@@ -9,6 +9,8 @@ import os
 tasks = Path("/p/scratch/hamilmater/vonhoff1/workflow_pq/MD_TB_PQ_wf/tasks")
 MD = Path("./MD")
 TB = Path("./TB")
+empTB = Path("./empTB")
+hamster = Path("./hamster")
 postTB = Path("./postTB")
 test = Path("./test")
 gap_dos = Path("./gap+dos")
@@ -46,12 +48,15 @@ t1_test = Task(tasks / MD / test / "test_MD_equilibration.py", None, "48:1:devel
 
 resources_TB = configWF["resources_TB"]
 
-t2_0 = Task(tasks / TB / "check_TB_type.py", None, "48:1:devel:2m", name="check_TB_type")
-t2_1 = Task(tasks / TB / "prep_fit_empTB.py", None, "48:1:devel:2m", name="prep_fit_empTB")
-t2_2 = Task(tasks / TB / "fit_empTB.py", None, resources_TB, name="fit_empTB")
+t2_0 = Task(tasks / TB / empTB / "check_TB_type.py", None, "48:1:devel:2m", name="check_TB_type")
+t2_1 = Task(tasks / TB / empTB / "prep_fit_empTB.py", None, "48:1:devel:2m", name="prep_fit_empTB")
+t2_2 = Task(tasks / TB / empTB / "fit_empTB.py", None, resources_TB, name="fit_empTB")
+
+t2_hamster = Task(tasks / TB / hamster / "hamster_TB.py", None, resources_TB, name="hamster_TB")
+
 t2_skip = Task(tasks / TB / "skip_TB.py", None, "48:1:devel:2m", name="skip_TB")
 
-sg2 = SwitchGroup({"empTB": {t2_1: [], t2_2: [t2_1]}, "skip_TB": t2_skip})
+sg2 = SwitchGroup({"empTB": {t2_1: [], t2_2: [t2_1]}, "hamster": t2_hamster, "skip_TB": t2_skip})
 
 t2_test0 = Task(tasks / TB / test / "check_test_TB.py", None, "48:1:devel:2m", name="check_test_TB")
 t2_test1_KPM = Task(tasks / TB / test / "test_TB_KPM.py", None, "48:1:batch:15m", name="test_TB_KPM")
@@ -87,7 +92,7 @@ t5b = Task(tasks / postTB / "skip_postTB.py", None, "48:1:devel:2m", name="skip_
 
 t = Task(tasks / "buffer.py", None, "48:1:devel:2m", name="buffer")
 
-sg3 = SwitchGroup({"conductivity": {t: [], swg4: [t]}, "gap+dos_exact_diag": {t3_dia: [], t3_1a: [t3_dia]}, "gap+dos_KPM": {t3_KPM: [], t3_1b: [t3_KPM], t3_2: [t3_1b]}, "skip_postTB": {t5a}})
+sg3 = SwitchGroup({"conductivity": {t: [], swg4: [t]}, "gap+dos_exact_diag": {t3_dia: [], t3_1a: [t3_dia]}, "gap+dos_KPM": {t3_KPM: [], t3_1b: [t3_KPM], t3_2: [t3_1b]}, "skip_postTB": t5a})
 
 t3_plot0 = Task(tasks / postTB / "check_postTB_plot.py", None, "48:1:devel:2m", name="check_postTB_plot")
 sg3_plot = SwitchGroup({"conductivity": t4_1, "gap+dos": t3_3, "skip_postTB": t5b})

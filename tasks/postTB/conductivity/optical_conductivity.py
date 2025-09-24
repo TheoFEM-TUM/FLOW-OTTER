@@ -2,7 +2,7 @@ import subprocess
 from typing import Tuple
 from pathlib import Path
 from ruamel.yaml import YAML
-
+import shutil
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
@@ -43,15 +43,6 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     else:
         dN_avg = configWF_i.get("dN_avg", 100)  
 
-    input_params = configWF_i["conductivity"]
-
-    if "temperature" in configWF:
-        input_params["T"] = configWF_i["temperature"]
-
-
-
-    input_params["TB_path"] = str(dir_TB / "hamiltonian/")
-    input_params["celldim_path"] = str(dir_TB / "celldimensions.txt")
 
     if dN_avg > 0:
         pq_index = kwargs['pq_index'][0]
@@ -68,14 +59,25 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     path_config = dir_config / config_file
 
+    if path_config.exists():
+        with open(path_configWF, "r") as f:
+            input_params = yaml.load(f) or {} 
+        shutil.copy2(path_config, dir_config / f"conductivity_config_backup.yaml")
+    else:
+        input_params = configWF_i["conductivity"]
+
+    if "temperature" in configWF:
+        input_params["T"] = configWF_i["temperature"]
+
+    input_params["TB_path"] = str(dir_TB / "hamiltonian/")
+    input_params["celldim_path"] = str(dir_TB / "celldimensions.txt")
+
     dir_output.mkdir(parents=True, exist_ok=True)
 
     input_params["output_dir"] = str(dir_output)
 
-
     with open(str(path_config), "w") as f:
         yaml.dump(input_params, f)
-
 
     result = subprocess.run([
         "srun", 

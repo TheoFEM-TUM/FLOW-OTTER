@@ -51,19 +51,19 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     path_traj = dir_MD / "position.lammpstrj"
 
-    result0 = subprocess.run([str(dir_codes / "TB/get_celldimensions.sh"), str(dir_MD)], check=True)
+    result0 = subprocess.run([str(dir_codes / "TB/empTB/get_celldimensions.sh"), str(dir_MD)], check=True)
 
-    result1 = subprocess.run([str(dir_codes / "TB/extractMDsnapshots.o"), str(dir_MD), str(dir_TB), str(cell_size), str(first_snapshot), str(last_snapshot)], check=True)
+    result1 = subprocess.run([str(dir_codes / "TB/empTB/extractMDsnapshots.o"), str(dir_MD), str(dir_TB), str(cell_size), str(first_snapshot), str(last_snapshot)], check=True)
 
 
     path_celldim = dir_MD / "celldimensions.txt"
-    shutil.copy(path_celldim, dir_TB)
+    shutil.copy2(path_celldim, dir_TB)
     #os.system(f"cp {path_celldim} {dir_TB}")
 
-    result2 = subprocess.run(["julia", "--project", str(dir_codes / "TB/find_nearst_neighbour.jl"), str(dir_snapshots), f"traj{first_snapshot}.xyz", str(path_celldim)], check=True)
+    result2 = subprocess.run(["julia", "--project", str(dir_codes / "TB/empTB/find_nearst_neighbour.jl"), str(dir_snapshots), f"traj{first_snapshot}.xyz", str(path_celldim)], check=True)
 
 
-    result3 = subprocess.run(["julia", "--project", str(dir_codes / "TB/find_unitcell.jl"), str(dir_snapshots), f"traj{first_snapshot}.xyz", str(path_celldim), str(cell_size)], check=True)
+    result3 = subprocess.run(["julia", "--project", str(dir_codes / "TB/empTB/find_unitcell.jl"), str(dir_snapshots), f"traj{first_snapshot}.xyz", str(path_celldim), str(cell_size)], check=True)
 
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}

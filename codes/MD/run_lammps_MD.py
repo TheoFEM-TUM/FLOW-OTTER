@@ -44,6 +44,7 @@ if input_params["restart"]:
     lmp.command(f"read_restart {str(path_ini)}")
     equilibrate = configWF.get("equilibrate", False)
 else:
+    lmp.command("atom_modify map yes")
     lmp.command(f"read_data {str(path_ini)}")
     equilibrate = True
 
@@ -55,7 +56,14 @@ else:
         replicate = input_params["replicate"]
         lmp.command(f"replicate {replicate[0]} {replicate[1]} {replicate[2]} bond/periodic")
 
-lmp.file(str(path_FF_MD))
+if configWF["MD_type"] == "lammps+MACE":
+    lmp.command("pair_style mace no_domain_decomposition")
+    lmp.command(f"pair_coeff * * {str(path_FF_MD)} " + " ".join(input_params["elements"]))
+if configWF["MD_type"] == "lammps+VASP":
+    lmp.command("pair_style vasp")
+    lmp.command(f"pair_coeff * * {str(path_FF_MD)} " + " ".join(input_params["elements"]))
+else:
+    lmp.file(str(path_FF_MD))
 
 # Time step
 lmp.command(f"timestep {input_params['dt']}")

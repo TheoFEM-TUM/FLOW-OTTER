@@ -40,6 +40,9 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     MD_type = configWF_i.get("MD_type", "skip_MD")
 
+    if "lammps" in MD_type:
+        MD_type = "lammps"
+
     print(f"MD type: {MD_type}")
 
     return True, {"path_configWF": path_configWF0, "num_simulations": num_simulations0, SWITCHGROUP_KEY: MD_type}

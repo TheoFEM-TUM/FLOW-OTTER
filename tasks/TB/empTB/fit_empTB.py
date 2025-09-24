@@ -45,7 +45,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         "srun", 
         "julia", "--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_pq/", 
         "-t", str(SLURM_CPUS_PER_TASK), 
-        str(dir_codes / "TB/compute_H.jl"), 
+        str(dir_codes / "TB/empTB/compute_H.jl"), 
         str(dir_TB), str(dir_input_TB), str(cell_size), str(first_snapshot), str(last_snapshot)], check=True)
     
 
