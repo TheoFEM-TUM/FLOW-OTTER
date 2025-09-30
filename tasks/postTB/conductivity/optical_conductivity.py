@@ -61,7 +61,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     if path_config.exists():
         with open(path_configWF, "r") as f:
-            input_params = yaml.load(f) or {} 
+            input_params = yaml.load(f)  
         shutil.copy2(path_config, dir_config / f"conductivity_config_backup.yaml")
     else:
         input_params = configWF_i["conductivity"]

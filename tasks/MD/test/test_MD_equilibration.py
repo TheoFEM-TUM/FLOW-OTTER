@@ -110,7 +110,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         else:
             T_set = configWF_i["lammps"]["T"]
 
-        error = false
+        error = False
 
         if (dT_nvt < T_std_nvt):
             print("dT_nvt < T_std_nvt: ", dT_nvt, " < ", T_std_nvt)
@@ -136,6 +136,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         plt.ylabel("Temperature (K)")
         plt.plot(step, T, color='blue', label="Temperature")
         plt.axhline(y=T_avg_nvt, xmin=x1, xmax=x2, color='red', label="Average")
+        plt.plot(moving_average(step, w), moving_average(T, w), color='orange', label="moving average")
         plt.axhline(y=T_avg_nvt+T_std_nvt, xmin=x1, xmax=x2, linestyle='--', color='red', label="Std")
         plt.axhline(y=T_avg_nvt-T_std_nvt, xmin=x1, xmax=x2, linestyle='--', color='red')
         plt.axhline(y=T_avg_npt, xmin=x2, xmax=x3, color='red')

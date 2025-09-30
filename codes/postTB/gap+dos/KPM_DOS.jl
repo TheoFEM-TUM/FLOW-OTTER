@@ -1,47 +1,12 @@
 using SparseArrays, LinearAlgebra, KrylovKit
-using YAML, DelimitedFiles
+using DelimitedFiles
 using Base.Threads: nthreads
 using Random, Statistics, Distributions
 using OhMyThreads, MPIPreferences
 MPIPreferences.use_system_binary()
 using MPI
 
-
-function read_TB_params(t::Int, TB_path::String)
-    file_path = joinpath(TB_path, "TB_" * string(t) * ".txt")
-    
-    row = Int[]
-    col = Int[]
-    H_elem = Complex{Float64}[]
-    traj = Vector{Vector{Float64}}(undef, 0)
-    
-    open(file_path, "r") do io
-        for line in eachline(io)
-            data = parse.(Float64, split(line))
-            push!(row, Int(data[1]))
-            push!(col, Int(data[2]))
-            push!(H_elem, Complex{Float64}(data[3], data[4]))
-            push!(traj, data[5:end])
-        end
-    end
-
-    traj = permutedims(hcat(traj...), [2,1])
-
-    return row, col, H_elem, traj
-end
-
-### extract hamiltonian for snapshot t
-function get_H_TB(TB_path::String, t::Int)
-   
-    #hamiltonian = SparseMatrixCSC{ComplexF64}
-
-    row, col, H_elem, _ = read_TB_params(t, TB_path)
-
-    hamiltonian = sparse(row, col, H_elem)
-    dropzeros!(hamiltonian)
-
-    return hamiltonian
-end
+include("read_hamiltonian.jl")
 
 function get_spectral_bounds(hamiltonian::SparseMatrixCSC{ComplexF64})
    
@@ -152,10 +117,9 @@ function calculate_density_func(C_m::Vector{Float64}, mean_E::Float64, ΔE::Floa
 end
 
 
-function KPM_DOS(M::Int, N::Int, TB_path::String, output_path::String, t::Int)
+function KPM_DOS(M::Int, N::Int, TB_path::String, output_path::String, t::Int, TB_type::String)
 
-    println(t)
-    H = get_H_TB(TB_path, t)
+    H = get_sparse_H(TB_path, t, TB_type)
     println("Hamiltonian read")
     E_max, E_min = get_spectral_bounds(H)
     println("Spectral bounds calculated")
@@ -209,6 +173,7 @@ function KPM_DOS(M::Int, N::Int, TB_path::String, output_path::String, t::Int)
         E, DoS = calculate_density_func(C_m, mean_E, ΔE, M)
 
         open(joinpath(output_path, "dos_$(t)_KPM.txt"), "w") do file
+            write(file, "# E     DOS(E) \n")
             for i in 1:size(E)[1]
                 write(file, " $(E[i]) $(DoS[i]) \n")
             end
@@ -226,8 +191,6 @@ N = parse(Int, ARGS[2])
 TB_path = ARGS[3]
 output_path = ARGS[4]
 t = parse(Int, ARGS[5])
+TB_type = ARGS[6]
 
-
-KPM_DOS(
-    M, N,TB_path, output_path, t
-)
+KPM_DOS(M, N,TB_path, output_path, t, TB_type)

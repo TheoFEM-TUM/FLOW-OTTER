@@ -32,8 +32,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
      
      
     dir_codes = Path(configWF_i.get("dir_codes", "./codes/"))
-    dir_TB = Path(dir_project_i + configWF_i.get("dir_TB", "2-TB/"))
-    dir_MD = Path(dir_project_i + configWF_i.get("dir_MD", "1-MD/"))
+    dir_TB = dir_project_i / Path(configWF_i.get("dir_TB", "2-TB/"))
+    dir_MD = dir_project_i / Path(configWF_i.get("dir_MD", "1-MD/"))
 
     s = configWF_i.get("size", 1)
     cell_size = configWF_i["cell_size"] * s

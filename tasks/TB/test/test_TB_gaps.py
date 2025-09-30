@@ -30,7 +30,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     if test_TB_type == "KPM":
 
-        E, dos = np.loadtxt(str(dir_TB / f"test_output/dos_{t}_KPM.txt"), unpack=True)
+        E, dos = np.loadtxt(str(dir_TB / f"test_output/dos_{t}_KPM.txt"), unpack=True, skiprows=1)
 
         fig1, (ax1) = plt.subplots()
         plt.title("Density of States (Kernel Polynomial Method)")
@@ -48,7 +48,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     
     else:
 
-        EV = np.loadtxt(str(dir_TB / f"test_output/EV_{t}.txt"), unpack=True)
+        EV = np.loadtxt(str(dir_TB / f"test_output/EV_{t}.txt"), unpack=True, skiprows=1)
 
         sigma = 0.05   # Gaussian broadening (energy units)
         E_grid_points = 1000  # number of points in energy grid
@@ -62,7 +62,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             dos += prefactor * np.exp(-0.5 * ((E_grid - E) / sigma)**2)
 
         data_dos = np.column_stack((E_grid, dos))
-        np.savetxt(str(dir_TB / f"test_output/dos_{t}_gauss.txt"), data_dos)
+        np.savetxt(str(dir_TB / f"test_output/dos_{t}_gauss.txt"), data_dos, header=" E     DOS(E)")
 
         fig1, (ax1) = plt.subplots()
         plt.title("Density of States (Gaussian broadened)")
@@ -82,7 +82,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         print(f"Gap: {gap}, between E {EV[idx]} and {EV[idx+1]}")
 
     data_gaps = np.column_stack((largest_gaps, EV[largest_gap_indices], EV[largest_gap_indices+1]))
-    np.savetxt(str(dir_TB / f"test_output/gaps_candidates_{t}.txt"), data_gaps)
+    np.savetxt(str(dir_TB / f"test_output/gaps_candidates_{t}.txt"), data_gaps, header=" gap    VBM     CBM")
 
 
     if configWF_i.get("human_in_loop", False):

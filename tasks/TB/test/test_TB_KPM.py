@@ -31,6 +31,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     dir_codes = Path(configWF_i.get("dir_codes", "./codes/"))
     dir_TB = dir_project_i / configWF_i.get("dir_TB", "2-TB/")
     #SLURM_CPUS_PER_TASK = configWF_i.get("SLURM_CPUS_PER_TASK", 1)
+    TB_type = configWF_i.get("TB_type", "skip_TB")
 
     M = configWF_i["gap+dos"].get("M", 1000)
     N = configWF_i["gap+dos"].get("N", 192)
@@ -42,8 +43,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         "julia", 
         f"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_pq/", 
         #"-t", f"{SLURM_CPUS_PER_TASK}", 
-        str(dir_codes / "postTB/KPM_DOS.jl"), 
-        str(M), str(N), str(dir_TB / "hamiltonian/"), str(dir_TB / "test_output/"), str(t),
+        str(dir_codes / "postTB/gap+dos/KPM_DOS.jl"), 
+        str(M), str(N), str(dir_TB / "hamiltonian/"), str(dir_TB / "test_output/"), str(t), TB_type
     ], check=True)        
 
     test_TB_type = "KPM"

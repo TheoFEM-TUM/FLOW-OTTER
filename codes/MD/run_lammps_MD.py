@@ -91,16 +91,18 @@ elements_str = " ".join(input_params["elements"])
 
 if equilibrate:
 
+    stepsize_eq = input_params.get("eqstepsize", 1)
+
     # Dump settings
-    lmp.command(f"dump 2 all custom {input_params['dt']} " + str(dir_MD / "position_eq.lammpstrj") + " id type element x y z")
+    lmp.command(f"dump 2 all custom {stepsize_eq} " + str(dir_MD / "position_eq.lammpstrj") + " id type element x y z")
     lmp.command("dump_modify 2 sort id")
     lmp.command(f"dump_modify 2 element {elements_str}")
 
-    lmp.command(f"dump 3 all custom {input_params['dt']} " + str(dir_MD / "velocity_eq.lammpstrj") + " id type element vx vy vz")
+    lmp.command(f"dump 3 all custom {stepsize_eq} " + str(dir_MD / "velocity_eq.lammpstrj") + " id type element vx vy vz")
     lmp.command("dump_modify 3 sort id")
     lmp.command(f"dump_modify 3 element {elements_str}")
 
-    lmp.command(f"dump 4 all custom {input_params['dt']} " + str(dir_MD / "forces_eq.lammpstrj") + " id type element fx fy fz")
+    lmp.command(f"dump 4 all custom {stepsize_eq} " + str(dir_MD / "forces_eq.lammpstrj") + " id type element fx fy fz")
     lmp.command("dump_modify 4 sort id")
     lmp.command(f"dump_modify 4 element {elements_str}")
 

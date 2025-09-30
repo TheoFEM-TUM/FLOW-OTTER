@@ -32,13 +32,13 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     gaps = np.zeros((len(snapshots), 3))
 
     for t in range(len(snapshots)):
-        gaps[t, :] = np.loadtxt(str(dir_TB / f"gap+dos/gap_{snapshots[t]}_KPM.txt"), unpack=True)
+        gaps[t, :] = np.loadtxt(str(dir_TB / f"gap+dos/gap_{snapshots[t]}_KPM.txt"), unpack=True, skiprows=1)
 
     avg_gap = np.mean(gaps, axis=0)
     std_gap = np.std(gaps, axis=0)
 
     data_gap = np.column_stack((avg_gap, std_gap))
-    np.savetxt(str(dir_TB / "gap+dos/gap_KPM.txt"), data_gap)
+    np.savetxt(str(dir_TB / "gap+dos/gap_KPM.txt"), data_gap, header=" average of gap/VBM/CBM   std of gap/VBM/CBM")
 
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}

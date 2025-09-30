@@ -46,7 +46,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         arr_dos = np.zeros((len(snapshots), 2*M))
 
         for t in range(len(snapshots)):
-            arr_E[t, :], arr_dos[t, :] = np.loadtxt(str(dir_TB / f"gap+dos/dos_{snapshots[t]}_KPM.txt"), unpack=True)
+            arr_E[t, :], arr_dos[t, :] = np.loadtxt(str(dir_TB / f"gap+dos/dos_{snapshots[t]}_KPM.txt"), unpack=True, skiprows=1)
 
         avg_E = np.mean(arr_E, axis=0)
         avg_dos = np.mean(arr_dos, axis=0)
@@ -67,11 +67,11 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         arr_E = np.zeros((len(snapshots), E_grid_points))
         arr_dos = np.zeros((len(snapshots), E_grid_points))
 
-        EV0 = np.loadtxt(str(dir_TB / f"gap+dos/EV_{snapshots[0]}.txt"), unpack=True)
+        EV0 = np.loadtxt(str(dir_TB / f"gap+dos/EV_{snapshots[0]}.txt"), unpack=True, skiprows=1)
         avg_EV = np.zeros(len(EV0))
 
         for t in range(len(snapshots)):
-            EV = np.loadtxt(str(dir_TB / f"gap+dos/EV_{snapshots[t]}.txt"), unpack=True)
+            EV = np.loadtxt(str(dir_TB / f"gap+dos/EV_{snapshots[t]}.txt"), unpack=True, skiprows=1)
 
             avg_EV += EV/len(snapshots)
 
@@ -92,7 +92,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     dos_type = postTB_type.split("_", 1)[1]
 
     data_dos = np.column_stack((avg_E, avg_dos, std_dos))
-    np.savetxt(str(dir_TB / f"gap+dos/avg_dos_{dos_type}.txt"), data_dos)
+    np.savetxt(str(dir_TB / f"gap+dos/avg_dos_{dos_type}.txt"), data_dos, header=" E    DOS(E)     std_DOS(E)")
 
     fig1, (ax1) = plt.subplots()
     plt.title(f"Density of States ({dos_type})")
@@ -111,7 +111,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         print(f"Gap: {gap}, between E {EV[idx]} and {EV[idx+1]}")
 
     data_gaps = np.column_stack((largest_gaps, EV[largest_gap_indices], EV[largest_gap_indices+1]))
-    np.savetxt(str(dir_TB / f"gap+dos/gaps_candidates_{dos_type}.txt"), data_gaps)
+    np.savetxt(str(dir_TB / f"gap+dos/gaps_candidates_{dos_type}.txt"), data_gaps, header=" gap    VBM     CBM")
 
     if postTB_type == "gap+dos_KPM":
         
@@ -146,19 +146,32 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     else:
 
         gaps = np.zeros((len(snapshots), len(largest_gap_indices)))
+        VBM = np.zeros((len(snapshots), len(largest_gap_indices)))
+        CBM = np.zeros((len(snapshots), len(largest_gap_indices)))
 
         for t in range(len(snapshots)):
-            EV = np.loadtxt(str(dir_TB / f"gap+dos/EV_{snapshots[t]}.txt"), unpack=True)
+            EV = np.loadtxt(str(dir_TB / f"gap+dos/EV_{snapshots[t]}.txt"), unpack=True, skiprows=1)
 
             for ix in range(len(largest_gap_indices)):
 
-                gaps[t, ix] = EV[largest_gap_indices[ix]+1] - EV[largest_gap_indices[ix]] 
+                VBM[t, ix] = EV[largest_gap_indices[ix]]
+                CBM[t, ix] = EV[largest_gap_indices[ix]+1]
+
+                gaps[t, ix] = CBM[t, ix] - VBM[t, ix]
 
         avg_gap = np.mean(gaps, axis=0)
         std_gap = np.std(gaps, axis=0)
+        
+        avg_VBM = np.mean(VBM, axis=0)
+        std_VBM = np.std(VBM, axis=0)
 
-        data_gaps = np.column_stack((avg_gap, std_gap))
-        np.savetxt(str(dir_TB / f"gap+dos/gap_{dos_type}.txt"), data_gaps)
+        avg_CBM = np.mean(CBM, axis=0)
+        std_CBM = np.std(CBM, axis=0)
+
+        data_gaps = np.array([[avg_gap, std_gap],
+                            [avg_VBM, std_VBM],
+                            [avg_CBM, std_CBM]])
+        np.savetxt(str(dir_TB / f"gap+dos/gap_{dos_type}.txt"), data_gaps, header=" average of gap/VBM/CBM    std of gap/VBM/CBM")
 
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, "snapshots": snapshots}

@@ -30,9 +30,10 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     dir_codes = Path(configWF_i.get("dir_codes", "./codes/"))
     dir_TB = dir_project_i / configWF_i.get("dir_TB", "2-TB/")
+    TB_type = configWF_i.get("TB_type", "skip_TB")
 
     result = subprocess.run([
-        "julia", "--project", str(dir_codes / "postTB/diagonalize_TB.jl"), str(dir_TB / "hamiltonian/"), str(dir_TB / "test_output/"), str(t)
+        "julia", "--project", str(dir_codes / "postTB/gap+dos/diagonalize_TB.jl"), str(dir_TB / "hamiltonian/"), str(dir_TB / "test_output/"), str(t), TB_type
     ], check=True)        
 
     test_TB_type = "exact_diag"

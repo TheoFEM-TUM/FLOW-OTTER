@@ -33,11 +33,11 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
             if (dir_TB / "gap+dos/avg_dos_KPM.txt").is_file():
 
-                E, dos, std_dos = np.loadtxt(str(dir_TB / "gap+dos/avg_dos_KPM.txt"), unpack=True)
+                E, dos, std_dos = np.loadtxt(str(dir_TB / "gap+dos/avg_dos_KPM.txt"), unpack=True, skiprows=1)
 
                 label = f"{param_to_vary} {array_to_vary[i]} (KPM)"
             else:
-                E, dos, std_dos = np.loadtxt(str(dir_TB / "gap+dos/avg_dos_exact_diag.txt"), unpack=True)
+                E, dos, std_dos = np.loadtxt(str(dir_TB / "gap+dos/avg_dos_exact_diag.txt"), unpack=True, skiprows=1)
 
                 label = f"{param_to_vary} {array_to_vary[i]} (exact diag)"
                 
