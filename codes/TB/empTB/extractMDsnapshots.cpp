@@ -2,6 +2,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <string>
+#include <cmath>
 
 using namespace std;
 
@@ -18,6 +19,7 @@ int main(int argc, char* argv[]){                         // extracts posistions
 	int num_unitcells = stoi(argv[3]);
 	int first_snapshot = stoi(argv[4]);
 	int last_snapshot = stoi(argv[5]);
+	int N_snapshots = stoi(argv[6]);
 	int num_atoms = atoms_per_unitcell * (num_unitcells * num_unitcells * num_unitcells);
 	string infile = folder1 + "/position.lammpstrj", outfile = folder2 + "/snapshots/traj", temp;
 	//infile.at(17) = outfile.at(14) = argv[1][1];            // name of the dum
@@ -30,7 +32,14 @@ int main(int argc, char* argv[]){                         // extracts posistions
 	double data[3];
 
 	//while (frame < timesteps + 1){
-	for (int frame=first_snapshot; frame<=last_snapshot; frame++){
+	//for (int frame=first_snapshot; frame<=last_snapshot; frame++){
+	int frame = first_snapshot;
+	for (int i = 0; i < N_snapshots; ++i) {
+		if (N_snapshots > 1) {
+    		frame = first_snapshot + round(i * double(last_snapshot - first_snapshot)/(N_snapshots - 1));
+		}
+
+
 		for (int i=0; i<9; ++i){
 			getline(fin,temp);                           // getline reads a line from inputfile fin and stores it into temp
 			//if (frame == 0){

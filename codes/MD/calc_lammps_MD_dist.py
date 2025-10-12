@@ -92,14 +92,20 @@ def position_histogram(input_dir, output_dir, type_names):
         raise FileNotFoundError("❌ position.lammpstrj not found")
 
     # Universe
-    u = mda.Universe(data_file, traj_file, format="LAMMPSDUMP", atom_style="id type x y z")
+    #u = mda.Universe(data_file, traj_file, format="LAMMPSDUMP", atom_style="id type element x y z")
+    u = mda.Universe(data_file, traj_file, format="LAMMPSDUMP")
+    #u = mda.Universe(traj_file, format="LAMMPSDUMP", atom_style="id type element x y z")
     atom_types = np.unique(u.atoms.types)
+    #atom_types = u.atoms.types
+    print(atom_types)
+
 
     # Initial positions
     u.trajectory[0]
     initial_positions = {
         atype: u.atoms[u.atoms.types == atype].positions.copy() for atype in atom_types
     }
+
 
     # Collect displacements
     all_displacements = {atype: [] for atype in atom_types}
@@ -114,8 +120,9 @@ def position_histogram(input_dir, output_dir, type_names):
     for atype in atom_types:
         all_displacements[atype] = np.vstack(all_displacements[atype])
 
+
     plot_histograms(all_displacements, atom_types, type_names, output_dir,
-                    "Displacements_Histogram.png", ["Δx", "Δy", "Δz"])
+                    "displacements_histogram.pdf", ["Δx", "Δy", "Δz"])
 
 
 def parse_lammps_dump(file_path, n_fields=3):
@@ -163,7 +170,7 @@ def velocities_histogram(input_dir, output_dir, type_names):
     atom_types = list(all_velocities.keys())
 
     plot_histograms(all_velocities, atom_types, type_names, output_dir,
-                    "Velocities_Histogram.png", ["Vx", "Vy", "Vz"])
+                    "velocities_histogram.pdf", ["Vx", "Vy", "Vz"])
 
 
 def forces_histogram(input_dir, output_dir, type_names):
@@ -179,7 +186,7 @@ def forces_histogram(input_dir, output_dir, type_names):
     atom_types = list(all_forces.keys())
 
     plot_histograms(all_forces, atom_types, type_names, output_dir,
-                    "Forces_Histogram.png", ["Fx", "Fy", "Fz"])
+                    "forces_histogram.pdf", ["Fx", "Fy", "Fz"])
 
 
 def main():

@@ -38,7 +38,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     s = configWF_i.get("size", 1)
     cell_size = configWF_i["cell_size"] * s
     first_snapshot = configWF_i.get("first_snapshot", 0)
-    last_snapshot = configWF_i["last_snapshot"]
+    N_snapshots = configWF_i["N_snapshots"]
+    last_snapshot = configWF_i.get("last_snapshot", first_snapshot + N_snapshots - 1)
 
 
     dir_snapshots = dir_TB / "snapshots/"
@@ -53,7 +54,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     result0 = subprocess.run([str(dir_codes / "TB/empTB/get_celldimensions.sh"), str(dir_MD)], check=True)
 
-    result1 = subprocess.run([str(dir_codes / "TB/empTB/extractMDsnapshots.o"), str(dir_MD), str(dir_TB), str(cell_size), str(first_snapshot), str(last_snapshot)], check=True)
+    result1 = subprocess.run([str(dir_codes / "TB/empTB/extractMDsnapshots.o"), str(dir_MD), str(dir_TB), str(cell_size), str(first_snapshot), str(last_snapshot), str(N_snapshots)], check=True)
 
 
     path_celldim = dir_MD / "celldimensions.txt"

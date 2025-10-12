@@ -30,7 +30,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     dir_TB = dir_project_i / configWF_i.get("dir_TB", "2-TB/")
     first_snapshot = configWF_i.get("first_snapshot", 0)
-    last_snapshot = configWF_i["last_snapshot"]
+    N_snapshots = configWF_i["N_snapshots"]
+    last_snapshot = configWF_i.get("last_snapshot", first_snapshot + N_snapshots - 1)
 
     run_test_TB = configWF_i.get("run_test_TB", True)
 

@@ -159,19 +159,19 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
                 gaps[t, ix] = CBM[t, ix] - VBM[t, ix]
 
+
         avg_gap = np.mean(gaps, axis=0)
         std_gap = np.std(gaps, axis=0)
-        
+
         avg_VBM = np.mean(VBM, axis=0)
         std_VBM = np.std(VBM, axis=0)
 
         avg_CBM = np.mean(CBM, axis=0)
         std_CBM = np.std(CBM, axis=0)
 
-        data_gaps = np.array([[avg_gap, std_gap],
-                            [avg_VBM, std_VBM],
-                            [avg_CBM, std_CBM]])
-        np.savetxt(str(dir_TB / f"gap+dos/gap_{dos_type}.txt"), data_gaps, header=" average of gap/VBM/CBM    std of gap/VBM/CBM")
+        data_gaps = np.squeeze(np.array([[avg_gap, std_gap, avg_VBM, std_VBM, avg_CBM, std_CBM]]))
+
+        np.savetxt(str(dir_TB / f"gap+dos/gaps_avg_std_{dos_type}.txt"), data_gaps, header=" average of gap      std of gap      average of VBM      std of VBM      average of CBM      std of VBM")
 
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, "snapshots": snapshots}

@@ -189,6 +189,7 @@ function compute_H(N_unitcells::Int, n_atoms::Int, n_orbitals::Int, positions::A
 
             r_nn = positions[nn_index, :]
 
+            # change for collect cell switches here
             delta = shift_PBC(r - r_nn, L)
             dist = norm(delta)
 
@@ -527,7 +528,12 @@ N_unitcells = n^3
 snapshot1 = parse(Int, ARGS[4])
 snapshot2 = parse(Int, ARGS[5])
 
-snapshot_size = snapshot2 - snapshot1 + 1
+snapshot_size = parse(Int, ARGS[6])
+
+snapshots = [
+        snapshot1 + round(Int, i * (snapshot2 - snapshot1) / (snapshot_size - 1))
+        for i in 0:snapshot_size-1
+    ]
 
 println("Start MPI:")
 MPI.Init()
@@ -543,17 +549,19 @@ mod_size = snapshot_size % rank_size
 
 for i in 0:(chunk_size - 1)
     
-    snapshot = snapshot1 + rank * chunk_size + i
+    #snapshot = snapshot1 + rank * chunk_size + i
+    ix = rank * chunk_size + i + 1
 
-    main(path, snapshot, path_input, N_unitcells, n_atoms, n_orbitals)
+    main(path, snapshots[ix], path_input, N_unitcells, n_atoms, n_orbitals)
 
 end
 
 if rank < mod_size
 
-    snapshot = snapshot1 + rank_size * chunk_size + rank
+    #snapshot = snapshot1 + rank_size * chunk_size + rank
+    ix = rank_size * chunk_size + rank + 1
 
-    main(path, snapshot, path_input, N_unitcells, n_atoms, n_orbitals)
+    main(path, snapshots[ix], path_input, N_unitcells, n_atoms, n_orbitals)
 
 end
 

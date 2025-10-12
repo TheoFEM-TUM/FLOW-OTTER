@@ -42,7 +42,8 @@ sg1a = SwitchGroup({"lammps": t1, "skip_MD": t1_skip})
 sg1b = SwitchGroup({"lammps": t1, "skip_MD": t1_skip})
 #sg1 = SwitchGroup({"lammps": t1_skip, "skip_MD": t1_skip})
 
-t1_test = Task(tasks / MD / test / "test_MD_equilibration.py", None, "48:1:devel:4m", name="test_MD_equilibration")
+t1_test_eq = Task(tasks / MD / test / "test_MD_equilibration.py", None, "48:1:devel:4m", name="test_MD_equilibration")
+t1_test = Task(tasks / MD / test / "test_MD.py", None, "48:1:devel:10m", name="test_MD")
 
 ### TB tasks
 
@@ -108,11 +109,11 @@ t_a = Task(tasks / "buffer.py", None, "local:1m", name="buffer")
 t_b = Task(tasks / "buffer.py", None, "local:1m", name="buffer")
 
 swg1 = StaticWidthGroup({
-    t1_0: [], sg1a: [t1_0], t1_test: [sg1a]
+    t1_0: [], sg1a: [t1_0], t1_test_eq: [sg1a], t1_test: [t1_test_eq]
     }, width=num_simulations)
 
 cg1 = CyclicalGroup({
-    t1_0: [], sg1b: [t1_0], t1_test: [sg1b]
+    t1_0: [], sg1b: [t1_0], t1_test_eq: [sg1b], t1_test: [t1_test_eq]
     }, num_simulations)
 
 sg0 = SwitchGroup({"sweep": {t_a: [], swg1: [t_a]}, "cascade": {t_b: [], cg1: [t_b]}})

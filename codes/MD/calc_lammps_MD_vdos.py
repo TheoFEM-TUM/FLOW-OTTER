@@ -29,7 +29,7 @@ def parse_masses(data_file):
             masses_section = True
             continue
         if masses_section:
-            if stripped.lower().startswith("atoms"):
+            if stripped.lower().startswith("atoms") or stripped.lower().startswith("bond"):
                 break
             if stripped == "":
                 continue  # skip blank lines
@@ -110,17 +110,101 @@ def get_VDOS(corr, potim):
 # ----------------------------
 # Plotting
 # ----------------------------
-def plot_vdos(omega, vdos, title, outfile):
+def plot_vdos(omega, vdos, title, outfile, omega_max=None):
+    if omega_max is None:
+        omega_max = np.max(omega)
     plt.figure()
-    plt.plot(omega, vdos, color="black")
-    plt.xlabel("Frequency (1/ps)")
+    plt.plot(omega[omega >= 0], vdos[omega >= 0], color="black")
+    plt.xlabel("Frequency")
     plt.ylabel("VDOS (arb. units)")
     plt.title(title)
-    plt.xlim(0, np.max(omega))
+    plt.xlim(0, omega_max)
     plt.tight_layout()
     plt.savefig(outfile)
     plt.close()
+
+    txtfile = outfile.with_suffix(".txt")
+    np.savetxt(
+        txtfile,
+        np.column_stack((omega[omega >= 0], vdos[omega >= 0])),
+        header="omega vdos",
+    )
     print(f"✅ Saved {title} → {outfile}")
+
+
+def calc_vdos(input_dir, output_dir, potim, masses):
+    input_dir = pathlib.Path(input_dir)
+    output_dir = pathlib.Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    vel_file = input_dir / "velocity.lammpstrj"
+    if not vel_file.exists():
+        raise FileNotFoundError("velocity.lammpstrj not found")
+
+    velocities = parse_lammps_velocities(vel_file)
+
+    # Total VDOS
+    time, vacf = get_VACF(velocities, masses)
+    omega, vdos = get_VDOS(vacf, potim)
+    plot_vdos(omega, vdos, "Total VDOS", output_dir / "VDOS_total.pdf")
+
+    # Atomic-resolved VDOS
+    for atype in sorted(velocities.keys()):
+        arr = velocities[atype]
+        vacf_type = []
+        vsq = []
+        nsteps, natoms, _ = arr.shape
+        m = masses[atype]
+        for j in range(natoms):
+            for k in range(3):
+                vacf_type.append(m * np.correlate(arr[:,j,k], arr[:,j,k], mode="full"))
+            vsq.append(m * np.sum(arr**2))
+        vacf_type = np.array(vacf_type)
+        corr_type = np.sum(vacf_type, axis=0)/np.sum(vsq)
+        omega_type, vdos_type = get_VDOS(corr_type, potim)
+        plot_vdos(omega_type, vdos_type, f"VDOS atom type {atype}", output_dir / f"VDOS_type_{atype}.pdf")
+
+def get_vdos(input_dir, output_dir, potim, type_names, omega_max=None):
+    input_dir = pathlib.Path(input_dir)
+    output_dir = pathlib.Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    vel_file = input_dir / "velocity.lammpstrj"
+    if not vel_file.exists():
+        raise FileNotFoundError("velocity.lammpstrj not found")
+
+    velocities = parse_lammps_velocities(vel_file)
+
+    data_files = list(input_dir.glob("*.data"))
+    if not data_files:
+        raise FileNotFoundError("*.data file not found")
+    data_file = data_files[0]
+
+    print(data_file)
+    masses = parse_masses(data_file)
+
+    # Total VDOS
+    time, vacf = get_VACF(velocities, masses)
+    omega, vdos = get_VDOS(vacf, potim)
+    plot_vdos(omega, vdos, "Total VDOS", output_dir / "VDOS_total.pdf", omega_max=omega_max)
+
+    # Atomic-resolved VDOS
+    for atype in sorted(velocities.keys()):
+        arr = velocities[atype]
+        vacf_type = []
+        vsq = []
+        nsteps, natoms, _ = arr.shape
+        m = masses[atype]
+        for j in range(natoms):
+            for k in range(3):
+                vacf_type.append(m * np.correlate(arr[:,j,k], arr[:,j,k], mode="full"))
+            vsq.append(m * np.sum(arr**2))
+        vacf_type = np.array(vacf_type)
+        corr_type = np.sum(vacf_type, axis=0)/np.sum(vsq)
+        omega_type, vdos_type = get_VDOS(corr_type, potim)
+        plot_vdos(omega_type, vdos_type, f"VDOS atom type {type_names[int(atype)]}", output_dir / f"VDOS_type_{type_names[int(atype)]}.pdf", omega_max=omega_max)
+
+
 
 # ----------------------------
 # Main
@@ -151,7 +235,7 @@ def main(input_dir, output_dir):
     # Total VDOS
     time, vacf = get_VACF(velocities, masses)
     omega, vdos = get_VDOS(vacf, potim)
-    plot_vdos(omega, vdos, "Total VDOS", output_dir / "VDOS_total.png")
+    plot_vdos(omega, vdos, "Total VDOS", output_dir / "VDOS_total.pdf")
 
     # Atomic-resolved VDOS
     for atype in sorted(velocities.keys()):
@@ -167,7 +251,7 @@ def main(input_dir, output_dir):
         vacf_type = np.array(vacf_type)
         corr_type = np.sum(vacf_type, axis=0)/np.sum(vsq)
         omega_type, vdos_type = get_VDOS(corr_type, potim)
-        plot_vdos(omega_type, vdos_type, f"VDOS atom type {atype}", output_dir / f"VDOS_type_{atype}.png")
+        plot_vdos(omega_type, vdos_type, f"VDOS atom type {atype}", output_dir / f"VDOS_type_{atype}.pdf")
 
 # ----------------------------
 if __name__ == "__main__":

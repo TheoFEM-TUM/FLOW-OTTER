@@ -35,7 +35,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     s = configWF_i.get("size", 1)
     cell_size = configWF_i["cell_size"] * s
     first_snapshot = configWF_i.get("first_snapshot", 0)
-    last_snapshot = configWF_i["last_snapshot"]
+    N_snapshots = configWF_i["N_snapshots"]
+    last_snapshot = configWF_i.get("last_snapshot", first_snapshot + N_snapshots - 1)
     dir_input_TB = Path(configWF_i["dir_input_TB"])
 
     SLURM_CPUS_PER_TASK = configWF_i.get("SLURM_CPUS_PER_TASK", 1)
@@ -46,7 +47,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         "julia", "--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_pq/", 
         "-t", str(SLURM_CPUS_PER_TASK), 
         str(dir_codes / "TB/empTB/compute_H.jl"), 
-        str(dir_TB), str(dir_input_TB), str(cell_size), str(first_snapshot), str(last_snapshot)], check=True)
+        str(dir_TB), str(dir_input_TB), str(cell_size), str(first_snapshot), str(last_snapshot), str(N_snapshots)], check=True)
     
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}

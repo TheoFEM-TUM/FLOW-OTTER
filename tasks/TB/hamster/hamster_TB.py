@@ -76,8 +76,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
 
     first_snapshot = configWF_i.get("first_snapshot", 0)
-    last_snapshot = configWF_i["last_snapshot"]
-    N_snapshots = last_snapshot - first_snapshot + 1
+    N_snapshots = configWF_i["N_snapshots"]
+    last_snapshot = configWF_i.get("last_snapshot", first_snapshot + N_snapshots - 1)
 
     input_params["Supercell"]["xdatcar"] = str(dir_MD / "structures.h5")
     input_params["Supercell"]["poscar"] = str(dir_MD / "POSCAR")
@@ -93,7 +93,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     result4 = subprocess.run([
         "julia", "--project", 
         str(dir_codes / "TB/hamster/yaml_to_hconf.jl"),
-        str(dir_input_TB / "hconf.yaml") ,str(path_hconf)], check=True)
+        str(dir_input_TB / "hconf.yaml"), str(path_hconf)], check=True)
 
 
     result = subprocess.run([

@@ -34,7 +34,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     TB_type = configWF_i.get("TB_type", "skip_TB")
 
     first_snapshot = configWF_i.get("first_snapshot", 0)
-    last_snapshot = configWF_i["last_snapshot"]
+    N_snapshots = configWF_i["N_snapshots"]
+    last_snapshot = configWF_i.get("last_snapshot", first_snapshot + N_snapshots - 1)
 
     num_snapshot_dos = configWF_i["gap+dos"].get("num_snapshot", last_snapshot - first_snapshot + 1)
     snapshot_sampling_dos = configWF_i["gap+dos"].get("snapshot_sampling", "all")

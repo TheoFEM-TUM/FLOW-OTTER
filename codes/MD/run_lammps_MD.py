@@ -1,5 +1,6 @@
 import yaml
 import sys
+import numpy as np
 from pathlib import Path
 
 
@@ -48,6 +49,8 @@ else:
     lmp.command(f"read_data {str(path_ini)}")
     equilibrate = True
 
+
+
 if "size" in configWF:
     s = configWF["size"]
     lmp.command(f"replicate {s} {s} {s} bond/periodic")
@@ -56,14 +59,19 @@ else:
         replicate = input_params["replicate"]
         lmp.command(f"replicate {replicate[0]} {replicate[1]} {replicate[2]} bond/periodic")
 
+elements = input_params["elements"]
+elements_str = " ".join(elements)
+
 if configWF["MD_type"] == "lammps+MACE":
     lmp.command("pair_style mace no_domain_decomposition")
-    lmp.command(f"pair_coeff * * {str(path_FF_MD)} " + " ".join(input_params["elements"]))
+    lmp.command(f"pair_coeff * * {str(path_FF_MD)} " + elements_str)
 if configWF["MD_type"] == "lammps+VASP":
     lmp.command("pair_style vasp")
-    lmp.command(f"pair_coeff * * {str(path_FF_MD)} " + " ".join(input_params["elements"]))
+    lmp.command(f"pair_coeff * * {str(path_FF_MD)} " + elements_str)
 else:
     lmp.file(str(path_FF_MD))
+
+#lmp.command(f"write_dump all custom " + str(dir_MD / "masses.txt") + f" id type element mass modify sort id element {elements_str}")
 
 # Time step
 lmp.command(f"timestep {input_params['dt']}")
@@ -83,29 +91,16 @@ lmp.command("variable Y equal ly")
 lmp.command("variable Z equal lz")
 lmp.command("variable V equal vol")
 lmp.command("variable P equal press")
-lmp.command(f"fix thermolog all print 100 '$t $T $E $X $Y $Z $V $P' file " + str(dir_MD / "thermo_output.txt screen no"))
+lmp.command(f"fix thermolog all print 100 '$t $T $E $X $Y $Z $V $P' file " + str(dir_MD / "thermo_output.txt") + " screen no")
 
 T_damp = input_params["T_damp"]
 
-elements_str = " ".join(input_params["elements"])
-
 if equilibrate:
 
-    stepsize_eq = input_params.get("eqstepsize", 1)
-
-    # Dump settings
-    lmp.command(f"dump 2 all custom {stepsize_eq} " + str(dir_MD / "position_eq.lammpstrj") + " id type element x y z")
-    lmp.command("dump_modify 2 sort id")
-    lmp.command(f"dump_modify 2 element {elements_str}")
-
-    lmp.command(f"dump 3 all custom {stepsize_eq} " + str(dir_MD / "velocity_eq.lammpstrj") + " id type element vx vy vz")
-    lmp.command("dump_modify 3 sort id")
-    lmp.command(f"dump_modify 3 element {elements_str}")
-
-    lmp.command(f"dump 4 all custom {stepsize_eq} " + str(dir_MD / "forces_eq.lammpstrj") + " id type element fx fy fz")
-    lmp.command("dump_modify 4 sort id")
-    lmp.command(f"dump_modify 4 element {elements_str}")
-
+    #stepsize_eq = input_params.get("eqstepsize", 1)
+    lmp.command(f"dump 0 all custom 1 " + str(dir_MD / "position_eq.lammpstrj") + " id type element x y z")
+    lmp.command("dump_modify 0 sort id")
+    lmp.command(f"dump_modify 0 element {elements_str}")
 
     T_start = input_params.get("T_start", T)
     if not (input_params["restart"]):
@@ -134,11 +129,26 @@ if equilibrate:
     path_restart_eq = dir_MD / restart_eq_file
     lmp.command(f"write_restart " + str(path_restart_eq))
 
+    lmp.command("undump 0")
+    
+
+lmp.command(f"write_data " + str(dir_MD / "pre_run.data"))
+
+prodrun_stepsize = input_params['prodrun_stepsize']
 
 # Dump settings
-lmp.command(f"dump 1 all custom {input_params['prodrun_stepsize']} " + str(dir_MD / "position.lammpstrj") + " id element x y z")
+lmp.command(f"dump 1 all custom {prodrun_stepsize} " + str(dir_MD / "position.lammpstrj") + " id type x y z")
 lmp.command("dump_modify 1 sort id")
 lmp.command(f"dump_modify 1 element {elements_str}")
+
+lmp.command(f"dump 2 all custom {prodrun_stepsize} " + str(dir_MD / "velocity.lammpstrj") + " id type vx vy vz")
+lmp.command("dump_modify 2 sort id")
+lmp.command(f"dump_modify 2 element {elements_str}")
+
+lmp.command(f"dump 3 all custom {prodrun_stepsize} " + str(dir_MD / "forces.lammpstrj") + " id type fx fy fz")
+lmp.command("dump_modify 3 sort id")
+lmp.command(f"dump_modify 3 element {elements_str}")
+
 
 # NVT production run
 lmp.command(f"fix 1 all nvt temp {T} {T} {T_damp}")
@@ -148,7 +158,6 @@ lmp.command("unfix 1")
 restart_file = f"restart_{T}"
 path_restart = dir_MD / restart_file
 lmp.command(f"write_restart {path_restart}")
-
 
 me = MPI.COMM_WORLD.Get_rank()
 nprocs = MPI.COMM_WORLD.Get_size()
