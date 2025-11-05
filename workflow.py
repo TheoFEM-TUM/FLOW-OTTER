@@ -51,7 +51,7 @@ resources_TB = configWF["resources_TB"]
 
 t2_0 = Task(tasks / TB / "check_TB_type.py", None, "48:1:devel:2m", name="check_TB_type")
 
-t2_1 = Task(tasks / TB / empTB / "prep_fit_empTB.py", None, "48:1:devel:2m", name="prep_fit_empTB")
+t2_1 = Task(tasks / TB / empTB / "prep_fit_empTB.py", None, "48:1:devel:5m", name="prep_fit_empTB")
 t2_2 = Task(tasks / TB / empTB / "fit_empTB.py", None, resources_TB, name="fit_empTB")
 
 t2_hamster = Task(tasks / TB / hamster / "hamster_TB.py", None, resources_TB, name="hamster_TB")

@@ -3,6 +3,8 @@ import yaml
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
+import h5py
+from scipy.sparse import csc_matrix
 from perqueue.constants import SWITCHGROUP_KEY
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
@@ -35,31 +37,75 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     run_test_TB = configWF_i.get("run_test_TB", True)
 
+    hamiltonian_type = configWF_i.get("hamiltonian_type", "TB")
+
     np.random.seed(42)
     t = np.random.randint(first_snapshot, last_snapshot)
     print(f"Random snapshot selected: {t}")
 
-    data_TB = np.loadtxt(str(dir_TB / f"hamiltonian/TB_{t}.txt"))
+
+    if hamiltonian_type == "Hr" or hamiltonian_type == "Hk":
+
+        if hamiltonian_type == "Hr":
+            H_type = f"Hr_{t}"
+        else:
+            H_type = f"Hk_{t}"
+
+        hoppings = []
+        onsites = []
+        real_ham = []
+        abs_ham = []
+
+        with h5py.File(str(dir_TB / f"hamiltonian/ham.h5"), "r") as f:
+            g = f[H_type]
+            for i in g.keys
+                if i == "vecs":
+                    continue
+                grp = g[i]
+
+                row = np.array(grp["rowval"][:])-1
+                col = np.array(grp["colptr"][:])-1
+                nzval = np.array(grp["nzval"][:])
+                m = int(np.array(grp["m"]))
+                n = int(np.array(grp["n"]))
+                
+                Hr = csc_matrix((nzval, rowval, colptr), shape=(m, n))
+
+                real_ham.append(np.real(nzval))
+                abs_ham.append(np.abs(nzval))
+
+                for k in range(-n:n)
+                    if k == 0:
+                        onsites.append(Hr.diagonal(k))
+                    else:
+                        hoppings.append(Hr.diagonal(k))
+
+    elif hamiltonian_type == "TB":
+
+        data_ham = np.loadtxt(str(dir_TB / f"hamiltonian/TB_{t}.txt"))
+        col = data_ham[:, 0]
+        row = data_ham[:, 1]
+        ham = data_ham[:, 2] + 1j * data_ham[:, 3]
+        real_ham = ham[:, 0]
+        abs_ham = np.abs(ham)
+
+        onsites = real_ham[col == row]
+        hoppings = real_ham[col != row]
+
+    else:
+        raise Exception(f"hamiltonian_type {hamiltonian_type} not recognized.")
+    
 
     max_elem = 15.0
 
 
-    if np.any(np.abs(data_TB[:, 2:4]) > max_elem):
-        ix = (np.where(np.abs(data_TB[:, 2:4]) > max_elem))
-        elem = (data_TB[:, 2:4][np.abs(data_TB[:, 2:4]) > max_elem])
+    if np.any(abs_ham > max_elem):
+        ix = (np.where(abs_ham > max_elem))
+        elem = (ham[abs_ham > max_elem])
         raise Exception(f"Hamiltonian {t} contains elements larger than {max_elem}. See elements {elem} at indeces {ix}")
     else:
         print(f"Hamiltonian {t} is within the acceptable range (max {max_elem}).")
 
-
-    arr_onsites = data_TB[data_TB[:, 0] == data_TB[:, 1], 2:4]
-    arr_hoppings = data_TB[data_TB[:, 0] != data_TB[:, 1], 2:4]
-
-    onsites = arr_onsites[:, 0]
-    hoppings = arr_hoppings[:, 0]
-
-    #onsites = np.sqrt(arr_onsites[0, :]**2 + arr_onsites[1, :]**2)
-    #hoppings = np.sqrt(arr_hoppings[0, :]**2 + arr_hoppings[1, :]**2)
 
     max_onsite = np.max(onsites)
     min_onsite = np.min(onsites)
@@ -92,7 +138,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     if not run_test_TB:
         test_TB_type = "skip_test_TB"
     else:
-        if np.max(data_TB[:, 1]) > 10**4:
+        if np.max(data_ham[:, 1]) > 10**4:
             print("Dimension of TB matrix > 10^4, calculate DoS with Kernel Polynomial method (KPM).")
             test_TB_type = "KPM"
         else:

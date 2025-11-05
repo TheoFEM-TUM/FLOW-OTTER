@@ -1,10 +1,11 @@
 using LinearAlgebra
 using DelimitedFiles
-using SpecialFunctions
 using MPIPreferences
+using SparseArrays
+using SpecialFunctions
 #MPIPreferences.use_system_binary()
 using MPI
-
+using HDF5
 
 function shift_PBC(delta, L)
     
@@ -108,7 +109,7 @@ function full_ewald(index0::Int, cell_index::Int, N_unitcells::Int, n_atoms::Int
 
             r1 = positions[index1, :]
 
-            d = shift_PBC(r1 - r0, L)
+            d, _ = shift_PBC(r1 - r0, L)
             
             if index1 != index0
                 d = d ./ (0.5 .* L)
@@ -214,12 +215,15 @@ function compute_H(N_unitcells::Int, n_atoms::Int, n_orbitals::Int, positions::A
                 hop_spσ *= -1
             end
 
+            #print(shift)
+            #println(r, r_nn)
+
             # spσ
             supercell[index_TB, :] = shift
             indices[index_TB, :] = [ix_cell, nn_ix + axis]
             hamiltonian[index_TB, :] = [hop_spσ, 0.0, delta...]
             index_TB += 1
-            supercell[index_TB, :] = shift
+            supercell[index_TB, :] = -shift
             indices[index_TB, :] = [nn_ix + axis, ix_cell]
             hamiltonian[index_TB, :] = [hop_spσ, 0.0, -delta...]
             index_TB += 1            
@@ -228,7 +232,7 @@ function compute_H(N_unitcells::Int, n_atoms::Int, n_orbitals::Int, positions::A
             indices[index_TB, :] = [dim_H + ix_cell, dim_H + nn_ix + axis]
             hamiltonian[index_TB, :] = [hop_spσ, 0.0, delta...]
             index_TB += 1
-            supercell[index_TB, :] = shift
+            supercell[index_TB, :] = -shift
             indices[index_TB, :] = [dim_H + nn_ix + axis, dim_H + ix_cell]
             hamiltonian[index_TB, :] = [hop_spσ, 0.0, -delta...]
             index_TB += 1
@@ -238,7 +242,7 @@ function compute_H(N_unitcells::Int, n_atoms::Int, n_orbitals::Int, positions::A
             indices[index_TB, :] = [ix_cell + 1 + axis, nn_ix + axis]
             hamiltonian[index_TB, :] = [hop_ppσ, 0.0, delta...]
             index_TB += 1
-            supercell[index_TB, :] = shift
+            supercell[index_TB, :] = -shift
             indices[index_TB, :] = [nn_ix + axis, ix_cell + 1 + axis]
             hamiltonian[index_TB, :] = [hop_ppσ, 0.0, -delta...]
             index_TB += 1
@@ -247,7 +251,7 @@ function compute_H(N_unitcells::Int, n_atoms::Int, n_orbitals::Int, positions::A
             indices[index_TB, :] = [dim_H + ix_cell + 1 + axis, dim_H + nn_ix + axis]
             hamiltonian[index_TB, :] = [hop_ppσ, 0.0, delta...]
             index_TB += 1
-            supercell[index_TB, :] = shift
+            supercell[index_TB, :] = -shift
             indices[index_TB, :] = [dim_H + nn_ix + axis, dim_H + ix_cell + 1 + axis]
             hamiltonian[index_TB, :] = [hop_ppσ, 0.0, -delta...]
             index_TB += 1
@@ -257,7 +261,7 @@ function compute_H(N_unitcells::Int, n_atoms::Int, n_orbitals::Int, positions::A
             indices[index_TB, :] = [ix_cell + 1 + (axis + 1)%3, nn_ix + (axis + 1)%3]
             hamiltonian[index_TB, :] = [-hop_ppπ, 0.0, delta...]
             index_TB += 1
-            supercell[index_TB, :] = shift
+            supercell[index_TB, :] = -shift
             indices[index_TB, :] = [nn_ix + (axis + 1)%3, ix_cell + 1 + (axis + 1)%3]
             hamiltonian[index_TB, :] = [-hop_ppπ, 0.0, -delta...]
             index_TB += 1
@@ -266,7 +270,7 @@ function compute_H(N_unitcells::Int, n_atoms::Int, n_orbitals::Int, positions::A
             indices[index_TB, :] = [dim_H + ix_cell + 1 + (axis + 1)%3, dim_H + nn_ix + (axis + 1)%3]
             hamiltonian[index_TB, :] = [-hop_ppπ, 0.0, delta...]
             index_TB += 1
-            supercell[index_TB, :] = shift
+            supercell[index_TB, :] = -shift
             indices[index_TB, :] = [dim_H + nn_ix + (axis + 1)%3, dim_H + ix_cell + 1 + (axis + 1)%3]
             hamiltonian[index_TB, :] = [-hop_ppπ, 0.0, -delta...]
             index_TB += 1
@@ -275,7 +279,7 @@ function compute_H(N_unitcells::Int, n_atoms::Int, n_orbitals::Int, positions::A
             indices[index_TB, :] = [ix_cell + 1 + (axis + 2)%3, nn_ix + (axis + 2)%3]
             hamiltonian[index_TB, :] = [-hop_ppπ, 0.0, delta...]
             index_TB += 1
-            supercell[index_TB, :] = shift
+            supercell[index_TB, :] = -shift
             indices[index_TB, :] = [nn_ix + (axis + 2)%3, ix_cell + 1 + (axis + 2)%3]
             hamiltonian[index_TB, :] = [-hop_ppπ, 0.0, -delta...]
             index_TB += 1
@@ -284,7 +288,7 @@ function compute_H(N_unitcells::Int, n_atoms::Int, n_orbitals::Int, positions::A
             indices[index_TB, :] = [dim_H + ix_cell + 1 + (axis + 2)%3, dim_H + nn_ix + (axis + 2)%3]
             hamiltonian[index_TB, :] = [-hop_ppπ, 0.0, delta...]
             index_TB += 1
-            supercell[index_TB, :] = shift
+            supercell[index_TB, :] = -shift
             indices[index_TB, :] = [dim_H + nn_ix + (axis + 2)%3, dim_H + ix_cell + 1 + (axis + 2)%3]
             hamiltonian[index_TB, :] = [-hop_ppπ, 0.0, -delta...]
             index_TB += 1
@@ -534,7 +538,7 @@ function shift_onsites!(hamiltonian, indices, mean_onsites_Pb, mean_onsites_Ha, 
 
 end
 
-function main(comm::MPI.Comm, path::String, snapshot::Int, path_SOC::String, N_unitcells::Int, n_atoms::Int, n_orbitals::Int)
+function main(comm::MPI.Comm, rank::Int, rank_size::Int, path::String, snapshot::Int, path_SOC::String, N_unitcells::Int, n_atoms::Int, n_orbitals::Int, hamiltonian_style::String)
 
     positions, SOC, L, hop_fit, q, nn, nn_cell, unit_cell, onsite_shifts = initialize(path, snapshot, path_SOC)
     println("Initialization for $snapshot finished!")
@@ -548,68 +552,138 @@ function main(comm::MPI.Comm, path::String, snapshot::Int, path_SOC::String, N_u
 
     rounded_hamiltonian = round.(hamiltonian, digits=6)
 
-    cell, H, r = construct_H(supercell, indices, rounded_hamiltonian)
 
-    write_H(cell, H, r, comm, snapshot; filename=joinpath(path, "hamiltonian/ham.h5"))    
+    if hamiltonian_style == "Hr"
 
-    #open(joinpath(path, "hamiltonian/TB_$(snapshot).txt"), "w") do io
-    #    for i in axes(indices, 1)
-    #        print(io, supercell[i, 1], ' ')
-    #        print(io, supercell[i, 2], ' ')
-    #        print(io, supercell[i, 3], ' ')
-    #        print(io, indices[i, 1], ' ')
-    #        print(io, indices[i, 2], ' ')
-    #        print(io, rounded_hamiltonian[i, 1], ' ')
-    #        print(io, rounded_hamiltonian[i, 2], ' ')
-    #        print(io, rounded_hamiltonian[i, 3], ' ')
-    #        print(io, rounded_hamiltonian[i, 4], ' ')
-    #        print(io, rounded_hamiltonian[i, 5], '\n')
-    #        #write(file, join(indices[i, :], ' ') * " " * join([i, :], ' ') * "\n")
-    #    end
-    #end
+        cell, H, r = construct_Hr(supercell, indices, rounded_hamiltonian)
+        println("Construction of sparse matrices for $snapshot finished!")
+
+        write_Hr(cell, H, r, snapshot, comm, rank, rank_size; filename=joinpath(path, "hamiltonian/ham.h5"))    
+        println("Writing Hr for $snapshot finished!")
+
+    elseif hamiltonian_style == "Hk"
+
+        Hk = construct_Hk(indices, rounded_hamiltonian)
+        println("Construction of sparse matrices for $snapshot finished!")
+
+        write_Hk(Hk, hamiltonian[:, 3:5], snapshot, comm, rank, rank_size; filename=joinpath(path, "hamiltonian/ham.h5"))    
+        println("Writing Hk for $snapshot finished!")
+
+    elseif hamiltonian_style == "TB"
+
+        write_TB(indices, rounded_hamiltonian, filename=joinpath(path, "hamiltonian/TB_$snapshot.txt"))
+        println("Writing TB for $snapshot finished!")
+
+    else
+
+        error("hamiltonian_style $hamiltonian_style not recognized.")
+
+    end
+
 
 end
 
-function construct_H(supercell, indices, hamiltonian)
+
+function construct_Hr(supercell, indices, hamiltonian)
 
     dim_H = maximum(indices)
 
     n_TB = size(hamiltonian, 1)
     cell = unique(supercell, dims=1)
-    n_cell = size(vec, 1)
+    n_cell = size(cell, 1)
 
     H = Dict{Tuple{Int,Int,Int}, SparseMatrixCSC{ComplexF64, Int}}()
-    r = Dict{Tuple{Int,Int,Int}, Array{Int,3}}()
+    r = Dict{Tuple{Int,Int,Int}, Array{Float64,2}}()
 
-    for c in cell
+    for i in 1:size(cell, 1)
 
-        idx = supercell .== c
+        c = cell[i, :]
+        idx = findall(j -> supercell[j, :] == c, 1:size(supercell, 1))
 
-        H[Tuple(c)] = sparse(indices[idx, 1], indices[idx, 2], Complex{Float64}(hamiltonian[idx, 1], hamiltonian[idx, 2]) , dim_H, dim_H)
-        r[Tuple(c)] = hamiltonian[idx, 3:5]
+        key = Tuple(round.(Int, c))
+        #print(key)
+        #print(size(idx))
+        #println(idx)
+
+        H[key] = sparse(indices[idx, 1], indices[idx, 2], ComplexF64.(hamiltonian[idx, 1], hamiltonian[idx, 2]), dim_H, dim_H)
+        r[key] = hamiltonian[idx, 3:5]
 
     end
 
     return cell, H, r
 end
 
-
-function write_H(cell, H, r, comm, ind=0; filename="ham.h5")
-    h5open(filename, "cw", comm) do file
-        g = create_group(file, "Hr_$ind")
-        g["R"] = cell
-        for (i, c) in enumerate(cell)
-            grp = create_group(g, "$i")
-            grp["rowval"] = H[Tuple(c)].rowval
-            grp["colptr"] = H[Tuple(c)].colptr
-            grp["nzval"]  = H[Tuple(c)].nzval
-            grp["m"]      = size(H[Tuple(c)], 1)
-            grp["n"]      = size(H[Tuple(c)], 2)
-            grp["r"]      = r[Tuple(c)]
+function write_Hr(cell, H, r, snapshot, comm, rank, rank_size; filename="ham.h5")
+    for x in 0:rank_size-1
+        if x == rank
+            h5open(filename, "cw") do file
+                println("Writing Hamiltonian to $filename for snapshot $snapshot ...")
+                g = create_group(file, "Hr_$snapshot")
+                g["vecs"] = cell
+                for (i, c) in enumerate(eachrow(cell))
+                    key = Tuple(round.(Int, c))
+                    grp = create_group(g, "$i")
+                    Hr = H[key]
+                    grp["rowval"] = Hr.rowval
+                    grp["colptr"] = Hr.colptr
+                    grp["nzval"]  = Hr.nzval
+                    grp["m"]      = size(Hr, 1)
+                    grp["n"]      = size(Hr, 2)
+                    grp["r"]      = r[key]
+                end
+            end
         end
+        MPI.Barrier(comm)
     end
 end
 
+
+function construct_Hk(indices, hamiltonian)
+    
+    dim_H = maximum(indices)
+
+    H = sparse(indices[:, 1], indices[:, 2], ComplexF64.(hamiltonian[:, 1], hamiltonian[:, 2]), dim_H, dim_H)
+    
+    return H
+end
+
+function write_Hk(Hk, r, hamiltonian, snapshot, comm, rank, rank_size; filename="ham.h5")
+    for x in 0:rank_size-1
+        if x == rank
+            h5open(filename, "cw") do file
+                println("Writing Hamiltonian to $filename ...")
+                g = create_group(file, "Hk_$snapshot")
+                g["vecs"] = Tuple([0, 0, 0])
+                grp = create_group(g, "0")
+                grp["rowval"] = Hk.rowval
+                grp["colptr"] = Hk.colptr
+                grp["nzval"]  = Hk.nzval
+                grp["m"]      = size(Hk, 1)
+                grp["n"]      = size(Hk, 2)
+                grp["r"]      = r
+            end
+        end
+        MPI.Barrier(comm)
+    end
+end
+
+
+function write_TB(indices, hamiltonian; filename="TB.txt")
+    open(filename, "w") do io
+        for i in axes(indices, 1)
+            #print(io, supercell[i, 1], ' ')
+            #print(io, supercell[i, 2], ' ')
+            #print(io, supercell[i, 3], ' ')
+            print(io, indices[i, 1], ' ')
+            print(io, indices[i, 2], ' ')
+            print(io, hamiltonian[i, 1], ' ')
+            print(io, hamiltonian[i, 2], ' ')
+            print(io, hamiltonian[i, 3], ' ')
+            print(io, hamiltonian[i, 4], ' ')
+            print(io, hamiltonian[i, 5], '\n')
+        end
+    end
+end
 
 #########################################################
 
@@ -633,13 +707,22 @@ snapshot2 = parse(Int, ARGS[5])
 
 snapshot_size = parse(Int, ARGS[6])
 
+hamiltonian_style = ARGS[7]
+
+filename = joinpath(path, "hamiltonian/ham.h5")
+if isfile(filename)
+    rm(filename; force=true)
+end
+
+println("Start MPI:")
+MPI.Init()
+
 snapshots = [
         snapshot1 + round(Int, i * (snapshot2 - snapshot1) / (snapshot_size - 1))
         for i in 0:snapshot_size-1
     ]
 
-println("Start MPI:")
-MPI.Init()
+#println(snapshots)
 
 comm = MPI.COMM_WORLD
 rank = MPI.Comm_rank(comm)
@@ -655,18 +738,29 @@ for i in 0:(chunk_size - 1)
     #snapshot = snapshot1 + rank * chunk_size + i
     ix = rank * chunk_size + i + 1
 
-    main(comm, path, snapshots[ix], path_input, N_unitcells, n_atoms, n_orbitals)
+    main(comm, rank, rank_size, path, snapshots[ix], path_input, N_unitcells, n_atoms, n_orbitals, hamiltonian_style)
 
 end
+
+MPI.Barrier(comm)
+println("Finished main chunks for rank $rank")
+
+color = rank < mod_size ? 1 : nothing
+sub_comm = MPI.Comm_split(comm, color, rank)
 
 if rank < mod_size
 
-    #snapshot = snapshot1 + rank_size * chunk_size + rank
+    sub_rank = MPI.Comm_rank(sub_comm)
+    sub_rank_size = MPI.Comm_size(sub_comm)
+
     ix = rank_size * chunk_size + rank + 1
 
-    main(comm, path, snapshots[ix], path_input, N_unitcells, n_atoms, n_orbitals)
+    main(sub_comm, sub_rank, sub_rank_size, path, snapshots[ix], path_input, N_unitcells, n_atoms, n_orbitals, hamiltonian_style)
 
 end
+
+MPI.Barrier(comm)
+println("Finished remaining chunks for rank $rank")
 
 
 MPI.Finalize()

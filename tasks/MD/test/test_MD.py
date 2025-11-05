@@ -64,41 +64,48 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     dir_codes = Path(configWF_i.get("dir_codes", "./codes/"))
     sys.path.append(str(dir_codes / "MD"))
 
-    import calc_lammps_MD_dist as dist
-    import calc_lammps_MD_vdos as vdos
+    run_test_MD = configWF_i.get("run_test_MD", True)
 
-    dir_MD = dir_project_i / configWF_i.get("dir_MD", "1-MD/")
-    dt = configWF_i["lammps"]["dt"]
-    step_size = configWF_i["lammps"]["prodrun_stepsize"]
-    potim = dt * step_size
+    if run_test_MD:
 
-    dir_test = dir_MD / "test_MD/"
-    dir_test.mkdir(parents=True, exist_ok=True)
+        import calc_lammps_MD_dist as dist
+        import calc_lammps_MD_vdos as vdos
 
-    #masses = read_element_masses(str(dir_MD / "masses.txt"))
-    #print(masses)
+        dir_MD = dir_project_i / configWF_i.get("dir_MD", "1-MD/")
+        dt = configWF_i["lammps"]["dt"]
+        step_size = configWF_i["lammps"]["prodrun_stepsize"]
+        potim = dt * step_size
 
-    elements = configWF_i["lammps"]["elements"]
-    type_names = {}
+        dir_test = dir_MD / "test_MD/"
+        dir_test.mkdir(parents=True, exist_ok=True)
 
-    for i in range(len(elements)):
-        type_names[i+1] = elements[i]
+        #masses = read_element_masses(str(dir_MD / "masses.txt"))
+        #print(masses)
 
-    print(f"typenames {type_names}")
+        elements = configWF_i["lammps"]["elements"]
+        type_names = {}
 
-    dist.position_histogram(str(dir_MD), dir_test, type_names)
-    # adapt velo with maxwell boltzmann dis
-    dist.velocities_histogram(str(dir_MD), dir_test, type_names)
-    dist.forces_histogram(str(dir_MD), dir_test, type_names)
+        for i in range(len(elements)):
+            type_names[i+1] = elements[i]
+
+        print(f"typenames {type_names}")
+
+        dist.position_histogram(str(dir_MD), dir_test, type_names)
+        # adapt velo with maxwell boltzmann dis
+        dist.velocities_histogram(str(dir_MD), dir_test, type_names)
+        dist.forces_histogram(str(dir_MD), dir_test, type_names)
 
 
-    #vdos.calc_vdos(str(dir_MD), dir_test, potim, masses)
-    vdos.get_vdos(str(dir_MD), dir_test, potim, type_names, omega_max=configWF_i.get("vdos_omega_max", None))
+        #vdos.calc_vdos(str(dir_MD), dir_test, potim, masses)
+        vdos.get_vdos(str(dir_MD), dir_test, potim, type_names, omega_max=configWF_i.get("vdos_omega_max", None))
 
 
-    if configWF_i.get("human_in_loop", False):
-        print("human_in_loop is set to True. Stopping workflow after each test.")
-        raise Exception("MD test done. Please check the plots in " + str(dir_MD / "test_MD/") + " and continue the workflow manually.")
+        if configWF_i.get("human_in_loop", False):
+            print("human_in_loop is set to True. Stopping workflow after each test.")
+            raise Exception("MD test done. Please check the plots in " + str(dir_MD / "test_MD/") + " and continue the workflow manually.")
+
+    else:
+        print("Skip MD test.")
 
 
     return True, {CYCLICALGROUP_KEY: cg_criteria, "path_configWF": path_configWF, "num_simulations": num_simulations}

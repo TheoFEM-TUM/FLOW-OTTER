@@ -37,7 +37,7 @@ function compute_nn_cell(positions, N_unitcells, n_unitcell, L, l, n_nn)
             if ix_Pb1 != ix_Pb2
                 d = shift_PBC(positions[ix_Pb1, :] - positions[ix_Pb2, :], L)
                 dist = norm(d)
-                if all(abs.(d) .< l .* n_nn .* 1.25)
+                if all(abs.(d) .< l .* n_nn .* 1.1)
                 #if all(d .< l .* (n_nn-1) .* 1.25) && all(d .> -l .* n_nn .* 1.25)
                     push!(nn_cell[ix_Pb1], ix_Pb2)
                 end

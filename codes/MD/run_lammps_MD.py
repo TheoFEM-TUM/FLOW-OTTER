@@ -94,11 +94,12 @@ lmp.command("variable P equal press")
 lmp.command(f"fix thermolog all print 100 '$t $T $E $X $Y $Z $V $P' file " + str(dir_MD / "thermo_output.txt") + " screen no")
 
 T_damp = input_params["T_damp"]
+prodrun_stepsize = input_params['prodrun_stepsize']
 
 if equilibrate:
 
     #stepsize_eq = input_params.get("eqstepsize", 1)
-    lmp.command(f"dump 0 all custom 1 " + str(dir_MD / "position_eq.lammpstrj") + " id type element x y z")
+    lmp.command(f"dump 0 all custom {prodrun_stepsize} " + str(dir_MD / "position_eq.lammpstrj") + " id type element x y z")
     lmp.command("dump_modify 0 sort id")
     lmp.command(f"dump_modify 0 element {elements_str}")
 
@@ -134,7 +135,6 @@ if equilibrate:
 
 lmp.command(f"write_data " + str(dir_MD / "pre_run.data"))
 
-prodrun_stepsize = input_params['prodrun_stepsize']
 
 # Dump settings
 lmp.command(f"dump 1 all custom {prodrun_stepsize} " + str(dir_MD / "position.lammpstrj") + " id type x y z")
