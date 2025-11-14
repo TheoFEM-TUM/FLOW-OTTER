@@ -1,6 +1,6 @@
 using SparseArrays, LinearAlgebra, KrylovKit
 using DelimitedFiles
-#using Hamster
+using Hamster
 #MPIPreferences.use_system_binary()
 #using MPI
 
@@ -62,43 +62,28 @@ end
 
 
 
-#function get_H_hamster_MPI(comm::MPI.Comm, TB_path::String, t::Int)
-#
-#    hamiltonian, _ = read_ham(comm, t, TB_path)
-#
-#    return hamiltonian
-#end
+function get_sparse_H(TB_path::String, t::Int, hamiltonian_style::String)
 
-
-function get_H_hamster(TB_path::String, t::Int)
-
-    hamiltonian, _ = read_ham(t, TB_path)
-
-    return hamiltonian
-end
-
-
-function get_sparse_H(TB_path::String, t::Int, TB_type::String)
-
-    if TB_type == "empTB"
+    if hamiltonian_style == "TB"
         hamiltonian = get_sparse_H_empTB(TB_path, t)
-    elseif TB_type == "hamster"
-        hamiltonian = get_H_hamster(TB_path, t)
+    elseif hamiltonian_style == "Hk" || hamiltonian_style == "Hr"
+        file_path = joinpath(TB_path, "ham.h5")
+        hamiltonian = read_ham(t, filename=file_path, space=string(last(hamiltonian_style)))
     else
-        error("Unknown TB_type: $TB_type")
+        error("Unknown hamiltonian_style: $hamiltonian_style")
     end
 
     return hamiltonian
 end
 
-function get_dense_H(TB_path::String, t::Int, TB_type::String)
+function get_dense_H(TB_path::String, t::Int, hamiltonian_style::String)
 
-    if TB_type == "empTB"
+    if hamiltonian_style == "TB"
         hamiltonian = get_dense_H_empTB(TB_path, t)
-    elseif TB_type == "hamster"
-        hamiltonian = Matrix(get_H_hamster(TB_path, t))
+    elseif hamiltonian_style == "Hk" || hamiltonian_style == "Hr"
+        hamiltonian = Matrix(read_ham(t, filename=file_path, space=string(last(hamiltonian_style))))
     else
-        error("Unknown TB_type: $TB_type")
+        error("Unknown hamiltonian_style: $hamiltonian_style")
     end
 
     return hamiltonian

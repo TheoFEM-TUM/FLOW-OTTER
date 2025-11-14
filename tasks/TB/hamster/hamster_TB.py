@@ -57,7 +57,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     if path_hconf.exists():
         
         result3 = subprocess.run([
-            "julia", "--project", 
+            "julia", 
+            "--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_hamster/", 
             str(dir_codes / "TB/hamster/hconf_to_yaml.jl"),
             str(path_hconf), str(dir_input_TB / "hconf.yaml")], check=True)
             

@@ -39,7 +39,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     last_snapshot = configWF_i.get("last_snapshot", first_snapshot + N_snapshots - 1)
     dir_input_TB = Path(configWF_i["dir_input_TB"])
     
-    hamiltonian_style = configWF_i.get("hamiltonian_write_style", "Hk")
+    hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
 
     SLURM_CPUS_PER_TASK = configWF_i.get("SLURM_CPUS_PER_TASK", 1)
 
@@ -47,7 +47,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     result = subprocess.run([        
         "srun", 
         "julia", 
-        "--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_pq/", 
+        "--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_julia/", 
         "-t", str(SLURM_CPUS_PER_TASK), 
         #str(dir_codes / "TB/empTB/compute_H.jl"), 
         str(dir_codes / "TB/empTB/compute_superH.jl"), 

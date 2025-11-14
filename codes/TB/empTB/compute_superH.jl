@@ -3,9 +3,11 @@ using DelimitedFiles
 using MPIPreferences
 using SparseArrays
 using SpecialFunctions
-#MPIPreferences.use_system_binary()
+MPIPreferences.use_system_binary()
 using MPI
 using HDF5
+using Unitful 
+using PhysicalConstants.CODATA2018: e, ħ
 
 function shift_PBC(delta, L)
     
@@ -555,18 +557,18 @@ function main(comm::MPI.Comm, rank::Int, rank_size::Int, path::String, snapshot:
 
     if hamiltonian_style == "Hr"
 
-        cell, H, r = construct_Hr(supercell, indices, rounded_hamiltonian)
+        cell, H, C = construct_Hr(supercell, indices, rounded_hamiltonian)
         println("Construction of sparse matrices for $snapshot finished!")
 
-        write_Hr(cell, H, r, snapshot, comm, rank, rank_size; filename=joinpath(path, "hamiltonian/ham.h5"))    
+        write_Hr(cell, H, C, snapshot, comm, rank, rank_size; filename=joinpath(path, "hamiltonian/ham.h5"))    
         println("Writing Hr for $snapshot finished!")
 
     elseif hamiltonian_style == "Hk"
 
-        Hk = construct_Hk(indices, rounded_hamiltonian)
+        Hk, C = construct_Hk(indices, rounded_hamiltonian)
         println("Construction of sparse matrices for $snapshot finished!")
 
-        write_Hk(Hk, hamiltonian[:, 3:5], snapshot, comm, rank, rank_size; filename=joinpath(path, "hamiltonian/ham.h5"))    
+        write_Hk(Hk, C, snapshot, comm, rank, rank_size; filename=joinpath(path, "hamiltonian/ham.h5"))    
         println("Writing Hk for $snapshot finished!")
 
     elseif hamiltonian_style == "TB"
@@ -585,6 +587,11 @@ end
 
 
 function construct_Hr(supercell, indices, hamiltonian)
+        
+    val_e = (e / unit(e))::Float64
+    val_ħ = (ħ / unit(ħ))::Float64
+
+    ħ_eVfs = val_ħ/val_e * 10^15
 
     dim_H = maximum(indices)
 
@@ -593,7 +600,8 @@ function construct_Hr(supercell, indices, hamiltonian)
     n_cell = size(cell, 1)
 
     H = Dict{Tuple{Int,Int,Int}, SparseMatrixCSC{ComplexF64, Int}}()
-    r = Dict{Tuple{Int,Int,Int}, Array{Float64,2}}()
+    C = Dict{Tuple{Int,Int,Int}, Vector{SparseMatrixCSC{ComplexF64, Int}}}()
+    #r = Dict{Tuple{Int,Int,Int}, Array{Float64,2}}()
 
     for i in 1:size(cell, 1)
 
@@ -606,14 +614,20 @@ function construct_Hr(supercell, indices, hamiltonian)
         #println(idx)
 
         H[key] = sparse(indices[idx, 1], indices[idx, 2], ComplexF64.(hamiltonian[idx, 1], hamiltonian[idx, 2]), dim_H, dim_H)
-        r[key] = hamiltonian[idx, 3:5]
+        C[key] = [
+            sparse(indices[idx, 1], indices[idx, 2], -1im/ħ_eVfs * ComplexF64.(hamiltonian[idx, 1], hamiltonian[idx, 2]) .* hamiltonian[idx, 3] , dim_H, dim_H),
+            sparse(indices[idx, 1], indices[idx, 2], -1im/ħ_eVfs * ComplexF64.(hamiltonian[idx, 1], hamiltonian[idx, 2]) .* hamiltonian[idx, 4] , dim_H, dim_H),
+            sparse(indices[idx, 1], indices[idx, 2], -1im/ħ_eVfs * ComplexF64.(hamiltonian[idx, 1], hamiltonian[idx, 2]) .* hamiltonian[idx, 5] , dim_H, dim_H)
+        ]
+        #r[key] = hamiltonian[idx, 3:5]
 
     end
 
-    return cell, H, r
+    #return cell, H, r
+    return cell, H, C
 end
 
-function write_Hr(cell, H, r, snapshot, comm, rank, rank_size; filename="ham.h5")
+function write_Hr(cell, H, C, snapshot, comm, rank, rank_size; filename="ham.h5")
     for x in 0:rank_size-1
         if x == rank
             h5open(filename, "cw") do file
@@ -624,12 +638,12 @@ function write_Hr(cell, H, r, snapshot, comm, rank, rank_size; filename="ham.h5"
                     key = Tuple(round.(Int, c))
                     grp = create_group(g, "$i")
                     Hr = H[key]
-                    grp["rowval"] = Hr.rowval
-                    grp["colptr"] = Hr.colptr
-                    grp["nzval"]  = Hr.nzval
-                    grp["m"]      = size(Hr, 1)
-                    grp["n"]      = size(Hr, 2)
-                    grp["r"]      = r[key]
+                    grp["rowval"]  = Hr.rowval
+                    grp["colptr"]  = Hr.colptr
+                    grp["nzval"]   = Hr.nzval
+                    grp["m"]       = size(Hr, 1)
+                    grp["n"]       = size(Hr, 2)
+                    grp["C_nzval"] = hcat(C[key][1].nzval, C[key][2].nzval, C[key][3].nzval)
                 end
             end
         end
@@ -640,27 +654,37 @@ end
 
 function construct_Hk(indices, hamiltonian)
     
+    val_e = (e / unit(e))::Float64
+    val_ħ = (ħ / unit(ħ))::Float64
+
+    ħ_eVfs = val_ħ/val_e * 10^15
+
     dim_H = maximum(indices)
 
     H = sparse(indices[:, 1], indices[:, 2], ComplexF64.(hamiltonian[:, 1], hamiltonian[:, 2]), dim_H, dim_H)
-    
-    return H
+    C = [
+            sparse(indices[:, 1], indices[:, 2], -1im/ħ_eVfs * ComplexF64.(hamiltonian[:, 1], hamiltonian[:, 2]) .* hamiltonian[:, 3] , dim_H, dim_H),
+            sparse(indices[:, 1], indices[:, 2], -1im/ħ_eVfs * ComplexF64.(hamiltonian[:, 1], hamiltonian[:, 2]) .* hamiltonian[:, 4] , dim_H, dim_H),
+            sparse(indices[:, 1], indices[:, 2], -1im/ħ_eVfs * ComplexF64.(hamiltonian[:, 1], hamiltonian[:, 2]) .* hamiltonian[:, 5] , dim_H, dim_H)
+        ]
+
+    return H, C
 end
 
-function write_Hk(Hk, r, hamiltonian, snapshot, comm, rank, rank_size; filename="ham.h5")
+function write_Hk(Hk, C, snapshot, comm, rank, rank_size; filename="ham.h5")
     for x in 0:rank_size-1
         if x == rank
             h5open(filename, "cw") do file
                 println("Writing Hamiltonian to $filename ...")
                 g = create_group(file, "Hk_$snapshot")
-                g["vecs"] = Tuple([0, 0, 0])
+                g["vecs"] = [0, 0, 0]
                 grp = create_group(g, "0")
-                grp["rowval"] = Hk.rowval
-                grp["colptr"] = Hk.colptr
-                grp["nzval"]  = Hk.nzval
-                grp["m"]      = size(Hk, 1)
-                grp["n"]      = size(Hk, 2)
-                grp["r"]      = r
+                grp["rowval"]  = Hk.rowval
+                grp["colptr"]  = Hk.colptr
+                grp["nzval"]   = Hk.nzval
+                grp["m"]       = size(Hk, 1)
+                grp["n"]       = size(Hk, 2)
+                grp["C_nzval"] = hcat(C[1].nzval, C[2].nzval, C[3].nzval)
             end
         end
         MPI.Barrier(comm)

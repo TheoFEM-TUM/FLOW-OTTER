@@ -31,7 +31,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     dir_codes = Path(configWF_i.get("dir_codes", "./codes/"))
     dir_TB = dir_project_i / configWF_i.get("dir_TB", "2-TB/")
 
-    TB_type = configWF_i.get("TB_type", "skip_TB")
+    hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
 
     first_snapshot = configWF_i.get("first_snapshot", 0)
     N_snapshots = configWF_i["N_snapshots"]
@@ -59,10 +59,10 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             "srun", 
             "-n", "1",
             "julia", 
-            f"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_pq/", 
+            f"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_hamster/", 
             #"-t", f"{SLURM_CPUS_PER_TASK}", 
             str(dir_codes / "postTB/gap+dos/KPM_DOS.jl"), 
-            str(M), str(N), str(dir_TB / "hamiltonian/"), str(dir_TB / "gap+dos/"), str(t), TB_type
+            str(M), str(N), str(dir_TB / "hamiltonian/"), str(dir_TB / "gap+dos/"), str(t), hamiltonian_style
         ], check=True)        
 
 

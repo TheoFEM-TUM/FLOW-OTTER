@@ -117,9 +117,9 @@ function calculate_density_func(C_m::Vector{Float64}, mean_E::Float64, ΔE::Floa
 end
 
 
-function KPM_DOS(M::Int, N::Int, TB_path::String, output_path::String, t::Int, TB_type::String)
+function KPM_DOS(M::Int, N::Int, TB_path::String, output_path::String, t::Int, hamiltonian_style::String)
 
-    H = get_sparse_H(TB_path, t, TB_type)
+    H = get_sparse_H(TB_path, t, hamiltonian_style)
     println("Hamiltonian read")
     E_max, E_min = get_spectral_bounds(H)
     println("Spectral bounds calculated")
@@ -191,6 +191,6 @@ N = parse(Int, ARGS[2])
 TB_path = ARGS[3]
 output_path = ARGS[4]
 t = parse(Int, ARGS[5])
-TB_type = ARGS[6]
+hamiltonian_style = ARGS[6]
 
-KPM_DOS(M, N,TB_path, output_path, t, TB_type)
+KPM_DOS(M, N,TB_path, output_path, t, hamiltonian_style)

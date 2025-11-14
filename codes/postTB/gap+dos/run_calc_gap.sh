@@ -10,7 +10,7 @@ snapshots=("$@")  # remaining arguments
 
 for t in "${snapshots[@]}"; do
     julia \
-    --project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_pq/ \
+    --project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_hamster/ \
     "${dir_codes}/calc_gap.jl" \
     "${dir_TB}/hamiltonian/" "$t" "$guess_E_v" "$guess_E_c" \
     "${dir_TB}/gap+dos/"

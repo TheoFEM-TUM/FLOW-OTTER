@@ -61,10 +61,16 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     shutil.copy2(path_celldim, dir_TB)
     #os.system(f"cp {path_celldim} {dir_TB}")
 
-    result2 = subprocess.run(["julia", "--project", str(dir_codes / "TB/empTB/find_nearst_neighbour.jl"), str(dir_snapshots), f"traj{first_snapshot}.xyz", str(path_celldim)], check=True)
+    result2 = subprocess.run([
+        "julia", 
+        "--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_julia/", 
+        str(dir_codes / "TB/empTB/find_nearst_neighbour.jl"), str(dir_snapshots), f"traj{first_snapshot}.xyz", str(path_celldim)], check=True)
 
 
-    result3 = subprocess.run(["julia", "--project", str(dir_codes / "TB/empTB/find_unitcell.jl"), str(dir_snapshots), f"traj{first_snapshot}.xyz", str(path_celldim), str(cell_size)], check=True)
+    result3 = subprocess.run([
+        "julia", 
+        "--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_julia/", 
+        str(dir_codes / "TB/empTB/find_unitcell.jl"), str(dir_snapshots), f"traj{first_snapshot}.xyz", str(path_celldim), str(cell_size)], check=True)
 
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}

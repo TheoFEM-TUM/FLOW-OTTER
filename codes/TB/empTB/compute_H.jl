@@ -2,7 +2,7 @@ using LinearAlgebra
 using DelimitedFiles
 using SpecialFunctions
 using MPIPreferences
-#MPIPreferences.use_system_binary()
+MPIPreferences.use_system_binary()
 using MPI
 
 

@@ -37,16 +37,16 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     run_test_TB = configWF_i.get("run_test_TB", True)
 
-    hamiltonian_type = configWF_i.get("hamiltonian_type", "TB")
+    hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
 
     np.random.seed(42)
     t = np.random.randint(first_snapshot, last_snapshot)
     print(f"Random snapshot selected: {t}")
 
 
-    if hamiltonian_type == "Hr" or hamiltonian_type == "Hk":
+    if hamiltonian_style == "Hr" or hamiltonian_style == "Hk":
 
-        if hamiltonian_type == "Hr":
+        if hamiltonian_style == "Hr":
             H_type = f"Hr_{t}"
         else:
             H_type = f"Hk_{t}"
@@ -56,31 +56,40 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         real_ham = []
         abs_ham = []
 
+        dim = 0
+
         with h5py.File(str(dir_TB / f"hamiltonian/ham.h5"), "r") as f:
             g = f[H_type]
-            for i in g.keys
+            for i in g.keys():
                 if i == "vecs":
                     continue
                 grp = g[i]
 
-                row = np.array(grp["rowval"][:])-1
-                col = np.array(grp["colptr"][:])-1
+                rowval = np.array(grp["rowval"][:])-1
+                colptr = np.array(grp["colptr"][:])-1
                 nzval = np.array(grp["nzval"][:])
                 m = int(np.array(grp["m"]))
                 n = int(np.array(grp["n"]))
                 
+                dim = max(dim, n)
+
                 Hr = csc_matrix((nzval, rowval, colptr), shape=(m, n))
 
                 real_ham.append(np.real(nzval))
                 abs_ham.append(np.abs(nzval))
 
-                for k in range(-n:n)
+                for k in range(-n, n + 1):
                     if k == 0:
                         onsites.append(Hr.diagonal(k))
                     else:
                         hoppings.append(Hr.diagonal(k))
 
-    elif hamiltonian_type == "TB":
+        real_ham = np.concatenate(real_ham)
+        abs_ham = np.concatenate(abs_ham)
+        onsites = np.concatenate(onsites)
+        hoppings = np.concatenate(hoppings)
+
+    elif hamiltonian_style == "TB":
 
         data_ham = np.loadtxt(str(dir_TB / f"hamiltonian/TB_{t}.txt"))
         col = data_ham[:, 0]
@@ -92,8 +101,10 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         onsites = real_ham[col == row]
         hoppings = real_ham[col != row]
 
+        dim = int(np.max(data_ham[:, 1])) + 1
+
     else:
-        raise Exception(f"hamiltonian_type {hamiltonian_type} not recognized.")
+        raise Exception(f"hamiltonian_style {hamiltonian_style} not recognized.")
     
 
     max_elem = 15.0
@@ -127,7 +138,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     bins_hopping = int((max_hopping - min_hopping)/0.05)
     fig1, (ax1) = plt.subplots()
     plt.title("hopping parameter histogram")
-    plt.hist(hoppings[hoppings != 0.0], bins=bins_hopping, range=(min_hopping, max_hopping), density=True)
+    plt.hist(hoppings[np.abs(hoppings) > 1e-5], bins=bins_hopping, range=(min_hopping, max_hopping), density=True)
     plt.xlabel(r'hopping parameter $t_{ij}$')
     plt.ylabel('counts')
     plt.tight_layout()
@@ -138,7 +149,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     if not run_test_TB:
         test_TB_type = "skip_test_TB"
     else:
-        if np.max(data_ham[:, 1]) > 10**4:
+        if dim > 10**4:
             print("Dimension of TB matrix > 10^4, calculate DoS with Kernel Polynomial method (KPM).")
             test_TB_type = "KPM"
         else:

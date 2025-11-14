@@ -6,10 +6,10 @@ include("read_hamiltonian.jl")
 TB_path = ARGS[1]
 output_path = ARGS[2]
 t = parse(Int, ARGS[3])
-TB_type = ARGS[4]  
+hamiltonian_style = ARGS[4]  
 
 
-H = get_dense_H(TB_path, t, TB_type)
+H = get_dense_H(TB_path, t, hamiltonian_style)
 
 E, _ = eigen(H)
 
