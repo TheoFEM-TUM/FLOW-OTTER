@@ -61,8 +61,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         configWF_i = configWF.copy()
         dir_project_i = dir_project
 
-    dir_codes = Path(configWF_i.get("dir_codes", "./codes/"))
-    sys.path.append(str(dir_codes / "MD"))
+    dir_code = Path(configWF_i.get("dir_code", "./codes/"))
+    sys.path.append(str(dir_code / "codes/MD/"))
 
     run_test_MD = configWF_i.get("run_test_MD", True)
 
@@ -71,7 +71,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         import calc_lammps_MD_dist as dist
         import calc_lammps_MD_vdos as vdos
 
-        dir_MD = dir_project_i / configWF_i.get("dir_MD", "1-MD/")
+        dir_MD = Path(configWF_i.get("dir_MD", str(dir_project_i / "1-MD/")))
+        
         dt = configWF_i["lammps"]["dt"]
         step_size = configWF_i["lammps"]["prodrun_stepsize"]
         potim = dt * step_size
@@ -90,14 +91,16 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
         print(f"typenames {type_names}")
 
-        dist.position_histogram(str(dir_MD), dir_test, type_names)
-        # adapt velo with maxwell boltzmann dis
-        dist.velocities_histogram(str(dir_MD), dir_test, type_names)
-        dist.forces_histogram(str(dir_MD), dir_test, type_names)
+        dir_test_hist = dir_test / "histograms/"
+        dir_test_hist.mkdir(parents=True, exist_ok=True)
+        dist.position_histogram(str(dir_MD), dir_test_hist, type_names)
+        dist.velocities_histogram(str(dir_MD), dir_test_hist, type_names)
+        dist.forces_histogram(str(dir_MD), dir_test_hist, type_names)
 
-
+        dir_test_vdos = dir_test / "vdos/"
+        dir_test_vdos.mkdir(parents=True, exist_ok=True)
         #vdos.calc_vdos(str(dir_MD), dir_test, potim, masses)
-        vdos.get_vdos(str(dir_MD), dir_test, potim, type_names, omega_max=configWF_i.get("vdos_omega_max", None))
+        vdos.get_vdos(str(dir_MD), dir_test_vdos, potim, type_names, omega_max=configWF_i.get("vdos_omega_max", None))
 
 
         if configWF_i.get("human_in_loop", False):

@@ -43,7 +43,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         configWF_i = configWF.copy()
         dir_project_i = dir_project
 
-    dir_MD = dir_project_i / configWF_i.get("dir_MD", "1-MD/")
+    dir_MD = Path(configWF_i.get("dir_MD", str(dir_project_i / "1-MD/")))
     equilibrate = configWF_i.get("equilibrate", False)
 
 

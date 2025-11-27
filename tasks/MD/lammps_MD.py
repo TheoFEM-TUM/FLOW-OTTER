@@ -38,8 +38,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         with open(str(path_configWF_i), 'r') as f:
             configWF_i = yaml.load(f)
 
-        dir_MD = dir_project_i / configWF_i.get("dir_MD", "1-MD/")
-        dir_codes = configWF_i["dir_codes"]
+        dir_MD = Path(configWF_i.get("dir_MD", str(dir_project_i / "1-MD/")))
+        dir_code = configWF_i["dir_code"]
 
         if simulation_type == "cascade":
 
@@ -86,8 +86,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         dir_project_i = dir_project
         path_configWF_i = path_configWF
 
-    dir_MD = dir_project_i / configWF_i.get("dir_MD", "1-MD/")
-    dir_codes = configWF_i["dir_codes"]
+    dir_MD = Path(configWF_i.get("dir_MD", str(dir_project_i / "1-MD/")))
+    dir_code = Path(configWF_i.get("dir_code", "./codes/")) / "codes/"
 
     #os.system(f"mkdir -p {dir_MD}")
     dir_MD.mkdir(parents=True, exist_ok=True)
@@ -96,7 +96,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         "srun", 
         #"-np", f"{MD_MPI_NPROCS}", 
         "python3",
-        f"{dir_codes}/MD/run_lammps_MD.py", 
+        str(dir_code / "/MD/run_lammps_MD.py"), 
         str(path_configWF_i), str(dir_MD)], check=True)
 
 

@@ -5,22 +5,6 @@ import sys
 import os
  
 
-project = Path("/p/scratch/hamilmater/vonhoff1/workflow_pq/MD_TB_PQ_wf")
-tasks = project / "tasks/"
-MD = Path("./MD")
-TB = Path("./TB")
-empTB = Path("./empTB")
-hamster = Path("./hamster")
-postTB = Path("./postTB")
-test = Path("./test")
-gap_dos = Path("./gap+dos")
-conductivity = Path("./conductivity")
-
-preamble_global = project / "preambles/preamble_global.sh"
-preamble_lammps = project / "preambles/preamble_lammps.sh"
-preamble_julia = project / "preambles/preamble_julia.sh"
-preamble_hamster = project / "preambles/preamble_hamster.sh"
-
 ### read in configuration
 if len(sys.argv) > 1:
     path_configWF = sys.argv[1]
@@ -34,112 +18,132 @@ dir_project = Path(configWF.get("dir_project", "./"))
 dir_project.mkdir(parents=True, exist_ok=True)
 #os.system(f"mkdir -p {dir_project}")
 
+dir_code = Path(Path(configWF.get("dir_code", "./")))
+tasks = dir_code / "tasks/"
+MD = tasks / "MD/"
+H = tasks / "H/"
+optoelec = tasks / "optoelec/"
+test_MD = MD / "test/"
+hamster = H / "hamster/"
+empTB = H / "empTB/"
+test_H = H / "test/"
+gap_dos = optoelec / "gap+dos/"
+conductivity = optoelec / "conductivity/"
+
+preamble_global = dir_code / "preambles/preamble_global.sh"
+preamble_lammps = dir_code / "preambles/preamble_lammps.sh"
+preamble_julia = dir_code / "preambles/preamble_julia.sh"
+preamble_hamster = dir_code / "preambles/preamble_hamster.sh"
+
+
+resources = configWF.get("resources", "48:1:devel:2m")
 
 ### MD tasks
 resources_MD = configWF["resources_MD"]
 
-t1_0 = Task(tasks / MD / "check_MD_type.py", None, "48:1:devel:2m", name="check_MD_type", preamble_path=str(preamble_julia))
-t1 = Task(tasks / MD / "lammps_MD.py", None, resources_MD, preamble_path=str(preamble_lammps), name="lammps_MD")
-t1_skip = Task(tasks / MD / "skip_MD.py", None, "48:1:devel:2m", name="skip_MD")
+t1_checkMD = Task( MD / "check_MD_type.py", None, resources, name="check_MD_type", preamble_path=str(preamble_julia))
+t1_MD = Task( MD / "lammps_MD.py", None, resources_MD, preamble_path=str(preamble_lammps), name="lammps_MD")
+t1_skipMD = Task( MD / "skip_MD.py", None, resources, name="skip_MD")
 
-sg1 = SwitchGroup({"lammps": t1, "skip_MD": t1_skip})
-sg1a = SwitchGroup({"lammps": t1, "skip_MD": t1_skip})
-sg1b = SwitchGroup({"lammps": t1, "skip_MD": t1_skip})
-#sg1 = SwitchGroup({"lammps": t1_skip, "skip_MD": t1_skip})
+sg1_MD = SwitchGroup({"lammps": t1_MD, "skip_MD": t1_skipMD})
+sg1_MD_s = SwitchGroup({"lammps": t1_MD, "skip_MD": t1_skipMD})
+sg1_MD_c = SwitchGroup({"lammps": t1_MD, "skip_MD": t1_skipMD})
+#sg1_MD = SwitchGroup({"lammps": t1_skipMD, "skip_MD": t1_skipMD})
 
-t1_test_eq = Task(tasks / MD / test / "test_MD_equilibration.py", None, "48:1:devel:4m", name="test_MD_equilibration")
-t1_test = Task(tasks / MD / test / "test_MD.py", None, "48:1:devel:10m", name="test_MD")
+t1_testMD_eq = Task( test_MD / "test_MD_equilibration.py", None, resources, name="test_MD_equilibration")
+t1_testMD = Task( test_MD / "test_MD.py", None, resources, name="test_MD")
 
-### TB tasks
+### H tasks
 
-resources_TB = configWF["resources_TB"]
+resources_H = configWF["resources_H"]
 
-t2_0 = Task(tasks / TB / "check_TB_type.py", None, "48:1:devel:2m", name="check_TB_type")
+t2_checkH = Task( H / "check_H_type.py", None, resources, name="check_H_type")
 
-t2_1 = Task(tasks / TB / empTB / "prep_fit_empTB.py", None, "48:1:devel:5m", preamble_path=str(preamble_julia), name="prep_fit_empTB")
-t2_2 = Task(tasks / TB / empTB / "fit_empTB.py", None, resources_TB, preamble_path=str(preamble_julia), name="fit_empTB")
+t2_prep_empTB = Task( empTB / "prep_fit_empTB.py", None, resources, preamble_path=str(preamble_julia), name="prep_fit_empTB")
+t2_empTB = Task( empTB / "fit_empTB.py", None, resources_H, preamble_path=str(preamble_julia), name="fit_empTB")
 
-t2_hamster = Task(tasks / TB / hamster / "hamster_TB.py", None, resources_TB, preamble_path=str(preamble_hamster), name="hamster_TB")
+t2_prep_hamster = Task( hamster / "prep_hamster.py", None, resources_H, preamble_path=str(preamble_hamster), name="prep_hamster")
+t2_hamster = Task( hamster / "hamster.py", None, resources_H, preamble_path=str(preamble_hamster), name="hamster")
 
-t2_skip = Task(tasks / TB / "skip_TB.py", None, "48:1:devel:2m", name="skip_TB")
+t2_skipH = Task( H / "skip_H.py", None, resources, name="skip_H")
 
-sg2 = SwitchGroup({"empTB": {t2_1: [], t2_2: [t2_1]}, "hamster": t2_hamster, "skip_TB": t2_skip})
+sg2_H = SwitchGroup({"empTB": {t2_prep_empTB: [], t2_empTB: [t2_prep_empTB]}, "hamster": {t2_prep_hamster: [], t2_hamster: [t2_prep_hamster]}, "skip_H": t2_skipH})
 
-t2_test0 = Task(tasks / TB / test / "check_test_TB.py", None, "48:1:devel:2m", name="check_test_TB")
-t2_test1_KPM = Task(tasks / TB / test / "test_TB_KPM.py", None, "48:1:batch:15m", preamble_path=str(preamble_hamster), name="test_TB_KPM")
-t2_test1_dia = Task(tasks / TB / test / "test_TB_exact_diag.py", None, "48:1:devel:15m", preamble_path=str(preamble_hamster), name="test_TB_exact_diag")
-t2_test2a = Task(tasks / TB / test / "test_TB_gaps.py", None, "48:1:devel:10m", name="test_TB_gaps")
-t2_test2b = Task(tasks / TB / test / "test_TB_gaps.py", None, "48:1:devel:10m", name="test_TB_gaps")
-t2_test_skip = Task(tasks / TB / test / "skip_test_TB.py", None, "48:1:devel:2m", name="skip_test_TB")
+t2_testH = Task( test_H / "check_test_H.py", None, resources, preamble_path=str(preamble_julia), name="check_test_H")
+t2_testH_KPM = Task( test_H / "test_H_KPM.py", None, resources_H, preamble_path=str(preamble_hamster), name="test_H_KPM")
+t2_testH_dia = Task( test_H / "test_H_exact_diag.py", None, resources_H, preamble_path=str(preamble_hamster), name="test_H_exact_diag")
+t2_testH_a = Task( test_H / "test_H_gaps.py", None, resources, name="test_H_gaps")
+t2_testH_b = Task( test_H / "test_H_gaps.py", None, resources, name="test_H_gaps")
+t2_testH_skip = Task( test_H / "skip_test_H.py", None, resources, name="skip_test_H")
 
-sg2_test = SwitchGroup({"KPM": {t2_test1_KPM: [], t2_test2a: [t2_test1_KPM]}, "exact_diag": {t2_test1_dia: [] , t2_test2b: [t2_test1_dia]}, "skip_test_TB": t2_test_skip})
+sg2_test = SwitchGroup({"KPM": {t2_testH_KPM: [], t2_testH_a: [t2_testH_KPM]}, "exact_diag": {t2_testH_dia: [] , t2_testH_b: [t2_testH_dia]}, "skip_test_H": t2_testH_skip})
 
 
-### postprocessing TB
+### postprocessing H
 
-resources_postTB = configWF["resources_postTB"]
+resources_optoelec = configWF["resources_optoelec"]
 
-t3_0 = Task(tasks / postTB / "check_postTB.py", None, "48:1:devel:2m", name="check_postTB")
-t3_KPM = Task(tasks / postTB / gap_dos / "gap+dos_KPM.py", None, resources_postTB, preamble_path=str(preamble_hamster), name="gap+dos_KPM")
-t3_dia = Task(tasks / postTB / gap_dos / "gap+dos_exact_diag.py", None, resources_postTB, preamble_path=str(preamble_hamster),name="gap+dos_exact_diag")
-t3_1a = Task(tasks / postTB / gap_dos / "gap+dos.py", None, resources_postTB, preamble_path=str(preamble_hamster), name="gap+dos")
-t3_1b = Task(tasks / postTB / gap_dos / "gap+dos.py", None, resources_postTB, preamble_path=str(preamble_hamster), name="gap+dos")
-t3_2 = Task(tasks / postTB / gap_dos / "gap.py", None, "48:1:devel:2m", name="gap")
-t3_3 = Task(tasks / postTB / gap_dos / "plot_avg_dos.py", None, "48:1:devel:2m", name="plot_avg_dos")
+t3_checkOpto = Task( optoelec / "check_optoelec.py", None, resources, name="check_optoelec")
+t3_dia = Task( gap_dos / "gap+dos_exact_diag.py", None, resources_optoelec, preamble_path=str(preamble_hamster),name="gap+dos_exact_diag")
+t3_KPM = Task( gap_dos / "gap+dos_KPM.py", None, resources_optoelec, preamble_path=str(preamble_hamster), name="gap+dos_KPM")
+t3_post_dia = Task( gap_dos / "gap+dos_post_exact_diag.py", None, resources_optoelec, preamble_path=str(preamble_hamster), name="gap+dos")
+t3_post_KPM = Task( gap_dos / "gap+dos_post_KPM.py", None, resources_optoelec, preamble_path=str(preamble_hamster), name="gap+dos")
+t3_gap_KPM = Task( gap_dos / "gap_KPM.py", None, resources, name="gap")
+t3_plot_KPM = Task( gap_dos / "plot_avg_dos.py", None, resources, name="plot_avg_dos")
 
 # optical conductivity task
-t4 = Task(tasks / postTB / conductivity / "optical_conductivity.py", None, resources_postTB, preamble_path=str(preamble_julia), name="optical_conductivity")
-t4_1 = Task(tasks / postTB / conductivity / "plot_optical_conductivity.py", None, "48:1:devel:2m", name="plot_optical_conductivity")
-#t4_1 = Task(tasks / postTB / conductivity / "plot_optical_conductivity.py", None, "local:1m", name="plot_optical_conductivity")
+t3_optC = Task( conductivity / "optical_conductivity.py", None, resources_optoelec, preamble_path=str(preamble_julia), name="optical_conductivity")
+t3_plot_optC = Task( conductivity / "plot_optical_conductivity.py", None, resources, name="plot_optical_conductivity")
+#t3_plot_optC = Task( optoelec / conductivity / "plot_optical_conductivity.py", None, "local:1m", name="plot_optical_conductivity")
 
 N_avg = configWF.get("N_avg", 1)  # Number of averages for optical conductivity
-swg4 = StaticWidthGroup(t4, width=N_avg)
+swg3_optC = StaticWidthGroup(t3_optC, width=N_avg)
 
-t5a = Task(tasks / postTB / "skip_postTB.py", None, "48:1:devel:2m", name="skip_postTB")
-t5b = Task(tasks / postTB / "skip_postTB.py", None, "48:1:devel:2m", name="skip_postTB")
+t3_skipOpto = Task( optoelec / "skip_optoelec.py", None, resources, name="skip_optoelec")
+t3_skipOpto_plot = Task( optoelec / "skip_optoelec.py", None, resources, name="skip_optoelec")
 
-t = Task(tasks / "buffer.py", None, "48:1:devel:2m", name="buffer")
+t_buffer = Task( tasks / "buffer.py", None, resources, name="buffer")
 
-sg3 = SwitchGroup({"conductivity": {t: [], swg4: [t]}, "gap+dos_exact_diag": {t3_dia: [], t3_1a: [t3_dia]}, "gap+dos_KPM": {t3_KPM: [], t3_1b: [t3_KPM], t3_2: [t3_1b]}, "skip_postTB": t5a})
+sg3_opto = SwitchGroup({"conductivity": {t_buffer: [], swg3_optC: [t_buffer]}, "gap+dos_exact_diag": {t3_dia: [], t3_post_dia: [t3_dia]}, "gap+dos_KPM": {t3_KPM: [], t3_post_KPM: [t3_KPM], t3_gap_KPM: [t3_post_KPM]}, "skip_optoelec": t3_skipOpto})
 
-t3_plot0 = Task(tasks / postTB / "check_postTB_plot.py", None, "48:1:devel:2m", name="check_postTB_plot")
-sg3_plot = SwitchGroup({"conductivity": t4_1, "gap+dos": t3_3, "skip_postTB": t5b})
+t3_checkOpto_plot = Task( optoelec / "check_optoelec_plot.py", None, resources, name="check_optoelec_plot")
+sg3_plotOpto = SwitchGroup({"conductivity": t3_plot_optC, "gap+dos": t3_plot_KPM, "skip_optoelec": t3_skipOpto_plot})
 
 ### simulation type
 num_simulations = configWF.get("num_simulations", 1)
 dict_simulation = {"path_configWF": path_configWF, "num_simulations": num_simulations}
 
-#t0_0 = Task(tasks / "check_simulation_type.py", dict_simulation, "local:1m", name="check_simulation_type")
-t0_0 = Task(tasks / "check_simulation_type.py", dict_simulation, "48:1:devel:2m", name="check_simulation_type")
+#t0_check_simulation = Task( "check_simulation_type.py", dict_simulation, "local:1m", name="check_simulation_type")
+t0_check_simulation = Task( tasks / "check_simulation_type.py", dict_simulation, resources, name="check_simulation_type")
 
-#t_a = Task(tasks / "buffer.py", None, "local:1m", name="buffer")
-#t_b = Task(tasks / "buffer.py", None, "local:1m", name="buffer")
-t_a = Task(tasks / "buffer.py", None, "48:1:devel:2m", name="buffer")
-t_b = Task(tasks / "buffer.py", None, "48:1:devel:2m", name="buffer")
+#t_buffer_s = Task( "buffer.py", None, "local:1m", name="buffer")
+#t_buffer_c = Task( "buffer.py", None, "local:1m", name="buffer")
+t_buffer_s = Task( tasks / "buffer.py", None, resources, name="buffer")
+t_buffer_c = Task( tasks / "buffer.py", None, resources, name="buffer")
 
-swg1 = StaticWidthGroup({
-    t1_0: [], sg1a: [t1_0], t1_test_eq: [sg1a], t1_test: [t1_test_eq]
+swg1_MD = StaticWidthGroup({
+    t1_checkMD: [], sg1_MD_s: [t1_checkMD], t1_testMD_eq: [sg1_MD_s], t1_testMD: [t1_testMD_eq]
     }, width=num_simulations)
 
-cg1 = CyclicalGroup({
-    t1_0: [], sg1b: [t1_0], t1_test_eq: [sg1b], t1_test: [t1_test_eq]
+cg1_MD = CyclicalGroup({
+    t1_checkMD: [], sg1_MD_c: [t1_checkMD], t1_testMD_eq: [sg1_MD_c], t1_testMD: [t1_testMD_eq]
     }, num_simulations)
 
-sg0 = SwitchGroup({"sweep": {t_a: [], swg1: [t_a]}, "cascade": {t_b: [], cg1: [t_b]}})
+sg0_check_simulation = SwitchGroup({"sweep": {t_buffer_s: [], swg1_MD: [t_buffer_s]}, "cascade": {t_buffer_c: [], cg1_MD: [t_buffer_c]}})
     
-swg2 = StaticWidthGroup({
-    t2_0: [], sg2: [t2_0], 
-    t2_test0: [sg2], sg2_test: [t2_test0], 
-    t3_0: [sg2_test], sg3: [t3_0] 
+swg2_3_H_opto = StaticWidthGroup({
+    t2_checkH: [], sg2_H: [t2_checkH], 
+    t2_testH: [sg2_H], sg2_test: [t2_testH], 
+    t3_checkOpto: [sg2_test], sg3_opto: [t3_checkOpto] 
     }, width=num_simulations)
 
 
 with PersistentQueue() as pq:
     pq.submit(Workflow({
-        t0_0: [],
-        sg0: [t0_0],
-        swg2: [sg0],
-        t3_plot0: [swg2], sg3_plot: [t3_plot0]
+        t0_check_simulation: [],
+        sg0_check_simulation: [t0_check_simulation],
+        swg2_3_H_opto: [sg0_check_simulation],
+        t3_checkOpto_plot: [swg2_3_H_opto], sg3_plotOpto: [t3_checkOpto_plot]
     }))
 
 
