@@ -31,9 +31,9 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         dir_project_i = dir_project
 
 
-    dir_code = Path(configWF_i.get("dir_code", "./codes/")) / "codes/"
-    dir_TB = Path(configWF_i.get("dir_TB", str(dir_project_i / "2-TB/")))
-    dir_input_TB = Path(configWF_i["dir_input_TB"])
+    dir_code = Path(configWF_i.get("dir_code", "./")) / "codes/"
+    dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
+    dir_input_H = Path(configWF_i["dir_input_H"])
 
     dir_MD = Path(configWF_i.get("dir_MD", str(dir_project_i / "1-MD/")))
     path_traj = dir_MD / "position.lammpstrj"
@@ -43,13 +43,19 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         path_poscar.unlink()
 
     result1 = subprocess.run([
-        "vamp", "supercell", "sample", "--N", "1,1", 
-        "--xdatcar", str(path_traj),
-        "--p", str(dir_MD),
-        "--lammps"], check=True)
+        "vamp", "lammps", "write_poscar",
+        "--lmp_file", str(path_traj),
+        "--p", str(dir_MD)], check=True)
 
-    shutil.move(dir_MD / "config_1/POSCAR", dir_MD)
-    shutil.rmtree(dir_MD / "config_1")
+    #result1 = subprocess.run([
+    #    vamp lammps write_poscar --lmp_file position.lammpstrj --p /home/vonhoff/Desktop/
+    #    "vamp", "supercell", "sample", "--N", "1,1", 
+    #    "--xdatcar", str(path_traj),
+    #    "--p", str(dir_MD),
+    #    "--lammps"], check=True)
+
+    #shutil.move(dir_MD / "config_1/POSCAR", dir_MD)
+    #shutil.rmtree(dir_MD / "config_1")
 
 
     path_structures_h5 = dir_MD / "structures.h5"

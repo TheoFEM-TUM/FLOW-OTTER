@@ -28,7 +28,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         configWF_i = configWF.copy()
         dir_project_i = dir_project
 
-    dir_codes = Path(configWF_i.get("dir_codes", "./codes/"))
+    dir_code = Path(configWF_i.get("dir_code", "./")) / "codes/"
     dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
 
     #SLURM_CPUS_PER_TASK = configWF_i.get("SLURM_CPUS_PER_TASK", 1)
@@ -44,7 +44,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         "julia", 
         f"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_hamster/", 
         #"-t", f"{SLURM_CPUS_PER_TASK}", 
-        str(dir_codes / "optoelec/gap+dos/KPM_DOS.jl"), 
+        str(dir_code / "optoelec/gap+dos/KPM_DOS.jl"), 
         str(M), str(N), str(dir_H / "hamiltonian/"), str(dir_H / "test_output/"), str(t), hamiltonian_style
     ], check=True)        
 

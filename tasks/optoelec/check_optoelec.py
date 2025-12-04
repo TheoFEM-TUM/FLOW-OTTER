@@ -5,7 +5,7 @@ from pathlib import Path
 from perqueue.constants import SWITCHGROUP_KEY
 
 
-def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
+def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, test_H_type: str = "skip", **kwargs) -> Tuple[bool, dict]:
 
     with open(path_configWF, "r") as f:
         configWF = yaml.safe_load(f)
@@ -31,18 +31,23 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     dir_H = dir_project_i / configWF_i.get("dir_H", "2-H/")
     t = configWF_i.get("first_snapshot", 0)
 
-    optoelec_type = configWF_i.get("optoelec_type", None)
+    hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
+    optoelec_type = configWF_i.get("optoelec_type", "gap+dos")
 
-    if not optoelec_type:
-        data_H = np.loadtxt(str(dir_H / f"hamiltonian/H_{t}.txt"))
+    if optoelec_type == "gap+dos":
+        #data_H = np.loadtxt(str(dir_H / f"hamiltonian/H_{t}.txt"))
         dir_gap_dos = dir_H / "gap+dos/"
         dir_gap_dos.mkdir(parents=True, exist_ok=True)
-        if np.max(data_H[:, 1]) > 10**4:
+        if test_H_type == "KPM":
+        #if np.max(data_H[:, 1]) > 10**4:
             print("Dimension of H matrix > 10^4, calculate DoS with Kernel Polynomial method (KPM).")
             optoelec_type = "gap+dos_KPM"
-        else:
+        elif test_H_type == "exact_diag":
             print("Dimension of H matrix < 10^4, calculate DoS with exact diagonalization.")
             optoelec_type = "gap+dos_exact_diag"
+        else:
+            print(f"Skip optoelec calculation because test_H_type {test_H_type} is not defined!")
+            optoelec_type = "skip_optoelec"
 
 
     print(f"optoelec type: {optoelec_type}")

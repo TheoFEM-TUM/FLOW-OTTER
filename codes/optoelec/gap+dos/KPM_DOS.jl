@@ -119,6 +119,8 @@ end
 
 function KPM_DOS(M::Int, N::Int, TB_path::String, output_path::String, t::Int, hamiltonian_style::String)
 
+    MPI.Init()
+
     H = get_sparse_H(TB_path, t, hamiltonian_style)
     println("Hamiltonian read")
     E_max, E_min = get_spectral_bounds(H)
@@ -130,8 +132,6 @@ function KPM_DOS(M::Int, N::Int, TB_path::String, output_path::String, t::Int, h
     dim = size(H, 1)
 
     g_m = [jackson_kernel_elem(m, M) for m in 1:M]
-
-    MPI.Init()
 
     comm = MPI.COMM_WORLD
     rank = MPI.Comm_rank(comm)

@@ -6,6 +6,7 @@ from perqueue.constants import SWITCHGROUP_KEY
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
+    # get project directory
     if isinstance(path_configWF, dict):
         path_configWF0 = next(iter(path_configWF.values()))
         num_simulations0 = next(iter(num_simulations.values()))
@@ -19,6 +20,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     dir_project = Path(configWF.get("dir_project", "./"))
     simulation_type = configWF.get("simulation_type", "sweep")
 
+
+    # Handle multiple simulations (branching)
     if num_simulations0 > 1:
 
         if simulation_type == "cascade":
@@ -26,6 +29,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         else:
             i = kwargs['pq_index'][0]
 
+        # determine correct branch config file
         param_to_vary = configWF["param_to_vary"]
         array_to_vary = configWF["array_to_vary"]
             
@@ -38,11 +42,13 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         configWF_i = configWF.copy()
 
 
+    # check MD type
     MD_type = configWF_i.get("MD_type", "skip_MD")
 
     if "lammps" in MD_type:
         MD_type = "lammps"
 
     print(f"MD type: {MD_type}")
+
 
     return True, {"path_configWF": path_configWF0, "num_simulations": num_simulations0, SWITCHGROUP_KEY: MD_type}

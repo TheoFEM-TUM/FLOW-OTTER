@@ -13,6 +13,7 @@ def moving_average(a, w):
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
 
+    # Read in global configurations
     with open(path_configWF, "r") as f:
         configWF = yaml.safe_load(f)
 
@@ -20,6 +21,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     simulation_type = configWF.get("simulation_type", "sweep")
     cg_criteria = False
 
+
+    # Handle multiple simulations (branching)
     if num_simulations > 1:
 
         if simulation_type == "cascade":
@@ -27,6 +30,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         else:
             i = kwargs['pq_index'][0]
 
+        # determine correct branch config file
         param_to_vary = configWF["param_to_vary"]
         array_to_vary = configWF["array_to_vary"]
     
@@ -49,6 +53,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     if equilibrate:
 
+        # read in temperature
         if "temperature" in configWF_i:
             T = configWF_i["temperature"]  
         else:
@@ -56,7 +61,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
         T_start = configWF_i["lammps"].get("T_start", T)
 
-
+        # get indeces where to split the trajectory for different ensembles
         if T_start != T:
             n1 = configWF_i["lammps"]['eqsteps_nvt_heating']
         else:
@@ -66,9 +71,9 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         n3 = configWF_i["lammps"]['eqsteps_npt']
 
 
+        # Read in LAMMPS dump data
         dir_test = dir_MD / "test_equilibrate/"
         dir_test.mkdir(parents=True, exist_ok=True)
-        #os.system(f"mkdir -p {dir_MD}/test_equilibrate/")
 
         N_atoms = np.loadtxt(str(dir_MD / "position.lammpstrj"), unpack=True, skiprows=3, max_rows=1)
 
@@ -88,12 +93,18 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
         w = configWF_i["lammps"].get("window_size", 50)  # window size for moving average
 
-        # temperature
+
+        ### ### ### ### ### ### ### 
+        ### temperature
+        ### ### ### ### ### ### ### 
+
+        # calculate statistical temperature values for temperature equilibration criterion
         T_avg_nvt = np.mean(T[(n1 < step) & (step <= n1 + n2)][-w:])
         T_std_nvt = np.std(T[(n1 < step) & (step <= n1 + n2)][-w:])
         T_avg_npt = np.mean(T[(n1 + n2 < step) & (step <= n1 + n2 + n3)][-w:])
         T_std_npt = np.std(T[(n1 + n2 < step) & (step <= n1 + n2 + n3)][-w:])
 
+        # temperature equilibration criterion
         dT_nvt = T_avg_nvt * np.sqrt(1.5 / N_atoms)
         dT_npt = T_avg_npt * np.sqrt(1.5 / N_atoms)
 
@@ -112,6 +123,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
         error = False
 
+        # check for temperature equilibration criterion
         if (dT_nvt < T_std_nvt):
             print("dT_nvt < T_std_nvt: ", dT_nvt, " < ", T_std_nvt)
             error = true
@@ -130,6 +142,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         else:
             print("Trajectory is equilibrated with respect to temperature.")
 
+        # plot temperature data
         fig1, (ax1) =  plt.subplots()
         fig1.suptitle("Temparture")
         plt.xlabel("Step")
@@ -153,7 +166,11 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         plt.close()
 
 
-        # energy
+        ### ### ### ### ### ### ### 
+        ### energy
+        ### ### ### ### ### ### ### 
+
+        # calculate statistical energy values
         E_avg_nvt = np.mean(E[(n1 < step) & (step <= n1 + n2)][-w:])
         E_std_nvt = np.std(E[(n1 < step) & (step <= n1 + n2)][-w:])
         E_avg_npt = np.mean(E[(n1 + n2 < step) & (step <= n1 + n2 + n3)][-w:])
@@ -162,7 +179,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         print("\n")
         print("Average energy (NVT): ", E_avg_nvt, " +/- ", E_std_nvt)
         print("Average energy (NPT): ", E_avg_npt, " +/- ", E_std_npt)
-   
+
+        # plot energy data
         fig1, (ax1) =  plt.subplots()
         fig1.suptitle("Energy per atom")
         plt.xlabel("Step")
@@ -186,13 +204,18 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         plt.close()
 
 
-        # volume
+        ### ### ### ### ### ### ### 
+        ### volume
+        ### ### ### ### ### ### ### 
+
+        # calculate statistical volume values
         V_avg_npt = np.mean(V[(n1 + n2 < step) & (step <= n1 + n2 + n3)][-w:])
         V_std_npt = np.std(V[(n1 + n2 < step) & (step <= n1 + n2 + n3)][-w:])
 
         print("\n")
         print("Average volume (NPT): ", V_avg_npt, " +/- ", V_std_npt)
    
+        # plot volume data
         fig1, (ax1) =  plt.subplots()
         fig1.suptitle("Volume")
         plt.xlabel("Step")
@@ -212,14 +235,20 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         plt.savefig(str(dir_MD / "test_equilibrate/V.pdf"))
         plt.close()
 
-        # lattice constants
+
+        ### ### ### ### ### ### ### 
+        ### lattice constants
+        ### ### ### ### ### ### ### 
+
+        # calculate statistical lattice constants values
         L_avg_npt = np.mean(L[:, (n1 + n2 < step) & (step <= n1 + n2 + n3)][-w:], axis=1)
         L_std_npt = np.std(L[:, (n1 + n2 < step) & (step <= n1 + n2 + n3)][-w:], axis=1)
 
         print("\n")
         for i in range(3):
             print(f"Average lattice constant {i+1} (NPT): ", L_avg_npt[i], " +/- ", L_std_npt[i])
-   
+
+            # plot lattice constants data
             fig1, (ax1) =  plt.subplots()
             fig1.suptitle(f"Lattice constant {i+1}")
             plt.xlabel("Step")
@@ -240,7 +269,11 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             plt.close()
 
 
-        # pressure
+        ### ### ### ### ### ### ### 
+        ### pressure
+        ### ### ### ### ### ### ### 
+
+        # calculate statistical pressure values
         p_avg_nvt = np.mean(p[(n1 < step) & (step <= n1 + n2)][-w:])
         p_std_nvt = np.std(p[(n1 < step) & (step <= n1 + n2)][-w:])
         p_avg_npt = np.mean(p[(n1 + n2 < step) & (step <= n1 + n2 + n3)][-w:])
@@ -249,7 +282,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         print("\n")
         print("Average pressure (NVT): ", p_avg_nvt, " +/- ", p_std_nvt)
         print("Average pressure (NPT): ", p_avg_npt, " +/- ", p_std_npt)
-   
+
+        # plot pressure data
         fig1, (ax1) =  plt.subplots()
         fig1.suptitle("Pressure")
         plt.xlabel("Step")
@@ -274,6 +308,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
         p_set = configWF_i["lammps"].get("P", 0.0)
 
+        # check if pressure is equilibrated
         if (abs(p_avg_npt - p_set) > p_std_npt):
             print("abs(T_avg_npt - T_set) > T_std_npt: ", abs(p_avg_npt - p_set), " > ", p_std_npt)
             error = true
@@ -286,6 +321,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         else:
             print("Trajectory is equilibrated with respect to pressure.")
 
+        # human_in_loop flag allows for human check before continuing
         if configWF_i.get("human_in_loop", False):
             print("human_in_loop is set to True. Stopping workflow after each test.")
             raise Exception("Equilibration test done. Please check the plots in " + str(dir_MD / "test_equilibrate/") + " and continue the workflow manually.")

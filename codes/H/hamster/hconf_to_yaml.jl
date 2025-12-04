@@ -3,7 +3,7 @@ import Hamster
 
 function to_dict(c::Hamster.Config)
     # start with the options at top-level
-    d = Dict("options" => c.options)
+    d = Dict("Options" => c.options)
     # merge each block into top-level
     for (k, v) in c.blocks
         d[k] = v

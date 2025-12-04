@@ -1,7 +1,7 @@
 using YAML
 
 """
-Convert a nested Dict (from YAML) to the custom block format.
+Convert a nested Dict (from YAML) to the Hamster block format.
 """
 function write_blocks(io::IO, data::Dict)
     for (section, content) in data

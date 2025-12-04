@@ -51,7 +51,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         hamiltonian_unit = configWF.get("hamiltonian_unit", "eV")
 
         plt.xlabel(f"Energy/{hamiltonian_unit}")
-        plt.ylabel(fr"Density of States/({hamiltonian_unit})$^{-1}$")
+        plt.ylabel(f"Density of States/({hamiltonian_unit})" + r"$^{-1}$")
         plt.legend()
         dir_plots = dir_project / "plots/"
         dir_plots.mkdir(parents=True, exist_ok=True)

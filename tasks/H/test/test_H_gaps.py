@@ -37,7 +37,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         plt.title("Density of States (Kernel Polynomial Method)")
         plt.plot(E, dos)
         plt.xlabel(f"Energy/{hamiltonian_unit}")
-        plt.ylabel(fr"Density of States/({hamiltonian_unit})$^{-1}$")
+        plt.ylabel(f"Density of States/({hamiltonian_unit})" + r"$^{-1}$")
         plt.savefig(str(dir_H / f"test_output/dos_{t}_KPM.pdf"))
         plt.close(fig1)
 
@@ -69,7 +69,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         plt.title("Density of States (Gaussian broadened)")
         plt.plot(E_grid, dos)
         plt.xlabel(f"Energy/{hamiltonian_unit}")
-        plt.ylabel(fr"Density of States/({hamiltonian_unit})$^{-1}$")
+        plt.ylabel(f"Density of States/({hamiltonian_unit})" + r"$^{-1}$")
         plt.savefig(str(dir_H / f"test_output/dos_{t}_gauss.pdf"))
         plt.close(fig1)
 
@@ -91,4 +91,4 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         raise Exception("H test done. Please check the plots in " + str(dir_H / "test_output/") + " and continue the workflow manually.")
 
 
-    return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}
+    return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, "test_H_type": test_H_type}

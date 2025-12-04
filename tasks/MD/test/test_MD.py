@@ -31,6 +31,7 @@ def read_element_masses(filename):
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
+    # Read in global configurations
     with open(path_configWF, "r") as f:
         configWF = yaml.safe_load(f)
 
@@ -38,6 +39,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     simulation_type = configWF.get("simulation_type", "sweep")
     cg_criteria = False
 
+    # Handle multiple simulations (branching)
     if num_simulations > 1:
 
         if simulation_type == "cascade":
@@ -45,32 +47,36 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         else:
             i = kwargs['pq_index'][0]
 
+        # determine correct branch config file
         param_to_vary = configWF["param_to_vary"]
         array_to_vary = configWF["array_to_vary"]
     
-        if i == (len(array_to_vary)-1):
-            cg_criteria = True
-            
         dir_project_i = dir_project / f"{param_to_vary}_{array_to_vary[i]}/"
 
         with open(str(dir_project_i / 'branch_config.yaml'), 'r') as f:
             configWF_i = yaml.safe_load(f)
 
+        # break condition activated for last branch in cascade
+        if i == (len(array_to_vary)-1):
+            cg_criteria = True
 
     else:
         configWF_i = configWF.copy()
         dir_project_i = dir_project
 
-    dir_code = Path(configWF_i.get("dir_code", "./codes/"))
-    sys.path.append(str(dir_code / "codes/MD/"))
+    # read in branch configuration 
+    dir_code = Path(configWF_i.get("dir_code", "./")) / "codes/MD/"
+    #sys.path.append(str(dir_code / "codes/MD/"))
 
     run_test_MD = configWF_i.get("run_test_MD", True)
 
     if run_test_MD:
 
+        # import LAMMPS MD distribution and vdos code
         import calc_lammps_MD_dist as dist
         import calc_lammps_MD_vdos as vdos
 
+        # read in branch configuration for distribution and vdos calculation
         dir_MD = Path(configWF_i.get("dir_MD", str(dir_project_i / "1-MD/")))
         
         dt = configWF_i["lammps"]["dt"]
@@ -80,9 +86,6 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         dir_test = dir_MD / "test_MD/"
         dir_test.mkdir(parents=True, exist_ok=True)
 
-        #masses = read_element_masses(str(dir_MD / "masses.txt"))
-        #print(masses)
-
         elements = configWF_i["lammps"]["elements"]
         type_names = {}
 
@@ -91,18 +94,20 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
         print(f"typenames {type_names}")
 
+        # calculation of distributions
         dir_test_hist = dir_test / "histograms/"
         dir_test_hist.mkdir(parents=True, exist_ok=True)
         dist.position_histogram(str(dir_MD), dir_test_hist, type_names)
         dist.velocities_histogram(str(dir_MD), dir_test_hist, type_names)
         dist.forces_histogram(str(dir_MD), dir_test_hist, type_names)
 
+        # calculation of vdos
         dir_test_vdos = dir_test / "vdos/"
         dir_test_vdos.mkdir(parents=True, exist_ok=True)
         #vdos.calc_vdos(str(dir_MD), dir_test, potim, masses)
         vdos.get_vdos(str(dir_MD), dir_test_vdos, potim, type_names, omega_max=configWF_i.get("vdos_omega_max", None))
 
-
+        # human_in_loop flag allows for human check before continuing
         if configWF_i.get("human_in_loop", False):
             print("human_in_loop is set to True. Stopping workflow after each test.")
             raise Exception("MD test done. Please check the plots in " + str(dir_MD / "test_MD/") + " and continue the workflow manually.")

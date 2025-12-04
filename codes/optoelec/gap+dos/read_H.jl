@@ -120,8 +120,10 @@ end
 function is_hermitian(H)
 
     if !ishermitian(H)
-        @show norm(H - H')
-        error("Hamiltonian is not hermitian!")
+        if norm(H - H') > 10^(-7)
+            @show norm(H - H')
+            error("Hamiltonian is not hermitian!")
+        end
     end
 
     return true

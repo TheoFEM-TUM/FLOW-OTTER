@@ -28,7 +28,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         configWF_i = configWF.copy()
         dir_project_i = dir_project
 
-    dir_code = Path(configWF_i.get("dir_code", "./codes/")) / "codes/"
+    dir_code = Path(configWF_i.get("dir_code", "./")) / "codes/"
     dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
 
 
@@ -75,7 +75,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     plt.plot(avg_E, avg_dos, label='thermal avg')
     plt.fill_between(avg_E, avg_dos - std_dos, avg_dos + std_dos, alpha=0.2, label='thermal fluc')
     plt.xlabel(f"Energy/{hamiltonian_unit}")
-    plt.ylabel(fr"Density of States/({hamiltonian_unit})$^{-1}$")
+    plt.ylabel(f"Density of States/({hamiltonian_unit})" + r"$^{-1}$")
     plt.savefig(str(dir_H / f"gap+dos/avg_dos_exact_diag.pdf"))
     plt.close(fig1)
 

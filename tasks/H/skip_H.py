@@ -4,4 +4,4 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     
     print(f"Skip H calculation!")
 
-    return True, {"path_configWF": path_configWF, "num_simulations": num_simulations,}
+    return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, "test_H_type": "skip"}

@@ -31,7 +31,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         dir_project_i = dir_project
      
      
-    dir_code = Path(configWF_i.get("dir_code", "./codes/")) / "codes/"
+    dir_code = Path(configWF_i.get("dir_code", "./")) / "codes/"
     dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
     dir_MD = Path(configWF_i.get("dir_MD", str(dir_project_i / "1-MD/")))
 

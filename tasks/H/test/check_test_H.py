@@ -1,6 +1,8 @@
 from typing import Tuple
 import yaml
 import numpy as np
+import random
+import re
 import matplotlib.pyplot as plt
 from pathlib import Path
 import h5py
@@ -40,17 +42,17 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
 
-    np.random.seed(42)
-    t = np.random.randint(first_snapshot, last_snapshot)
-    print(f"Random snapshot selected: {t}")
+    #np.random.seed(42)
+    #t = np.random.randint(first_snapshot, last_snapshot)
+    #print(f"Random snapshot selected: {t}")
 
 
     if hamiltonian_style == "Hr" or hamiltonian_style == "Hk":
 
-        if hamiltonian_style == "Hr":
-            H_type = f"Hr_{t}"
-        else:
-            H_type = f"Hk_{t}"
+        #if hamiltonian_style == "Hr":
+        #    H_type = f"Hr_{t}"
+        #else:
+        #    H_type = f"Hk_{t}"
 
         hoppings = []
         onsites = []
@@ -60,7 +62,14 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         dim = 0
 
         with h5py.File(str(dir_H / f"hamiltonian/ham.h5"), "r") as f:
-            g = f[H_type]
+
+            random_key = random.choice(list(f.keys()))
+            print(f"Random snapshot selected: {random_key}")
+            g = f[random_key]
+
+            match = re.search(r"H[kr]__(\d+)", random_key)
+            t = int(match.group(1))
+
             for i in g.keys():
                 if i == "vecs":
                     continue
@@ -87,12 +96,21 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
         real_ham = np.concatenate(real_ham)
         abs_ham = np.concatenate(abs_ham)
-        onsites = np.concatenate(onsites)
-        hoppings = np.concatenate(hoppings)
+        onsites = np.real(np.concatenate(onsites))
+        hoppings = np.real(np.concatenate(hoppings))
 
     elif hamiltonian_style == "H":
 
-        data_ham = np.loadtxt(str(dir_H / f"hamiltonian/H_{t}.txt"))
+        H_files = list((dir_H / "hamiltonian").glob(f"H_*.txt"))
+
+        random_file = random.choice(files)
+        print(f"Random snapshot selected: {random_file}")
+        
+        stem = Path(random_file).stem
+        t = int(stem.split("_")[1])
+
+        data_ham = np.loadtxt(random_file)
+
         col = data_ham[:, 0]
         row = data_ham[:, 1]
         ham = data_ham[:, 2] + 1j * data_ham[:, 3]
@@ -129,8 +147,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     bins_onsite = int((max_onsite - min_onsite)/0.05)
     fig1, (ax1) = plt.subplots()
     plt.title("on-site parameter histogram")
-    plt.hist(onsites, bins=bins_onsite, range=(min_onsite, max_onsite), density=True)
-    plt.xlabel(fr'on-site parameter $t_{ii}/${hamiltonian_unit}')
+    plt.hist(onsites[np.abs(onsites) > 1e-5], bins=bins_onsite, range=(min_onsite, max_onsite), density=False)
+    plt.xlabel(r'on-site parameter $t_{ii}/$' + f'{hamiltonian_unit}')
     plt.ylabel('counts')
     plt.tight_layout()
     dir_test = dir_H / "test_output/"
@@ -141,8 +159,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     bins_hopping = int((max_hopping - min_hopping)/0.05)
     fig1, (ax1) = plt.subplots()
     plt.title("hopping parameter histogram")
-    plt.hist(hoppings[np.abs(hoppings) > 1e-5], bins=bins_hopping, range=(min_hopping, max_hopping), density=True)
-    plt.xlabel(fr'hopping parameter $t_{ij}/${hamiltonian_unit}')
+    plt.hist(hoppings[np.abs(hoppings) > 1e-5], bins=bins_hopping, range=(min_hopping, max_hopping), density=False)
+    plt.xlabel(r'hopping parameter $t_{ij}/$' + f'{hamiltonian_unit}')
     plt.ylabel('counts')
     plt.tight_layout()
     plt.savefig(str(dir_H / f"test_output/hopping_histogram_{t}.pdf"))
