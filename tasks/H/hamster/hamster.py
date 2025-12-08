@@ -8,14 +8,17 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     
     yaml = YAML()
 
+    # Read in global configurations
     with open(path_configWF, 'r') as f:
         configWF = yaml.load(f)
 
     dir_project = Path(configWF.get("dir_project", "./"))
 
+    # Handle multiple simulations (branching)
     if num_simulations > 1:
         i = kwargs['pq_index'][0]
 
+        # determine correct branch config file
         param_to_vary = configWF["param_to_vary"]
         array_to_vary = configWF["array_to_vary"]
 
@@ -31,6 +34,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         dir_project_i = dir_project
 
 
+    # read in branch configuration 
     dir_code = Path(configWF_i.get("dir_code", "./")) / "codes/"
     dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
     dir_input_H = Path(configWF_i["dir_input_H"])
@@ -43,13 +47,15 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     path_hconf = dir_input_H / "hconf"
 
+    # copy Hamster hamiltonian params to directory where calculation takes place
     shutil.copy2(dir_input_H / "ml_params.dat", dir_H / "ml_params.dat")
     shutil.copy2(dir_input_H / "params.dat", dir_H / "params.dat")
     shutil.copy2(dir_input_H / "rllm.dat", dir_H / "rllm.dat")
 
-
+    # read in hconf file with existing configuration
     if path_hconf.exists():
         
+        # convert hconf to yaml file to modify configuration for present simulation 
         result3 = subprocess.run([
             "julia", 
             #"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_hamster/", 
@@ -60,14 +66,13 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             input_params = yaml.load(f)  
 
         shutil.copy2(path_hconf, dir_H / f"hconf_backup")
-        shutil.copy2(dir_H / "hconf.yaml", dir_H / f"hconf_backup.yaml")
 
     else:
         input_params = configWF_i["hamster"]
 
-
     hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
 
+    # modify Hamster configuration params for present simulation 
     input_params["Options"]["init_params"] = str( dir_H / "params.dat")
     input_params["Options"]["skip_diag"] = True
     input_params["Options"]["ham_file"] = str( dir_ham / "ham.h5")
@@ -94,11 +99,13 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     input_params["ML"]["init_params"] = str(dir_H / "ml_params.dat")
 
+    # save new configuration to yaml file
     with open(str(dir_H / "hconf.yaml"), "w") as f:
         yaml.dump(input_params, f)
 
     path_hconf_new = dir_H / "hconf"
 
+    # convert yaml to hconf file
     result4 = subprocess.run([
         "julia", 
         #"--project", 
@@ -111,6 +118,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     if path_ham.exists():
         path_ham.unlink()
 
+    # calculate Hamster hamiltonians
     print("Start Hamster!")
     result = subprocess.run([
         #"srun", 

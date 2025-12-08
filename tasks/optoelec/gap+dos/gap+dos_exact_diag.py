@@ -3,6 +3,9 @@ import yaml
 import numpy as np
 from pathlib import Path
 import subprocess
+import h5py
+import re
+import random
 
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
@@ -41,17 +44,43 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     snapshot_sampling_dos = configWF_i["gap+dos"].get("snapshot_sampling", "all")
 
 
+    if hamiltonian_style == "Hr" or hamiltonian_style == "Hk":
+ 
+        t_vals = []
+
+        with h5py.File(str(dir_H / f"hamiltonian/ham.h5"), "r") as f:
+
+            for key in f.keys():
+                match = re.search(r"H[kr]__(\d+)", key)
+            if match:
+                t_vals.append(int(match.group(1)))
+
+        snapshots = np.sort(np.array(t_vals))
+
+    elif hamiltonian_style == "H":
+
+        H_files = list((dir_H / "hamiltonian").glob("H_*.txt"))
+
+        snapshots = np.sort(np.array([
+            int(Path(f).stem.split("_")[1])
+            for f in H_files
+        ]))
+
+    else:
+        raise Exception(f"hamiltonian_style {hamiltonian_style} not recognized.")
+
+
     if snapshot_sampling_dos == "uniform":
-        step_size = int((last_snapshot - first_snapshot + 1)/num_snapshot_dos)
-        snapshots = np.arange(first_snapshot, last_snapshot + 1, step_size)
+        indices = np.linspace(0, len(snapshots) - 1, num_snapshot_dos, dtype=int)
+        chosen_snapshots = snapshots[indices]
     elif snapshot_sampling_dos == "random":
-        snapshots = np.random.randint(first_snapshot, last_snapshot, num_snapshot_dos)
+        chosen_snapshots = np.sort(np.random.choice(snapshots, size=num_snapshot_dos, replace=False))
 
 
-    for t in snapshots:
+    for t in chosen_snapshots:
         result = subprocess.run([
             "julia", 
-            "--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_hamster/", 
+            #"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_hamster/", 
             str(dir_code / "optoelec/gap+dos/diagonalize_H.jl"), str(dir_H / "hamiltonian/"), str(dir_H / "gap+dos/"), str(t), hamiltonian_style
         ], check=True)        
 

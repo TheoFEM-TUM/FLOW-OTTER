@@ -99,7 +99,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
         # Build the command
         cmd = [
-            str(dir_code / "optoelec/run_calc_gap.sh"),
+            str(dir_code / "optoelec/gap+dos/run_calc_gap.sh"),
             str(dir_code),
             str(dir_H),
             str(guess_E_v),

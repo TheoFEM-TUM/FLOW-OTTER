@@ -6,6 +6,7 @@ from perqueue.constants import SWITCHGROUP_KEY
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
     
+    # get project directory
     if isinstance(path_configWF, dict):
         path_configWF0 = next(iter(path_configWF.values()))
         num_simulations0 = next(iter(num_simulations.values()))
@@ -18,9 +19,11 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     dir_project = Path(configWF.get("dir_project", "./"))
 
+    # Handle multiple simulations (branching)
     if num_simulations0 > 1:
         i = kwargs['pq_index'][0]
 
+        # determine correct branch config file
         param_to_vary = configWF["param_to_vary"]
         array_to_vary = configWF["array_to_vary"]
             
@@ -34,8 +37,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         configWF_i = configWF.copy()
 
 
+    # check Hamiltonian type
     H_type = configWF_i.get("H_type", "skip_H")
-
 
     print(f"H type: {H_type}")
 

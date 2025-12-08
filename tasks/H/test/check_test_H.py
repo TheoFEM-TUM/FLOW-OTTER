@@ -11,16 +11,17 @@ from perqueue.constants import SWITCHGROUP_KEY
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
-    print("Running check_test_H.py")
-
+    # Read in global configurations
     with open(path_configWF, "r") as f:
         configWF = yaml.safe_load(f)
 
     dir_project = Path(configWF.get("dir_project", "./"))
 
+    # Handle multiple simulations (branching)
     if num_simulations > 1:
         i = kwargs['pq_index'][0]
 
+        # determine correct branch config file
         param_to_vary = configWF["param_to_vary"]
         array_to_vary = configWF["array_to_vary"]
             
@@ -33,6 +34,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         configWF_i = configWF.copy()
         dir_project_i = dir_project
 
+    # read in branch configuration 
     dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
     first_snapshot = configWF_i.get("first_snapshot", 0)
     N_snapshots = configWF_i["N_snapshots"]
@@ -42,17 +44,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
 
-    #np.random.seed(42)
-    #t = np.random.randint(first_snapshot, last_snapshot)
-    #print(f"Random snapshot selected: {t}")
-
-
+    # read in Hamiltonians from different file types with specific styles
     if hamiltonian_style == "Hr" or hamiltonian_style == "Hk":
-
-        #if hamiltonian_style == "Hr":
-        #    H_type = f"Hr_{t}"
-        #else:
-        #    H_type = f"Hk_{t}"
 
         hoppings = []
         onsites = []
@@ -63,6 +56,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
         with h5py.File(str(dir_H / f"hamiltonian/ham.h5"), "r") as f:
 
+            # select random snapshot
             random_key = random.choice(list(f.keys()))
             print(f"Random snapshot selected: {random_key}")
             g = f[random_key]
@@ -83,26 +77,46 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                 
                 dim = max(dim, n)
 
-                Hr = csc_matrix((nzval, rowval, colptr), shape=(m, n))
+                # construct hamiltonian matrix
+                #H = csc_matrix((nzval, rowval, colptr), shape=(m, n))
 
-                real_ham.append(np.real(nzval))
-                abs_ham.append(np.abs(nzval))
+                real_ham.extend(np.real(nzval))
+                abs_ham.extend(np.abs(nzval))
 
-                for k in range(-n, n + 1):
-                    if k == 0:
-                        onsites.append(Hr.diagonal(k))
+                # reconstruct col index array once
+                colval = np.empty_like(rowval)
+                for j in range(n):
+                    colval[colptr[j]:colptr[j+1]] = j
+
+                for r, c, v in zip(rowval, colval, nzval):
+                    if r == c:
+                        onsites.append(v.real)
                     else:
-                        hoppings.append(Hr.diagonal(k))
+                        hoppings.append(v.real)
 
-        real_ham = np.concatenate(real_ham)
-        abs_ham = np.concatenate(abs_ham)
-        onsites = np.real(np.concatenate(onsites))
-        hoppings = np.real(np.concatenate(hoppings))
+
+                ## seperate onsite and hopping elements
+                #for k in range(-n, n + 1):
+                #    if k == 0:
+                #        onsites.append(H.diagonal(k))
+                #    else:
+                #        hoppings.append(H.diagonal(k))
+
+        #real_ham = np.concatenate(real_ham)
+        #abs_ham = np.concatenate(abs_ham)
+        #onsites = np.real(np.concatenate(onsites))
+        #hoppings = np.real(np.concatenate(hoppings))
+
+        real_ham = np.array(real_ham, dtype=float)
+        abs_ham  = np.array(abs_ham, dtype=float)
+        onsites  = np.array(onsites, dtype=float)
+        hoppings = np.array(hoppings, dtype=float)
 
     elif hamiltonian_style == "H":
 
-        H_files = list((dir_H / "hamiltonian").glob(f"H_*.txt"))
 
+        # select random snapshot
+        H_files = list((dir_H / "hamiltonian").glob(f"H_*.txt"))
         random_file = random.choice(files)
         print(f"Random snapshot selected: {random_file}")
         
@@ -117,6 +131,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         real_ham = ham[:, 0]
         abs_ham = np.abs(ham)
 
+        # seperate onsite and hopping elements
         onsites = real_ham[col == row]
         hoppings = real_ham[col != row]
 
@@ -126,9 +141,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         raise Exception(f"hamiltonian_style {hamiltonian_style} not recognized.")
     
 
+    # check if Hamiltonian elements are in reasonable energy range
     max_elem = 15.0
-
-
     if np.any(abs_ham > max_elem):
         ix = (np.where(abs_ham > max_elem))
         elem = (ham[abs_ham > max_elem])
@@ -137,6 +151,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         print(f"Hamiltonian {t} is within the acceptable range (max {max_elem}).")
 
 
+    # calcalute distribution for Hamiltonian onsite and hopping elements
     max_onsite = np.max(onsites)
     min_onsite = np.min(onsites)
     max_hopping = np.max(hoppings)
@@ -144,6 +159,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     hamiltonian_unit = configWF_i.get("hamiltonian_unit", "eV")
 
+    # onsite distribution
     bins_onsite = int((max_onsite - min_onsite)/0.05)
     fig1, (ax1) = plt.subplots()
     plt.title("on-site parameter histogram")
@@ -156,6 +172,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     plt.savefig(str(dir_H / f"test_output/on_site_histogram_{t}.pdf"))
     plt.close(fig1)
 
+    # hopping distribution
     bins_hopping = int((max_hopping - min_hopping)/0.05)
     fig1, (ax1) = plt.subplots()
     plt.title("hopping parameter histogram")
@@ -166,7 +183,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     plt.savefig(str(dir_H / f"test_output/hopping_histogram_{t}.pdf"))
     plt.close(fig1)
 
-
+    # check which diagonalization/DoS calculation method should be used by matrix dimension
     if not run_test_H:
         test_H_type = "skip_test_H"
     else:

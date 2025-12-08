@@ -121,12 +121,14 @@ sg2_H = SwitchGroup({"empTB": {t2_prep_empTB: [], t2_empTB: [t2_prep_empTB]}, "h
 t2_testH = Task( test_H / "check_test_H.py", None, resources_instant, preamble_path=str(preamble_julia), name="check_test_H")
 t2_testH_KPM = Task( test_H / "test_H_KPM.py", None, resources_H, preamble_path=str(preamble_hamster), name="test_H_KPM")
 t2_testH_dia = Task( test_H / "test_H_exact_diag.py", None, resources_H, preamble_path=str(preamble_hamster), name="test_H_exact_diag")
-t2_testH_a = Task( test_H / "test_H_gaps.py", None, resources_short, name="test_H_gaps")
-t2_testH_b = Task( test_H / "test_H_gaps.py", None, resources_short, name="test_H_gaps")
+t2_testH_post_KPM = Task( test_H / "test_H_post_KPM.py", None, resources_short, name="test_H_post_KPM")
+t2_testH_post_dia = Task( test_H / "test_H_post_exact_diag.py", None, resources_short, name="test_H_post_exact_diag")
+#t2_testH_a = Task( test_H / "test_H_gaps.py", None, resources_short, name="test_H_gaps")
+#t2_testH_b = Task( test_H / "test_H_gaps.py", None, resources_short, name="test_H_gaps")
 t2_testH_skip = Task( test_H / "skip_test_H.py", None, resources_instant, name="skip_test_H")
 
 # which test H type: Kernel polynomial method, exact diagonalization or skip?
-sg2_test = SwitchGroup({"KPM": {t2_testH_KPM: [], t2_testH_a: [t2_testH_KPM]}, "exact_diag": {t2_testH_dia: [] , t2_testH_b: [t2_testH_dia]}, "skip_test_H": t2_testH_skip})
+sg2_test = SwitchGroup({"KPM": {t2_testH_KPM: [], t2_testH_post_KPM: [t2_testH_KPM]}, "exact_diag": {t2_testH_dia: [] , t2_testH_post_dia: [t2_testH_dia]}, "skip_test_H": t2_testH_skip})
 
 
 ###  3. optoelectronic properties

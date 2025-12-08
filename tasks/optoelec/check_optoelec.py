@@ -35,11 +35,9 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     optoelec_type = configWF_i.get("optoelec_type", "gap+dos")
 
     if optoelec_type == "gap+dos":
-        #data_H = np.loadtxt(str(dir_H / f"hamiltonian/H_{t}.txt"))
         dir_gap_dos = dir_H / "gap+dos/"
         dir_gap_dos.mkdir(parents=True, exist_ok=True)
         if test_H_type == "KPM":
-        #if np.max(data_H[:, 1]) > 10**4:
             print("Dimension of H matrix > 10^4, calculate DoS with Kernel Polynomial method (KPM).")
             optoelec_type = "gap+dos_KPM"
         elif test_H_type == "exact_diag":

@@ -6,14 +6,17 @@ from pathlib import Path
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
 
+    # Read in global configurations
     with open(path_configWF, 'r') as f:
         configWF = yaml.safe_load(f)
 
     dir_project = Path(configWF.get("dir_project", "./"))
 
+    # Handle multiple simulations (branching)
     if num_simulations > 1:
         i = kwargs['pq_index'][0]
 
+        # determine correct branch config file
         param_to_vary = configWF["param_to_vary"]
         array_to_vary = configWF["array_to_vary"]
 
@@ -29,6 +32,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         dir_project_i = dir_project
 
 
+    # read in branch configuration 
     dir_code = Path(configWF_i.get("dir_code", "./")) / "codes/"
     dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
 
@@ -44,6 +48,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     SLURM_CPUS_PER_TASK = configWF_i.get("SLURM_CPUS_PER_TASK", 1)
     NUM_MPI_RANKS = configWF_i.get("NUM_MPI_RANKS", N_snapshots)
 
+     
+    # calculate empirical Tight Binding hamiltonians
     result = subprocess.run([        
         "srun", 
         "--mpi=pmi2",
