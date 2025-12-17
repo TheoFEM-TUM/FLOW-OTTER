@@ -10,14 +10,17 @@ import random
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
+    # Read in global configurations
     with open(path_configWF, "r") as f:
         configWF = yaml.safe_load(f)
 
     dir_project = Path(configWF.get("dir_project", "./"))
 
+    # Handle multiple simulations (branching)
     if num_simulations > 1:
         i = kwargs['pq_index'][0]
 
+        # determine correct branch config file
         param_to_vary = configWF["param_to_vary"]
         array_to_vary = configWF["array_to_vary"]
             
@@ -31,6 +34,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         dir_project_i = dir_project
 
 
+    # read in branch configuration 
     dir_code = Path(configWF_i.get("dir_code", "./")) / "codes/"
     dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
 
@@ -49,6 +53,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
 
 
+    # determine available snapshots based on hamiltonian style
     if hamiltonian_style == "Hr" or hamiltonian_style == "Hk":
  
         t_vals = []
@@ -75,13 +80,14 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         raise Exception(f"hamiltonian_style {hamiltonian_style} not recognized.")
 
 
+    # choose snapshots for exact diagonalization calculation
     if snapshot_sampling_dos == "uniform":
         indices = np.linspace(0, len(snapshots) - 1, num_snapshot_dos, dtype=int)
         chosen_snapshots = snapshots[indices]
     elif snapshot_sampling_dos == "random":
         chosen_snapshots = np.sort(np.random.choice(snapshots, size=num_snapshot_dos, replace=False))
 
-
+    # calculate DoS of Hamiltonian with Kernel Polynomial Method 
     for t in chosen_snapshots:
         result = subprocess.run([
             "srun", 
@@ -92,8 +98,6 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             str(dir_code / "optoelec/gap+dos/KPM_DOS.jl"), 
             str(M), str(N), str(dir_H / "hamiltonian/"), str(dir_H / "gap+dos/"), str(t), hamiltonian_style
         ], check=True)        
-
-
 
     optoelec_type = "gap+dos_KPM"
 

@@ -3,43 +3,43 @@ import sys
 import numpy as np
 from pathlib import Path
 
-
+# set input paths
 path_configWF = sys.argv[1]
 dir_MD = Path(sys.argv[2])
 
-
+# load configuration file
 with open(path_configWF, "r") as f:
     configWF = yaml.safe_load(f) or {} 
 
-#MD_file = configWF["MD_file"]
-#dir_input_MD = configWF.get("dir_input_MD", dir_MD)
+# set directory for initial MD structure
 dir_ini_MD = Path(configWF.get("dir_ini_MD", str(dir_MD)))
 
+# set input parameters
 input_params = configWF["lammps"]
 if "temperature" in configWF:
     T = configWF["temperature"]  
 else:
     T = input_params["T"]
 
-
-
-#path_FF_MD = dir_input_MD + MD_file
+# set force field path
 path_FF_MD = Path(configWF.get("path_FF_MD", str(dir_MD)))
 print(path_FF_MD)
 
-#MPI.Init()
+# start LAMMPS
 from mpi4py import MPI
 from lammps import lammps
 
 lmp = lammps()
 lmp.command(f"log  " + str(dir_MD / "log.lammps"))
 
+# define preamble configurations
 lmp.cmd.units(f"{input_params['units']}")
 lmp.command(f"dimension {input_params['dimension']}")
 lmp.command(f"boundary {input_params['boundary']}")
 lmp.command(f"kspace_style {input_params['kspace_style']}")
 lmp.cmd.atom_style(f"{input_params['atom_style']}")
 
+# specify initial structure
 path_ini = dir_ini_MD / input_params["ini_MD_file"]
 if input_params["restart"]:
     lmp.command(f"read_restart {str(path_ini)}")
@@ -49,8 +49,7 @@ else:
     lmp.command(f"read_data {str(path_ini)}")
     equilibrate = True
 
-
-
+# Replicate structure if specified
 if "size" in configWF:
     s = configWF["size"]
     lmp.command(f"replicate {s} {s} {s} bond/periodic")
@@ -62,6 +61,7 @@ else:
 elements = input_params["elements"]
 elements_str = " ".join(elements)
 
+# Define force field
 if configWF["MD_type"] == "lammps+MACE":
     lmp.command("pair_style mace no_domain_decomposition")
     lmp.command(f"pair_coeff * * {str(path_FF_MD)} " + elements_str)
@@ -71,7 +71,6 @@ if configWF["MD_type"] == "lammps+VASP":
 else:
     lmp.file(str(path_FF_MD))
 
-#lmp.command(f"write_dump all custom " + str(dir_MD / "masses.txt") + f" id type element mass modify sort id element {elements_str}")
 
 # Time step
 lmp.command(f"timestep {input_params['dt']}")
@@ -81,8 +80,6 @@ lmp.command(f"reset_timestep 0")
 lmp.command("thermo 100")
 lmp.command("thermo_style custom step temp etotal lx ly lz vol density press")
 lmp.command("thermo_modify line one format float %12.5f")
-
-#lmp.command(f"fix thermolog all print 100 '${step} ${temp} ${etotal} ${lx} ${ly} ${lz} ${vol} ${density} ${press}' file {dir_MD}/thermo_output.txt screen no")
 lmp.command("variable t equal step")
 lmp.command("variable T equal temp")
 lmp.command("variable E equal etotal")
@@ -96,13 +93,15 @@ lmp.command(f"fix thermolog all print 100 '$t $T $E $X $Y $Z $V $P' file " + str
 T_damp = input_params["T_damp"]
 prodrun_stepsize = input_params['prodrun_stepsize']
 
+# start equilibration if needed
 if equilibrate:
 
-    #stepsize_eq = input_params.get("eqstepsize", 1)
+    # define dump file for equilibration
     lmp.command(f"dump 0 all custom {prodrun_stepsize} " + str(dir_MD / "position_eq.lammpstrj") + " id type element x y z")
     lmp.command("dump_modify 0 sort id")
     lmp.command(f"dump_modify 0 element {elements_str}")
 
+    # Initial minimization and velocity assignment
     T_start = input_params.get("T_start", T)
     if not (input_params["restart"]):
         lmp.command(f"velocity all create {T_start} 12345 dist gaussian")
@@ -126,6 +125,7 @@ if equilibrate:
     lmp.command(f"run {input_params['eqsteps_npt']}")
     lmp.command(f"unfix 1")
 
+    # write restart file after equilibration
     restart_eq_file = f"restart_eq_{T}"
     path_restart_eq = dir_MD / restart_eq_file
     lmp.command(f"write_restart " + str(path_restart_eq))
@@ -135,8 +135,7 @@ if equilibrate:
 
 lmp.command(f"write_data " + str(dir_MD / "pre_run.data"))
 
-
-# Dump settings
+# Dump file settings
 lmp.command(f"dump 1 all custom {prodrun_stepsize} " + str(dir_MD / "position.lammpstrj") + " id type x y z")
 lmp.command("dump_modify 1 sort id")
 lmp.command(f"dump_modify 1 element {elements_str}")

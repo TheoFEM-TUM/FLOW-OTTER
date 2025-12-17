@@ -1,0 +1,24 @@
+=== Job Environment Report ===
+SLURM_JOB_ID: 35159802
+
+--- Key Environment Variables ---
+CONDA_PREFIX: <not set>
+CONDA_DEFAULT_ENV: <not set>
+CONDA_SHLVL: <not set>
+PYTHONPATH: <not set>
+VIRTUAL_ENV: <not set>
+LOADEDMODULES: <not set>
+
+--- All CONDA_* variables ---
+None
+
+--- Module command available? ---
+YES - module is available
+
+--- PATH (first 5 entries) ---
+/home/t30/all/ge62nep/.vscode-server/data/User/globalStorage/github.copilot-chat/debugCommand
+/home/t30/all/ge62nep/.vscode-server/data/User/globalStorage/github.copilot-chat/copilotCli
+/home/t30/egg/ge62nep/.vscode-server/cli/servers/Stable-bf9252a2fb45be6893dd8870c0bf37e2e1766d61/server/bin/remote-cli
+/usr/local/sbin
+/usr/local/bin
+module: not found

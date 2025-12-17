@@ -8,6 +8,7 @@ using MPI
 
 include("read_H.jl")
 
+### get spectral bounds of the hamiltonian
 function get_spectral_bounds(hamiltonian::SparseMatrixCSC{ComplexF64})
    
     E_max = real(eigsolve(hamiltonian, 1, :LR, ishermitian=true)[1][1])::Float64
@@ -16,6 +17,7 @@ function get_spectral_bounds(hamiltonian::SparseMatrixCSC{ComplexF64})
     return E_max, E_min
 end
 
+### transform band center and width to mean and half-width
 function transform_band_center_and_width(E_max, E_min)
 
     ϵ = 0.01
@@ -57,7 +59,7 @@ function jackson_kernel_elem(m::Int, M::Int)
     return g_m
 end
 
-### calculate coeff_DOS_m = v * T_m(H) * v
+### calculate coeff_DOS_m = v * T_m(H) * v for DoS
 function kernel_polynomial_method_coeff_dos(H::SparseMatrixCSC{ComplexF64}, v::Vector{ComplexF64}, M::Int)
 
     coeff_DOS = Vector{Float64}(undef, M)
@@ -90,7 +92,7 @@ function chebyshev_polynomials(x, m::Int)
 end
 
 
-### calculate DoS from coefficients C_m
+### calculate DoS from coefficients C_m calculated with kernel_polynomial_method_coeff_dos
 function calculate_density_func(C_m::Vector{Float64}, mean_E::Float64, ΔE::Float64, M::Int)
 
     z = 2 * M
@@ -117,10 +119,12 @@ function calculate_density_func(C_m::Vector{Float64}, mean_E::Float64, ΔE::Floa
 end
 
 
+### main function for KPM DoS calculation
 function KPM_DOS(M::Int, N::Int, TB_path::String, output_path::String, t::Int, hamiltonian_style::String)
 
     MPI.Init()
 
+    ### read and rescale hamiltonian
     H = get_sparse_H(TB_path, t, hamiltonian_style)
     println("Hamiltonian read")
     E_max, E_min = get_spectral_bounds(H)
@@ -152,6 +156,7 @@ function KPM_DOS(M::Int, N::Int, TB_path::String, output_path::String, t::Int, h
     arr_coeff_DOS = zeros(Float64, M, num_vecs)
     coeff_DOS = zeros(Float64, M)
 
+    ### get DoS coefficients
     tforeach(1:num_vecs; chunksize=1) do i
 
         vec = draw_vec(i, dim, rank, num_vecs)
@@ -185,6 +190,10 @@ function KPM_DOS(M::Int, N::Int, TB_path::String, output_path::String, t::Int, h
 
 end
 
+
+### ### ### ### ### ### ###
+### main script execution
+### ### ### ### ### ### ###
 
 M = parse(Int, ARGS[1])
 N = parse(Int, ARGS[2])

@@ -62,9 +62,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     plt.savefig(str(dir_H / f"test_output/dos_{t}_gauss.pdf"))
     plt.close(fig1)
 
-    gaps = np.diff(EV)
-        
     # calculate band gap candidates out of eigenvalues spectrum
+    gaps = np.diff(EV)
     largest_gap_indices = np.argsort(gaps)[-5:][::-1]
     largest_gaps = gaps[largest_gap_indices]
 

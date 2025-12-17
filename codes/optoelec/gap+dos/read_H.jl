@@ -4,6 +4,7 @@ using Hamster
 #MPIPreferences.use_system_binary()
 #using MPI
 
+### read empirical TB hamiltonian parameters from file
 function read_empTB_params(t::Int, TB_path::String)
     file_path = joinpath(TB_path, "TB_" * string(t) * ".txt")
     
@@ -31,8 +32,6 @@ end
 ### extract sparse hamiltonian for snapshot t for empirical TB model
 function get_sparse_H_empTB(TB_path::String, t::Int)
    
-    #hamiltonian = SparseMatrixCSC{ComplexF64}
-
     row, col, H_elem, _ = read_empTB_params(t, TB_path)
 
     hamiltonian = sparse(row, col, H_elem)
@@ -45,8 +44,6 @@ end
 ### extract dense hamiltonian for snapshot t for empirical TB model
 function get_dense_H_empTB(TB_path::String, t::Int)
    
-    #hamiltonian = SparseMatrixCSC{ComplexF64}
-
     row, col, H_elem, _ = read_empTB_params(t, TB_path)
 
     max_index = maximum([maximum(row), maximum(col)])
@@ -61,7 +58,7 @@ function get_dense_H_empTB(TB_path::String, t::Int)
 end
 
 
-
+### extract sparse hamiltonian for snapshot t for different hamiltonian styles
 function get_sparse_H(TB_path::String, t::Int, hamiltonian_style::String)
 
     if hamiltonian_style == "TB"
@@ -89,6 +86,7 @@ function get_sparse_H(TB_path::String, t::Int, hamiltonian_style::String)
     return hamiltonian
 end
 
+### extract dense hamiltonian for snapshot t for different hamiltonian styles
 function get_dense_H(TB_path::String, t::Int, hamiltonian_style::String)
 
     if hamiltonian_style == "TB"
@@ -116,7 +114,7 @@ function get_dense_H(TB_path::String, t::Int, hamiltonian_style::String)
     return hamiltonian
 end
 
-
+### check if Hamiltonian is hermitian
 function is_hermitian(H)
 
     if !ishermitian(H)

@@ -7,14 +7,17 @@ from perqueue.constants import SWITCHGROUP_KEY
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, test_H_type: str = "skip", **kwargs) -> Tuple[bool, dict]:
 
+    # get project directory
     with open(path_configWF, "r") as f:
         configWF = yaml.safe_load(f)
 
     dir_project = Path(configWF.get("dir_project", "./"))
 
+    # Handle multiple simulations (branching)
     if num_simulations > 1:
         i = kwargs['pq_index'][0]
 
+        # determine correct branch config file
         param_to_vary = configWF["param_to_vary"]
         array_to_vary = configWF["array_to_vary"]
             
@@ -28,12 +31,14 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         dir_project_i = dir_project
         
 
+    # read in branch configuration 
     dir_H = dir_project_i / configWF_i.get("dir_H", "2-H/")
     t = configWF_i.get("first_snapshot", 0)
 
     hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
     optoelec_type = configWF_i.get("optoelec_type", "gap+dos")
 
+    # check which diagonalization/DoS calculation method should be used by matrix dimension
     if optoelec_type == "gap+dos":
         dir_gap_dos = dir_H / "gap+dos/"
         dir_gap_dos.mkdir(parents=True, exist_ok=True)

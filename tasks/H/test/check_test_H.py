@@ -94,19 +94,6 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                     else:
                         hoppings.append(v.real)
 
-
-                ## seperate onsite and hopping elements
-                #for k in range(-n, n + 1):
-                #    if k == 0:
-                #        onsites.append(H.diagonal(k))
-                #    else:
-                #        hoppings.append(H.diagonal(k))
-
-        #real_ham = np.concatenate(real_ham)
-        #abs_ham = np.concatenate(abs_ham)
-        #onsites = np.real(np.concatenate(onsites))
-        #hoppings = np.real(np.concatenate(hoppings))
-
         real_ham = np.array(real_ham, dtype=float)
         abs_ham  = np.array(abs_ham, dtype=float)
         onsites  = np.array(onsites, dtype=float)

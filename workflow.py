@@ -142,9 +142,9 @@ t3_skipOpto_plot = Task( optoelec / "skip_optoelec.py", None, resources_instant,
 # band gap + density of states tasks
 t3_dia = Task( gap_dos / "gap+dos_exact_diag.py", None, resources_optoelec, preamble_path=str(preamble_hamster),name="gap+dos_exact_diag")
 t3_KPM = Task( gap_dos / "gap+dos_KPM.py", None, resources_optoelec, preamble_path=str(preamble_hamster), name="gap+dos_KPM")
-t3_post_dia = Task( gap_dos / "gap+dos_post_exact_diag.py", None, resources_optoelec, preamble_path=str(preamble_hamster), name="gap+dos")
-t3_post_KPM = Task( gap_dos / "gap+dos_post_KPM.py", None, resources_optoelec, preamble_path=str(preamble_hamster), name="gap+dos")
-t3_gap_KPM = Task( gap_dos / "gap_KPM.py", None, resources_instant, name="gap")
+t3_post_dia = Task( gap_dos / "gap+dos_post_exact_diag.py", None, resources_optoelec, preamble_path=str(preamble_hamster), name="gap+dos_post_exact_diag")
+t3_post_KPM = Task( gap_dos / "gap+dos_post_KPM.py", None, resources_optoelec, preamble_path=str(preamble_hamster), name="gap+dos_post_KPM")
+t3_gap_KPM = Task( gap_dos / "gap_KPM.py", None, resources_instant, name="gap_KPM")
 t3_plot_KPM = Task( gap_dos / "plot_avg_dos.py", None, resources_instant, name="plot_avg_dos")
 
 # optical conductivity tasks
