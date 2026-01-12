@@ -32,6 +32,7 @@ from mpi4py import MPI
 from lammps import lammps
 
 lmp = lammps()
+
 lmp.command(f"log  " + str(dir_MD / "log.lammps"))
 
 lmp.cmd.units(f"{input_params['units']}")
@@ -49,11 +50,10 @@ else:
     lmp.command(f"read_data {str(path_ini)}")
     equilibrate = True
 
-
-
 if "size" in configWF:
     s = configWF["size"]
-    lmp.command(f"replicate {s} {s} {s} bond/periodic")
+    if s > 1:
+        lmp.command(f"replicate {s} {s} {s} bond/periodic")
 else:
     if "replicate" in input_params:
         replicate = input_params["replicate"]
@@ -63,8 +63,11 @@ elements = input_params["elements"]
 elements_str = " ".join(elements)
 
 if configWF["MD_type"] == "lammps+MACE":
-    lmp.command("pair_style mace no_domain_decomposition")
-    lmp.command(f"pair_coeff * * {str(path_FF_MD)} " + elements_str)
+    lmp.command("newton on")
+    lmp.command(f"pair_style mliap unified {str(path_FF_MD)} 0")
+    lmp.command(f"pair_coeff * * " + elements_str)
+    #lmp.command("pair_style mace no_domain_decomposition")
+    #lmp.command(f"pair_coeff * * {str(path_FF_MD)} " + elements_str)
 if configWF["MD_type"] == "lammps+VASP":
     lmp.command("pair_style vasp")
     lmp.command(f"pair_coeff * * {str(path_FF_MD)} " + elements_str)

@@ -2,9 +2,16 @@ from typing import Tuple
 import yaml
 from pathlib import Path
 from perqueue.constants import SWITCHGROUP_KEY
+import sys
+import subprocess
 
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
+
+    print(sys.version)
+    print(sys.version_info) 
+    out = subprocess.check_output(["julia", "--version"], text=True)
+    print(out)
 
     if isinstance(path_configWF, dict):
         path_configWF0 = next(iter(path_configWF.values()))

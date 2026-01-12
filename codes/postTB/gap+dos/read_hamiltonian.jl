@@ -68,7 +68,7 @@ function get_sparse_H(TB_path::String, t::Int, hamiltonian_style::String)
         hamiltonian = get_sparse_H_empTB(TB_path, t)
     elseif hamiltonian_style == "Hk" || hamiltonian_style == "Hr"
         file_path = joinpath(TB_path, "ham.h5")
-        hamiltonian = read_ham(t, filename=file_path, space=string(last(hamiltonian_style)))
+        hamiltonian, _ = read_ham(t, filename=file_path, space=string(last(hamiltonian_style)))
     else
         error("Unknown hamiltonian_style: $hamiltonian_style")
     end
@@ -81,7 +81,7 @@ function get_dense_H(TB_path::String, t::Int, hamiltonian_style::String)
     if hamiltonian_style == "TB"
         hamiltonian = get_dense_H_empTB(TB_path, t)
     elseif hamiltonian_style == "Hk" || hamiltonian_style == "Hr"
-        hamiltonian = Matrix(read_ham(t, filename=file_path, space=string(last(hamiltonian_style))))
+        hamiltonian, _ = Matrix(read_ham(t, filename=file_path, space=string(last(hamiltonian_style))))
     else
         error("Unknown hamiltonian_style: $hamiltonian_style")
     end

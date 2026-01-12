@@ -7,9 +7,8 @@ unset PYTHONPATH
 unset PYTHONHOME
 
 
-
-echo "This script is running safely."
-#deactivate
+echo "This script2 is running safely."
+deactivate
 #workflow_pq/MD_TB_PQ_wf/preambles/preamble_julia.sh
 module purge
 
@@ -22,6 +21,6 @@ module load Intel
 module load IntelMPI
 module load imkl
 
-module load Julia
+#module load Julia
 
-julia --version
+#julia --version

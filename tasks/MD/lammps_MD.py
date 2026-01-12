@@ -3,6 +3,8 @@ from ruamel.yaml import YAML
 import subprocess
 from pathlib import Path
 from perqueue.constants import CYCLICALGROUP_KEY
+import os
+
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
@@ -88,17 +90,92 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     dir_MD = dir_project_i / configWF_i.get("dir_MD", "1-MD/")
     dir_codes = configWF_i["dir_codes"]
+    MD_type = configWF_i.get("MD_type")
+    input_type = configWF_i.get("input_type", "write_input")
 
-    #os.system(f"mkdir -p {dir_MD}")
     dir_MD.mkdir(parents=True, exist_ok=True)
 
-    result = subprocess.run([
-        "srun", 
-        #"-np", f"{MD_MPI_NPROCS}", 
-        "python3",
-        f"{dir_codes}/MD/run_lammps_MD.py", 
-        str(path_configWF_i), str(dir_MD)], check=True)
+    if MD_type == "lammps":
 
+        if input_type == "write_input":
+
+            result1 = subprocess.run([
+                #"srun", 
+                #"-np", f"{MD_MPI_NPROCS}", 
+                "python3",
+                f"{dir_codes}/MD/write_input_lammps_MD.py", 
+                str(path_configWF_i), str(dir_MD)], check=True)
+
+            result2 = subprocess.run([
+                "srun",
+                "lmp_mpi",
+                "-in",
+                f"{dir_MD}/lmp.inp",
+                #">",
+                #f"{dir_MD}/lmp_output"
+            ], check=True)
+
+        elif input_type == "existing_input":
+
+            print("Using already existing LAMMPS input file.")
+
+            path_input_lammps = configWF_i["path_input_lammps"]
+
+            result2 = subprocess.run([
+                "srun",
+                "lmp_mpi",
+                "-in",
+                f"{path_input_lammps}",
+                #">",
+                #f"{dir_MD}/lmp_output"
+            ], check=True)
+
+        elif input_type == "python_input":
+
+            result = subprocess.run([
+                "srun", 
+                #"-np", f"{MD_MPI_NPROCS}", 
+                "python3",
+                f"{dir_codes}/MD/run_lammps_MD.py", 
+                str(path_configWF_i), str(dir_MD)], check=True)
+    
+    elif MD_type == "lammps+MACE":
+
+        result1 = subprocess.run([
+            #"srun", 
+            "python3",
+            f"{dir_codes}/MD/write_input_lammps_MD.py", 
+            str(path_configWF_i), str(dir_MD)], check=True)
+
+        result2 = subprocess.run([
+            "srun",
+            "lmp",
+            "-k", "on", "g", "1", "-sf", "kk", "-pk", "kokkos", "newton", "on", "neigh", "half",
+            "-in",
+            f"{dir_MD}/lmp.inp",
+            #">",
+            #f"{dir_MD}/lmp_output"
+        ], check=True)
+
+    elif MD_type == "lammps+VASP":
+
+        print("SLURM_NTASKS =", os.environ.get("SLURM_NTASKS"))
+
+        result1 = subprocess.run([
+            #"srun", 
+            "python3",
+            f"{dir_codes}/MD/write_input_lammps_MD.py", 
+            str(path_configWF_i), str(dir_MD)], check=True)
+
+        result2 = subprocess.run([
+            "srun",
+            "-n", os.environ["SLURM_NTASKS"],
+            "lmp_mpi",
+            "-in",
+            f"{dir_MD}/lmp.inp",
+            #">",
+            #f"{dir_MD}/lmp_output"
+        ], check=True)
 
 
     return True, {CYCLICALGROUP_KEY: cg_criteria, "path_configWF": path_configWF, "num_simulations": num_simulations}

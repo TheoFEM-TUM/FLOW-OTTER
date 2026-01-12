@@ -751,6 +751,7 @@ snapshots = [
 comm = MPI.COMM_WORLD
 rank = MPI.Comm_rank(comm)
 rank_size = MPI.Comm_size(comm)
+println("Rank $rank of $rank_size started.")
 
 BLAS.set_num_threads(1)
 

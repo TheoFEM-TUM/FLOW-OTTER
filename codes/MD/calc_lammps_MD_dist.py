@@ -93,7 +93,8 @@ def position_histogram(input_dir, output_dir, type_names):
 
     # Universe
     #u = mda.Universe(data_file, traj_file, format="LAMMPSDUMP", atom_style="id type element x y z")
-    u = mda.Universe(data_file, traj_file, format="LAMMPSDUMP")
+    #u = mda.Universe(data_file, traj_file, format="LAMMPSDUMP")
+    u = mda.Universe(data_file, traj_file, format="LAMMPSDUMP", atom_style="id type x y z")
     #u = mda.Universe(traj_file, format="LAMMPSDUMP", atom_style="id type element x y z")
     atom_types = np.unique(u.atoms.types)
     #atom_types = u.atoms.types

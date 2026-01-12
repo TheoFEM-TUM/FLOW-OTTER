@@ -19,6 +19,7 @@ conductivity = Path("./conductivity")
 preamble_global = project / "preambles/preamble_global.sh"
 preamble_lammps = project / "preambles/preamble_lammps.sh"
 preamble_julia = project / "preambles/preamble_julia.sh"
+preamble_julia2 = project / "preambles/preamble_julia2.sh"
 preamble_hamster = project / "preambles/preamble_hamster.sh"
 
 ### read in configuration
@@ -38,7 +39,7 @@ dir_project.mkdir(parents=True, exist_ok=True)
 ### MD tasks
 resources_MD = configWF["resources_MD"]
 
-t1_0 = Task(tasks / MD / "check_MD_type.py", None, "48:1:devel:2m", name="check_MD_type", preamble_path=str(preamble_julia))
+t1_0 = Task(tasks / MD / "check_MD_type.py", None, "48:1:devel:2m", preamble_path=str(preamble_julia2), name="check_MD_type")
 t1 = Task(tasks / MD / "lammps_MD.py", None, resources_MD, preamble_path=str(preamble_lammps), name="lammps_MD")
 t1_skip = Task(tasks / MD / "skip_MD.py", None, "48:1:devel:2m", name="skip_MD")
 
@@ -110,7 +111,8 @@ num_simulations = configWF.get("num_simulations", 1)
 dict_simulation = {"path_configWF": path_configWF, "num_simulations": num_simulations}
 
 #t0_0 = Task(tasks / "check_simulation_type.py", dict_simulation, "local:1m", name="check_simulation_type")
-t0_0 = Task(tasks / "check_simulation_type.py", dict_simulation, "48:1:devel:2m", name="check_simulation_type")
+#t0_0 = Task(tasks / "check_simulation_type.py", dict_simulation, "48:1:devel:2m", name="check_simulation_type")
+t0_0 = Task(tasks / "check_simulation_type.py", dict_simulation, "48:1:devel:2m", preamble_path=str(preamble_julia), name="check_simulation_type")
 
 #t_a = Task(tasks / "buffer.py", None, "local:1m", name="buffer")
 #t_b = Task(tasks / "buffer.py", None, "local:1m", name="buffer")
