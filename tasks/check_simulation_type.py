@@ -15,6 +15,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     yaml = YAML()
 
+    # Read in global configurations
     with open(path_configWF, "r") as f:
         configWF = yaml.load(f)
     
@@ -22,28 +23,27 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     
     dir_project = Path(configWF.get("dir_project", "./"))
     dir_project.mkdir(parents=True, exist_ok=True)
-    #os.system(f"mkdir -p {dir_project}")
 
+
+    # Handle multiple simulations (branching)
     if num_simulations > 1:
+        
+        # Parameters controlling how values vary between simulations
         param_group = configWF.get("param_group_for_vary", None)
         param_to_vary = configWF["param_to_vary"]
         array_to_vary = configWF["array_to_vary"]
-        
-        #del configWF["param_group_for_vary"]
-        #del configWF["param_to_vary"]
-        #del configWF["array_to_vary"]
 
-
+        # Loop over different branches
         for i in range(num_simulations):
+
             dir_project_i = dir_project / f"{param_to_vary}_{array_to_vary[i]}/" 
-            print(dir_project)
-            print(dir_project_i)
             path_configWF_i = dir_project_i / 'branch_config.yaml'
             path_pre_configWF_i = dir_project_i / 'pre_branch_config.yaml'
 
+
+            # Update configuration for this branch
             configWF["dir_project"] = str(dir_project_i)
             dir_project_i.mkdir(parents=True, exist_ok=True)
-            #os.system(f"mkdir -p {dir_project_i}")
             configWF["simulation_index"] = i
 
             if param_group is None:
@@ -66,8 +66,27 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, SWITCHGROUP_KEY: simulation_type}
 
 
-# Recursive deep merge b into a
 def deep_merge(a, b):
+    """
+    Recursively merge dictionary b into dictionary a.
+
+    For each key:
+    - If both a[k] and b[k] are dictionaries, merge them recursively.
+    - Otherwise, overwrite a[k] with b[k].
+
+    Parameters
+    ----------
+    a : dict
+        Destination dictionary that will be modified in-place.
+    b : dict
+        Source dictionary whose values overwrite or extend dictionary a.
+
+    Returns
+    -------
+    dict
+        The modified dictionary a after merging.
+    """
+
     for k, v in b.items():
         if (
             k in a
@@ -77,4 +96,5 @@ def deep_merge(a, b):
             deep_merge(a[k], v)
         else:
             a[k] = v
+
     return a
