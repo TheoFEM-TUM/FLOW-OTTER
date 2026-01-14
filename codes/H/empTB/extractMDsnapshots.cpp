@@ -57,7 +57,7 @@ int main(int argc, char* argv[]){                         // extracts posistions
 
 		fout.open(outfile1.c_str());
 		for (int i=0; i<num_atoms; ++i){     // 49152 = 12*16^3    12 atomes per unit cell and 16^3 unit cells
-			fin >> temp >> temp >> data[0] >> data[1] >> data[2];
+			fin >> temp >> temp >> temp >> data[0] >> data[1] >> data[2];
 			fout << data[0] << " " << data[1] << " " << data[2] << '\n';
 			}
 		getline(fin,temp);

@@ -87,11 +87,13 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     elif snapshot_sampling_dos == "random":
         chosen_snapshots = np.sort(np.random.choice(snapshots, size=num_snapshot_dos, replace=False))
 
+    ranks_optoelec = configWF_i.get("ranks_optoelec", 1)
+
     # calculate DoS of Hamiltonian with Kernel Polynomial Method 
     for t in chosen_snapshots:
         result = subprocess.run([
             "srun", 
-            "-n", "1",
+            "-n", str(ranks_optoelec),
             "julia", 
             #f"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_hamster/", 
             #"-t", f"{SLURM_CPUS_PER_TASK}", 

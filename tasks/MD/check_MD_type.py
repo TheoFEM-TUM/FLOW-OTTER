@@ -8,10 +8,10 @@ import subprocess
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
-    print(sys.version)
-    print(sys.version_info) 
-    out = subprocess.check_output(["julia", "--version"], text=True)
-    print(out)
+    #print(sys.version)
+    #print(sys.version_info) 
+    #out = subprocess.check_output(["julia", "--version"], text=True)
+    #print(out)
 
     # get project directory
     if isinstance(path_configWF, dict):

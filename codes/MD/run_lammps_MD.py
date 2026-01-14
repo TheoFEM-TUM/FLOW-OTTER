@@ -141,15 +141,15 @@ if equilibrate:
 lmp.command(f"write_data " + str(dir_MD / "pre_run.data"))
 
 # Dump file settings
-lmp.command(f"dump 1 all custom {prodrun_stepsize} " + str(dir_MD / "position.lammpstrj") + " id type x y z")
+lmp.command(f"dump 1 all custom {prodrun_stepsize} " + str(dir_MD / "position.lammpstrj") + " id type element x y z")
 lmp.command("dump_modify 1 sort id")
 lmp.command(f"dump_modify 1 element {elements_str}")
 
-lmp.command(f"dump 2 all custom {prodrun_stepsize} " + str(dir_MD / "velocity.lammpstrj") + " id type vx vy vz")
+lmp.command(f"dump 2 all custom {prodrun_stepsize} " + str(dir_MD / "velocity.lammpstrj") + " id type element vx vy vz")
 lmp.command("dump_modify 2 sort id")
 lmp.command(f"dump_modify 2 element {elements_str}")
 
-lmp.command(f"dump 3 all custom {prodrun_stepsize} " + str(dir_MD / "forces.lammpstrj") + " id type fx fy fz")
+lmp.command(f"dump 3 all custom {prodrun_stepsize} " + str(dir_MD / "forces.lammpstrj") + " id type element fx fy fz")
 lmp.command("dump_modify 3 sort id")
 lmp.command(f"dump_modify 3 element {elements_str}")
 

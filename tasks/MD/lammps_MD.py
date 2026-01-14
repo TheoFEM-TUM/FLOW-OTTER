@@ -92,24 +92,27 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     dir_MD.mkdir(parents=True, exist_ok=True)
     dir_code = Path(configWF_i.get("dir_code", "./")) / "codes/"
 
+    MD_type = configWF_i.get("MD_type")
+    input_type = configWF_i.get("input_type_lammps", "write_input")
+
+    print("SLURM_NTASKS =", os.environ.get("SLURM_NTASKS"))
+    ranks_MD = configWF_i.get("ranks_MD", os.environ.get("SLURM_NTASKS"))
+
     if MD_type == "lammps":
 
         if input_type == "write_input":
 
             result1 = subprocess.run([
-                #"srun", 
-                #"-np", f"{MD_MPI_NPROCS}", 
                 "python3",
-                f"{dir_codes}/MD/write_input_lammps_MD.py", 
+                f"{dir_code}/MD/write_input_lammps_MD.py", 
                 str(path_configWF_i), str(dir_MD)], check=True)
 
             result2 = subprocess.run([
                 "srun",
+                "-n", f"{ranks_MD}",
                 "lmp_mpi",
                 "-in",
                 f"{dir_MD}/lmp.inp",
-                #">",
-                #f"{dir_MD}/lmp_output"
             ], check=True)
 
         elif input_type == "existing_input":
@@ -120,58 +123,50 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
             result2 = subprocess.run([
                 "srun",
+                "-n", f"{ranks_MD}",
                 "lmp_mpi",
                 "-in",
                 f"{path_input_lammps}",
-                #">",
-                #f"{dir_MD}/lmp_output"
             ], check=True)
 
         elif input_type == "python_input":
 
             result = subprocess.run([
                 "srun", 
-                #"-np", f"{MD_MPI_NPROCS}", 
+                "-n", f"{ranks_MD}", 
                 "python3",
-                f"{dir_codes}/MD/run_lammps_MD.py", 
+                f"{dir_code}/MD/run_lammps_MD.py", 
                 str(path_configWF_i), str(dir_MD)], check=True)
     
     elif MD_type == "lammps+MACE":
 
         result1 = subprocess.run([
-            #"srun", 
             "python3",
-            f"{dir_codes}/MD/write_input_lammps_MD.py", 
+            f"{dir_code}/MD/write_input_lammps_MD.py", 
             str(path_configWF_i), str(dir_MD)], check=True)
 
         result2 = subprocess.run([
             "srun",
+            "-n", f"{ranks_MD}",
             "lmp",
             "-k", "on", "g", "1", "-sf", "kk", "-pk", "kokkos", "newton", "on", "neigh", "half",
             "-in",
             f"{dir_MD}/lmp.inp",
-            #">",
-            #f"{dir_MD}/lmp_output"
         ], check=True)
 
     elif MD_type == "lammps+VASP":
 
-        print("SLURM_NTASKS =", os.environ.get("SLURM_NTASKS"))
-
         result1 = subprocess.run([
-            #"srun", 
             "python3",
-            f"{dir_codes}/MD/write_input_lammps_MD.py", 
+            f"{dir_code}/MD/write_input_lammps_MD.py", 
             str(path_configWF_i), str(dir_MD)], check=True)
 
         result2 = subprocess.run([
             "srun",
-            "-n", os.environ["SLURM_NTASKS"],
+            "-n", f"{ranks_MD}",
             "lmp_mpi",
             "-in",
             f"{dir_MD}/lmp.inp",
-            #">",
-            #f"{dir_MD}/lmp_output"
         ], check=True)
 
 

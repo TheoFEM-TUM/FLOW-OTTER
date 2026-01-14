@@ -66,7 +66,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     # read in branch configuration 
     dir_code = Path(configWF_i.get("dir_code", "./")) / "codes/MD/"
-    #sys.path.append(str(dir_code / "codes/MD/"))
+    sys.path.append(str(dir_code))
 
     run_test_MD = configWF_i.get("run_test_MD", True)
 
@@ -94,18 +94,42 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
         print(f"typenames {type_names}")
 
+        # determine units for plotting
+        units_type = configWF_i["lammps"].get("units")
+
+        if units_type == "real":
+            units = ["/A", "/(A/fs)", "/((kcal/mol)/A)", "/PHz"]
+        elif units_type == "metal":
+            units = ["/A", "/(A/ps)", "/(eV/A)", "/THz"]
+        elif units_type == "si":
+            units = ["/m", "/(m/s)", "/N", "/Hz"]
+        elif units_type == "cgs":
+            units = ["/cm", "/(cm/s)", "/dynes", "/Hz"]
+        elif units_type == "electron":
+            units = ["/Bohr", "/(Bohr/atomic time units)", "/(Hartrees/Bohr)", "/PHz"]
+        elif units_type == "micro": 
+            units = ["/μm", "/(m/s)", "/nN", "/MHz"]
+        elif units_type == "nano":
+            units = ["/nm", "/(m/s)", "/pN", "/GHz"]
+        else:
+            if configWF_i["lammps"].get("units_array") is not None:
+                units = configWF_i["lammps"]["units_array"][5:]
+            else:
+                print("Unknown units type. Using no units.")
+                units = ["", "", "", ""]
+
         # calculation of distributions
         dir_test_hist = dir_test / "histograms/"
         dir_test_hist.mkdir(parents=True, exist_ok=True)
-        dist.position_histogram(str(dir_MD), dir_test_hist, type_names)
-        dist.velocities_histogram(str(dir_MD), dir_test_hist, type_names)
-        dist.forces_histogram(str(dir_MD), dir_test_hist, type_names)
+        dist.position_histogram(str(dir_MD), dir_test_hist, type_names, units[0])
+        dist.velocities_histogram(str(dir_MD), dir_test_hist, type_names, units[1])
+        dist.forces_histogram(str(dir_MD), dir_test_hist, type_names, units[2])
 
         # calculation of vdos
         dir_test_vdos = dir_test / "vdos/"
         dir_test_vdos.mkdir(parents=True, exist_ok=True)
         #vdos.calc_vdos(str(dir_MD), dir_test, potim, masses)
-        vdos.get_vdos(str(dir_MD), dir_test_vdos, potim, type_names, omega_max=configWF_i.get("vdos_omega_max", None))
+        vdos.get_vdos(str(dir_MD), dir_test_vdos, potim, type_names, units[3], omega_max=configWF_i.get("vdos_omega_max", None))
 
         # human_in_loop flag allows for human check before continuing
         if configWF_i.get("human_in_loop", False):

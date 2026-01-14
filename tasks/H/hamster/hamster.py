@@ -112,7 +112,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         str(dir_code / "H/hamster/yaml_to_hconf.jl"),
         str(dir_H / "hconf.yaml"), str(path_hconf_new)], check=True)
 
-    NUM_MPI_RANKS = configWF_i.get("NUM_MPI_RANKS", N_snapshots)
+    ranks_H = configWF_i.get("ranks_H", N_snapshots)
 
     path_ham = dir_ham / "ham.h5"
     if path_ham.exists():
@@ -123,7 +123,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     result = subprocess.run([
         #"srun", 
         #"--mpi=pmi2",
-        #"--ntasks", str(NUM_MPI_RANKS),
+        #"-n", str(ranks_H),
         "hamster",
         ], cwd = str(dir_H), check=True)
 

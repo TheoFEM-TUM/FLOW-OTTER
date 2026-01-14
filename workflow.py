@@ -19,7 +19,7 @@ dir_project = Path(configWF.get("dir_project", "./"))
 dir_project.mkdir(parents=True, exist_ok=True)
 
 # path to tasks
-dir_code = Path(Path(configWF.get("dir_code", "./")))
+dir_code = Path(configWF.get("dir_code", "./"))
 tasks = dir_code / "tasks/"
 MD = tasks / "MD/"
 H = tasks / "H/"

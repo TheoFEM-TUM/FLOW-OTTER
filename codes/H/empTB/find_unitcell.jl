@@ -84,7 +84,7 @@ end
 
 ### Main execution
 path = ARGS[1]
-xyz_file = ARGS[2] # Replace with your file name
+xyz_file = ARGS[2] 
 L = readdlm(ARGS[3])
 n_nn = Int(parse(Int, ARGS[4])/4)
 println(n_nn)

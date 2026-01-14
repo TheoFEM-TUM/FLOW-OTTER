@@ -3,6 +3,7 @@ from typing import Tuple
 from pathlib import Path
 from ruamel.yaml import YAML
 import shutil
+import os
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
@@ -79,8 +80,11 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     with open(str(path_config), "w") as f:
         yaml.dump(input_params, f)
 
+    ranks_optoelec = configWF_i.get("ranks_optoelec", os.environ.get("SLURM_NTASKS"))
+
     result = subprocess.run([
         "srun", 
+        "-n", str(ranks_optoelec),
         "julia", 
         #f"--project={dir_conductivity}", 
         f"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_pq/", 

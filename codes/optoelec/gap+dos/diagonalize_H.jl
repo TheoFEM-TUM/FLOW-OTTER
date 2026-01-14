@@ -4,14 +4,14 @@ using MPI
 include("read_H.jl")
 
 ### set script arguments
-TB_path = ARGS[1]
+H_path = ARGS[1]
 output_path = ARGS[2]
 t = parse(Int, ARGS[3])
 hamiltonian_style = ARGS[4]  
 
 ### set Hamiltonian matrix
 MPI.Init()
-H = get_dense_H(TB_path, t, hamiltonian_style)
+H = get_dense_H(H_path, t, hamiltonian_style)
 MPI.Finalize()
 
 ### diagonalize Hamiltonian

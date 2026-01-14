@@ -45,19 +45,19 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     
     hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
 
-    SLURM_CPUS_PER_TASK = configWF_i.get("SLURM_CPUS_PER_TASK", 1)
-    NUM_MPI_RANKS = configWF_i.get("NUM_MPI_RANKS", N_snapshots)
+    threads_H = configWF_i.get("threads_H", 1)
+    ranks_H = configWF_i.get("ranks_H", N_snapshots)
 
      
     # calculate empirical Tight Binding hamiltonians
     result = subprocess.run([        
         "srun", 
-        "--mpi=pmi2",
-        "--ntasks", str(NUM_MPI_RANKS),
+        #"--mpi=pmi2",
+        "-n", str(ranks_H),
         #"--cpus-per-task", "1",
         "julia", 
         "--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_julia/", 
-        "-t", str(SLURM_CPUS_PER_TASK), 
+        "-t", str(threads_H), 
         #str(dir_code / "H/empTB/compute_H.jl"), 
         str(dir_code / "H/empTB/compute_superH.jl"), 
         str(dir_H), str(dir_input_H), str(cell_size), str(first_snapshot), str(last_snapshot), str(N_snapshots), hamiltonian_style], check=True)

@@ -4,7 +4,7 @@ using MPI
 include("read_H.jl")
 
 ### set script arguments
-TB_path = ARGS[1]
+H_path = ARGS[1]
 t = parse(Int, ARGS[2])
 guess_E_v = parse(Float64, ARGS[3]) 
 guess_E_c = parse(Float64, ARGS[4])
@@ -13,7 +13,7 @@ hamiltonian_style = ARGS[6]
 
 ### set Hamiltonian matrix
 MPI.Init()
-H = get_sparse_H(TB_path, t, hamiltonian_style)
+H = get_sparse_H(H_path, t, hamiltonian_style)
 MPI.Finalize()
 
 ### get VBM and CBM from initial guesses

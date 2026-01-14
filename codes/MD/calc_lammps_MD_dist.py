@@ -76,7 +76,7 @@ def plot_histograms(data_dict, atom_types, type_names, output_dir, filename, lab
     print(f"✅ Saved histogram → {outfile}")
 
 
-def position_histogram(input_dir, output_dir, type_names):
+def position_histogram(input_dir, output_dir, type_names, unit):
     """Compute displacement histograms from position.lammpstrj (needs PBC correction)."""
     input_dir = pathlib.Path(input_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -94,8 +94,8 @@ def position_histogram(input_dir, output_dir, type_names):
     # Universe
     #u = mda.Universe(data_file, traj_file, format="LAMMPSDUMP", atom_style="id type element x y z")
     #u = mda.Universe(data_file, traj_file, format="LAMMPSDUMP")
-    u = mda.Universe(data_file, traj_file, format="LAMMPSDUMP", atom_style="id type x y z")
-    #u = mda.Universe(traj_file, format="LAMMPSDUMP", atom_style="id type element x y z")
+    #u = mda.Universe(data_file, traj_file, format="LAMMPSDUMP", atom_style="id type x y z")
+    u = mda.Universe(traj_file, format="LAMMPSDUMP", atom_style="id type element x y z")
     atom_types = np.unique(u.atoms.types)
     #atom_types = u.atoms.types
     print(atom_types)
@@ -123,7 +123,7 @@ def position_histogram(input_dir, output_dir, type_names):
 
 
     plot_histograms(all_displacements, atom_types, type_names, output_dir,
-                    "displacements_histogram.pdf", ["Δx", "Δy", "Δz"])
+                    "displacements_histogram.pdf", [f"Δx{unit}", f"Δy{unit}", f"Δz{unit}"])
 
 
 def parse_lammps_dump(file_path, n_fields=3):
@@ -145,7 +145,7 @@ def parse_lammps_dump(file_path, n_fields=3):
                 for _ in range(n_atoms):
                     parts = f.readline().split()
                     atype = int(parts[1])
-                    values = list(map(float, parts[2:2+n_fields]))
+                    values = list(map(float, parts[3:3+n_fields]))
                     arr.append((atype, values))
                 # append results
                 for atype, vals in arr:
@@ -158,7 +158,7 @@ def parse_lammps_dump(file_path, n_fields=3):
     return data
 
 
-def velocities_histogram(input_dir, output_dir, type_names):
+def velocities_histogram(input_dir, output_dir, type_names, unit):
     """Compute velocity histograms from velocity.lammpstrj"""
     input_dir = pathlib.Path(input_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -171,10 +171,10 @@ def velocities_histogram(input_dir, output_dir, type_names):
     atom_types = list(all_velocities.keys())
 
     plot_histograms(all_velocities, atom_types, type_names, output_dir,
-                    "velocities_histogram.pdf", ["Vx", "Vy", "Vz"])
+                    "velocities_histogram.pdf", [f"Vx{unit}", f"Vy{unit}", f"Vz{unit}"])
 
 
-def forces_histogram(input_dir, output_dir, type_names):
+def forces_histogram(input_dir, output_dir, type_names, unit):
     """Compute force histograms from forces.lammpstrj"""
     input_dir = pathlib.Path(input_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -187,7 +187,7 @@ def forces_histogram(input_dir, output_dir, type_names):
     atom_types = list(all_forces.keys())
 
     plot_histograms(all_forces, atom_types, type_names, output_dir,
-                    "forces_histogram.pdf", ["Fx", "Fy", "Fz"])
+                    "forces_histogram.pdf", [f"Fx{unit}", f"Fy{unit}", f"Fz{unit}"])
 
 
 def main():

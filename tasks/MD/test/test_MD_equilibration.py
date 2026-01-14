@@ -91,7 +91,31 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         x2 = (n1 + n2)/n_tot
         x3 = (n1 + n2 + n3)/n_tot
 
-        w = configWF_i["lammps"].get("window_size", 50)  # window size for moving average
+        w = configWF_i["lammps"].get("window_size", 20)  # window size for moving average
+
+        # determine units for plotting
+        units_type = configWF_i["lammps"].get("units")
+
+        if units_type == "real":
+            units = ["Temperature (K)", "Energy per atom (kcal/mol)", "Lattice constant (A)", "Volume (A^3)", "Pressure (atm)"]
+        elif units_type == "metal":
+            units = ["Temperature (K)", "Energy per atom (eV)", "Lattice constant (A)", "Volume (A^3)", "Pressure (bars)"]
+        elif units_type == "si":
+            units = ["Temperature (K)", "Energy per atom (J)", "Lattice constant (m)", "Volume (m^3)", "Pressure (Pa)"]
+        elif units_type == "cgs":
+            units = ["Temperature (K)", "Energy per atom (erg)", "Lattice constant (cm)", "Volume (cm^3)", "Pressure (barye)"]
+        elif units_type == "electron":
+            units = ["Temperature (K)", "Energy per atom (Hartrees)", "Lattice constant (Bohr)", "Volume (Bohr^3)", "Pressure (Pa)"]
+        elif units_type == "micro": 
+            units = ["Temperature (K)", "Energy per atom (fJ)", "Lattice constant (μm)", "Volume (μm^3)", "Pressure (kPa)"]
+        elif units_type == "nano":
+            units = ["Temperature (K)", "Energy per atom (zJ)", "Lattice constant (nm)", "Volume (nm^3)", "Pressure (MPa)"]
+        else:
+            if configWF_i["lammps"].get("units_array") is not None:
+                units = configWF_i["lammps"]["units_array"]
+            else:
+                print("Unknown units type. Using no units.")
+                units = ["Temperature", "Energy", "Lattice constant", "Volume", "Pressure"]
 
 
         ### ### ### ### ### ### ### 
@@ -146,10 +170,10 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         fig1, (ax1) =  plt.subplots()
         fig1.suptitle("Temparture")
         plt.xlabel("Step")
-        plt.ylabel("Temperature (K)")
+        plt.ylabel(units[0])
         plt.plot(step, T, color='blue', label="Temperature")
-        plt.axhline(y=T_avg_nvt, xmin=x1, xmax=x2, color='red', label="Average")
         plt.plot(moving_average(step, w), moving_average(T, w), color='orange', label="moving average")
+        plt.axhline(y=T_avg_nvt, xmin=x1, xmax=x2, color='red', label="Average")
         plt.axhline(y=T_avg_nvt+T_std_nvt, xmin=x1, xmax=x2, linestyle='--', color='red', label="Std")
         plt.axhline(y=T_avg_nvt-T_std_nvt, xmin=x1, xmax=x2, linestyle='--', color='red')
         plt.axhline(y=T_avg_npt, xmin=x2, xmax=x3, color='red')
@@ -184,9 +208,9 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         fig1, (ax1) =  plt.subplots()
         fig1.suptitle("Energy per atom")
         plt.xlabel("Step")
-        plt.ylabel("Energy per atom")
+        plt.ylabel(units[1])
         plt.plot(step, E/N_atoms, color='blue', label="energy")
-        plt.plot(moving_average(step, w), moving_average(E, w), color='orange', label="moving average")
+        plt.plot(moving_average(step, w), moving_average(E, w)/N_atoms, color='orange', label="moving average")
         plt.axhline(y=E_avg_nvt/N_atoms, xmin=x1, xmax=x2, color='red', label="Average")
         plt.axhline(y=(E_avg_nvt+E_std_nvt)/N_atoms, xmin=x1, xmax=x2, linestyle='--', color='red', label="Std")
         plt.axhline(y=(E_avg_nvt-E_std_nvt)/N_atoms, xmin=x1, xmax=x2, linestyle='--', color='red')
@@ -219,7 +243,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         fig1, (ax1) =  plt.subplots()
         fig1.suptitle("Volume")
         plt.xlabel("Step")
-        plt.ylabel("Volume")
+        plt.ylabel(units[3])
         plt.plot(step, V, color='blue', label="Volume")
         plt.plot(moving_average(step, w), moving_average(V, w), color='orange', label="moving average")
         plt.axhline(y=V_avg_npt, xmin=x2, xmax=x3, color='red', label="Average")
@@ -252,7 +276,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             fig1, (ax1) =  plt.subplots()
             fig1.suptitle(f"Lattice constant {i+1}")
             plt.xlabel("Step")
-            plt.ylabel(f"Lattice constant {i+1}")
+            plt.ylabel(units[2])
             plt.plot(step, L[i], color="blue", label=f"lattice constant {i+1}")
             plt.plot(moving_average(step, w), moving_average(L[i], w), color='orange', label="moving average")
             plt.axhline(y=L_avg_npt[i], xmin=x2, xmax=x3, color="red", label="Average")
@@ -287,7 +311,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         fig1, (ax1) =  plt.subplots()
         fig1.suptitle("Pressure")
         plt.xlabel("Step")
-        plt.ylabel("Pressure")
+        plt.ylabel(units[4])
         plt.plot(step, p, color='blue', label="Pressure")
         plt.plot(moving_average(step, w), moving_average(p, w), color='orange', label="moving average")
         plt.axhline(y=p_avg_nvt, xmin=x1, xmax=x2, color='red', label="Average")

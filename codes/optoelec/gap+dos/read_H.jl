@@ -5,8 +5,8 @@ using Hamster
 #using MPI
 
 ### read empirical TB hamiltonian parameters from file
-function read_empTB_params(t::Int, TB_path::String)
-    file_path = joinpath(TB_path, "TB_" * string(t) * ".txt")
+function read_empTB_params(t::Int, H_path::String)
+    file_path = joinpath(H_path, "TB_" * string(t) * ".txt")
     
     row = Int[]
     col = Int[]
@@ -30,9 +30,9 @@ end
 
 
 ### extract sparse hamiltonian for snapshot t for empirical TB model
-function get_sparse_H_empTB(TB_path::String, t::Int)
+function get_sparse_H_empTB(H_path::String, t::Int)
    
-    row, col, H_elem, _ = read_empTB_params(t, TB_path)
+    row, col, H_elem, _ = read_empTB_params(t, H_path)
 
     hamiltonian = sparse(row, col, H_elem)
     dropzeros!(hamiltonian)
@@ -42,9 +42,9 @@ end
 
 
 ### extract dense hamiltonian for snapshot t for empirical TB model
-function get_dense_H_empTB(TB_path::String, t::Int)
+function get_dense_H_empTB(H_path::String, t::Int)
    
-    row, col, H_elem, _ = read_empTB_params(t, TB_path)
+    row, col, H_elem, _ = read_empTB_params(t, H_path)
 
     max_index = maximum([maximum(row), maximum(col)])
 
@@ -59,16 +59,16 @@ end
 
 
 ### extract sparse hamiltonian for snapshot t for different hamiltonian styles
-function get_sparse_H(TB_path::String, t::Int, hamiltonian_style::String)
+function get_sparse_H(H_path::String, t::Int, hamiltonian_style::String)
 
     if hamiltonian_style == "TB"
-        hamiltonian = get_sparse_H_empTB(TB_path, t)
+        hamiltonian = get_sparse_H_empTB(H_path, t)
     elseif hamiltonian_style == "Hk" || hamiltonian_style == "Hr"
-        file_path = joinpath(TB_path, "ham.h5")
+        file_path = joinpath(H_path, "ham.h5")
         H, cell = read_ham(t, filename=file_path, space=string(last(hamiltonian_style)))
 
         if hamiltonian_style == "Hk"
-            ix = findfirst(x -> x == [0, 0, 0], cell)
+            ix = findfirst(i -> isapprox(cell[:, i], [0.0, 0.0, 0.0]; atol=1e-10), 1:size(cell, 2))
             hamiltonian = sparse(H[ix])
         else
             hamiltonian = deepcopy(H[1])
@@ -87,16 +87,16 @@ function get_sparse_H(TB_path::String, t::Int, hamiltonian_style::String)
 end
 
 ### extract dense hamiltonian for snapshot t for different hamiltonian styles
-function get_dense_H(TB_path::String, t::Int, hamiltonian_style::String)
+function get_dense_H(H_path::String, t::Int, hamiltonian_style::String)
 
     if hamiltonian_style == "TB"
-        hamiltonian = get_dense_H_empTB(TB_path, t)
+        hamiltonian = get_dense_H_empTB(H_path, t)
     elseif hamiltonian_style == "Hk" || hamiltonian_style == "Hr"
-        file_path = joinpath(TB_path, "ham.h5")
+        file_path = joinpath(H_path, "ham.h5")
         H, cell = read_ham(t, filename=file_path, space=string(last(hamiltonian_style)))
 
         if hamiltonian_style == "Hk"
-            ix = findfirst(x -> x == [0, 0, 0], cell)
+            ix = findfirst(i -> isapprox(cell[:, i], [0.0, 0.0, 0.0]; atol=1e-10), 1:size(cell, 2))
             hamiltonian = Matrix(sparse(H[ix]))
         else
             hamiltonian = Matrix(deepcopy(H[1]))
