@@ -27,7 +27,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         path_configWF_i = dir_project_i / 'branch_config.yaml'
 
         with open(str(path_configWF_i), 'r') as f:
-            configWF_i = yaml.safe_load(f)
+            configWF_i = yaml.load(f)
 
     else:
         configWF_i = configWF.copy()

@@ -61,6 +61,24 @@ with open(lammps_input_file, "w") as f:
         r = input_params["replicate"]
         w(f"replicate {r[0]} {r[1]} {r[2]} bond/periodic")
 
+    # change cell volume
+    if "lattice_constants" in input_params:
+        L = input_params["lattice_constants"]
+        if isinstance(L, float):
+            w(f"change_box all x final 0 {L} y final 0 {L} z final 0 {L} remap")
+        else:
+            w(f"change_box all x final 0 {L[0]} y final 0 {L[1]} z final 0 {L[2]} remap")
+        w("")
+
+    if "volume_scale" in configWF:
+        scale = configWF["volume_scale"]
+        if isinstance(scale, float):
+            w(f"change_box all x scale {scale} y scale {scale} z scale {scale} remap")
+        else:
+            w(f"change_box all x scale {scale[0]} y scale {scale[1]} z scale {scale[2]} remap")
+        w("")
+
+
     # Force field
     elements = input_params["elements"]
     elements_str = " ".join(elements)
@@ -69,6 +87,10 @@ with open(lammps_input_file, "w") as f:
         w("newton on")
         w(f"pair_style mliap unified {path_FF_MD} 0")
         w(f"pair_coeff * * {elements_str}")
+    elif configWF["MD_type"] == "lammps+MACE_no_mliap":
+        w("newton on")
+        w("pair_style mace no_domain_decomposition")
+        w(f"pair_coeff * * {str(path_FF_MD)} " + elements_str)
     elif configWF["MD_type"] == "lammps+VASP":
         w("pair_style vasp")
         w(f"pair_coeff * * {path_FF_MD} {elements_str}")
@@ -83,7 +105,9 @@ with open(lammps_input_file, "w") as f:
     w("")
 
     # Thermo output
-    w("thermo 100")
+    thermo_output_step_size = input_params.get("thermo_output_step_size", 100)
+
+    w(f"thermo {thermo_output_step_size}")
     w("thermo_style custom step temp etotal lx ly lz vol density press")
     w("thermo_modify line one format float %12.5f")
     w("")
@@ -99,7 +123,7 @@ with open(lammps_input_file, "w") as f:
     w("")
 
     w(
-        f"fix thermolog all print 100 "
+        f"fix thermolog all print {thermo_output_step_size} "
         f"'$t $T $E $X $Y $Z $V $P' "
         f"file {dir_MD / 'thermo_output.txt'} screen no"
     )
@@ -133,20 +157,33 @@ with open(lammps_input_file, "w") as f:
             w("unfix 1")
             w("")
 
-        # NVT run
+        # NVT equilibration run
         w(f"fix 1 all nvt temp {T} {T} {T_damp}")
         w(f"run {input_params['eqsteps_nvt']}")
         w("unfix 1")
         w("")
 
-        # NPT run
-        P = input_params.get("P", 0.0)
-        P_damp = input_params.get("P_damp", 100.0)
+        if configWF.get("npt_equilibrate", True):
 
-        w(f"fix 1 all npt temp {T} {T} {T_damp} aniso {P} {P} {P_damp}")
-        w(f"run {input_params['eqsteps_npt']}")
-        w("unfix 1")
-        w("")
+            barostat = input_params.get("barostat", "aniso")
+
+            # NPT pressure parameter
+            P = input_params.get("P", 0.0)
+            P_damp = input_params.get("P_damp", 100.0)
+            P_start = input_params.get("P_start", P)
+
+            # Expansion phase
+            if P_start != P:
+                w(f"fix 1 all npt temp {T} {T} {T_damp} {barostat} {P_start} {P} {P_damp}")
+                w(f"run {input_params['eqsteps_npt_expansion']}")
+                w("unfix 1")
+                w("")
+
+            # NPT equilibration run
+            w(f"fix 1 all npt temp {T} {T} {T_damp} {barostat} {P} {P} {P_damp}")
+            w(f"run {input_params['eqsteps_npt']}")
+            w("unfix 1")
+            w("")
 
         w(f"write_restart {dir_MD / f'restart_eq_{T}'}")
         w("undump 0")

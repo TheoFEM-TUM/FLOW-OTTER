@@ -52,7 +52,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     # average DoS over snapshots
     for t in range(len(snapshots)):
-        arr_E[t, :], arr_dos[t, :] = np.loadtxt(str(dir_H / f"gap+dos/dos_{snapshots[t]}_KPM.txt"), unpack=True, skiprows=1)
+        arr_E[t, :], arr_dos[t, :] = np.loadtxt(str(dir_H / f"gap+dos/DOS/dos_{snapshots[t]}_KPM.txt"), unpack=True, skiprows=1)
 
     avg_E = np.mean(arr_E, axis=0)
     avg_dos = np.mean(arr_dos, axis=0)
@@ -93,6 +93,9 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     else:
 
+        dir_gap = dir_H / "gap+dos/gap/"
+        dir_gap.mkdir(parents=True, exist_ok=True)
+
         for t in snapshots:
             result = subprocess.run([
                 #"srun", 
@@ -103,7 +106,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                 str(t), 
                 str(guess_E_v), 
                 str(guess_E_c), 
-                dir_H + "/gap+dos/", 
+                str(dir_gap), 
                 hamiltonian_style,
             ], check=True)        
 

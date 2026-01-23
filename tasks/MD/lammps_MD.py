@@ -110,7 +110,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             result2 = subprocess.run([
                 "srun",
                 "-n", f"{ranks_MD}",
-                "lmp_mpi",
+                "lmp",
                 "-in",
                 f"{dir_MD}/lmp.inp",
             ], check=True)
@@ -138,18 +138,24 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                 f"{dir_code}/MD/run_lammps_MD.py", 
                 str(path_configWF_i), str(dir_MD)], check=True)
     
-    elif MD_type == "lammps+MACE":
+    #elif MD_type == "lammps+MACE" or MD_type == "lammps+MACE_no_mliap":
+    elif "lammps+MACE" in MD_type:
 
         result1 = subprocess.run([
             "python3",
             f"{dir_code}/MD/write_input_lammps_MD.py", 
             str(path_configWF_i), str(dir_MD)], check=True)
 
+        print(os.environ.get("CUDA_VISIBLE_DEVICES"))
+
         result2 = subprocess.run([
             "srun",
-            "-n", f"{ranks_MD}",
+            #"--exclusive",
+            #"--gpus-per-task=1",
+            #"--gres=gpu:4",
+            #"-n", f"{ranks_MD}",
             "lmp",
-            "-k", "on", "g", "1", "-sf", "kk", "-pk", "kokkos", "newton", "on", "neigh", "half",
+            "-k", "on", "g", "4", "-sf", "kk", "-pk", "kokkos", "newton", "on", "neigh", "half",
             "-in",
             f"{dir_MD}/lmp.inp",
         ], check=True)

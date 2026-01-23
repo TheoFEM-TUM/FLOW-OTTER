@@ -60,16 +60,37 @@ else:
         replicate = input_params["replicate"]
         lmp.command(f"replicate {replicate[0]} {replicate[1]} {replicate[2]} bond/periodic")
 
+# change cell volume
+if "lattice_constants" in input_params:
+    L = configWF["lattice_constants"]
+    if isinstance(L, float):
+        lmp.command(f"change_box all x final 0 {L} y final 0 {L} z final 0 {L} remap")
+    else:
+        lmp.command(f"change_box all x final 0 {L[0]} y final 0 {L[1]} z final 0 {L[2]} remap")
+    lmp.command("")
+
+
+if "volume_scale" in configWF:
+    scale = configWF["volume_scale"]
+    if isinstance(scale, float):
+        lmp.command(f"change_box all x scale {scale} y scale {scale} z scale {scale} remap")
+    else:
+        lmp.command(f"change_box all x scale {scale[0]} y scale {scale[1]} z scale {scale[2]} remap")
+    lmp.command("")
+
+
+# Define force field
 elements = input_params["elements"]
 elements_str = " ".join(elements)
 
-# Define force field
 if configWF["MD_type"] == "lammps+MACE":
     lmp.command("newton on")
     lmp.command(f"pair_style mliap unified {str(path_FF_MD)} 0")
     lmp.command(f"pair_coeff * * " + elements_str)
-    #lmp.command("pair_style mace no_domain_decomposition")
-    #lmp.command(f"pair_coeff * * {str(path_FF_MD)} " + elements_str)
+elif configWF["MD_type"] == "lammps+MACE_no_mliap":
+    lmp.command("newton on")
+    lmp.command("pair_style mace no_domain_decomposition")
+    lmp.command(f"pair_coeff * * {str(path_FF_MD)} " + elements_str)
 if configWF["MD_type"] == "lammps+VASP":
     lmp.command("pair_style vasp")
     lmp.command(f"pair_coeff * * {str(path_FF_MD)} " + elements_str)
@@ -82,7 +103,8 @@ lmp.command(f"timestep {input_params['dt']}")
 lmp.command(f"reset_timestep 0")
 
 # Thermo output
-lmp.command("thermo 100")
+thermo_output_step_size = input_params.get("thermo_output_step_size", 100)
+lmp.command(f"thermo {thermo_output_step_size}")
 lmp.command("thermo_style custom step temp etotal lx ly lz vol density press")
 lmp.command("thermo_modify line one format float %12.5f")
 lmp.command("variable t equal step")
@@ -93,7 +115,7 @@ lmp.command("variable Y equal ly")
 lmp.command("variable Z equal lz")
 lmp.command("variable V equal vol")
 lmp.command("variable P equal press")
-lmp.command(f"fix thermolog all print 100 '$t $T $E $X $Y $Z $V $P' file " + str(dir_MD / "thermo_output.txt") + " screen no")
+lmp.command(f"fix thermolog all print {thermo_output_step_size} '$t $T $E $X $Y $Z $V $P' file " + str(dir_MD / "thermo_output.txt") + " screen no")
 
 T_damp = input_params["T_damp"]
 prodrun_stepsize = input_params['prodrun_stepsize']
@@ -118,17 +140,30 @@ if equilibrate:
         lmp.command(f"run {input_params['eqsteps_nvt_heating']}")
         lmp.command("unfix 1")
 
-    # NVT run
+    # NVT equilibration run
     lmp.command(f"fix 1 all nvt temp {T} {T} {T_damp}")
     lmp.command(f"run {input_params['eqsteps_nvt']}")
     lmp.command(f"unfix 1")
 
-    # NPT run
-    P = input_params.get("P", 0.0)
-    P_damp = input_params.get("P_damp", 100.0)
-    lmp.command(f"fix 1 all npt temp {T} {T} {T_damp} aniso {P} {P} {P_damp}")
-    lmp.command(f"run {input_params['eqsteps_npt']}")
-    lmp.command(f"unfix 1")
+    if configWF.get("npt_equilibrate", True):
+
+        barostat = input_params.get("barostat", "aniso")
+
+        # NPT pressure parameter
+        P = input_params.get("P", 0.0)
+        P_damp = input_params.get("P_damp", 100.0)
+        P_start = input_params.get("P_start", P)
+
+        # Expansion phase
+        if P_start != P:
+            lmp.command(f"fix 1 all npt temp {T} {T} {T_damp} {barostat} {P_start} {P} {P_damp}")
+            lmp.command(f"run {input_params['eqsteps_npt_expansion']}")
+            lmp.command("unfix 1")
+
+        # NPT equilibration run
+        lmp.command(f"fix 1 all npt temp {T} {T} {T_damp} {barostat} {P} {P} {P_damp}")
+        lmp.command(f"run {input_params['eqsteps_npt']}")
+        lmp.command(f"unfix 1")
 
     # write restart file after equilibration
     restart_eq_file = f"restart_eq_{T}"

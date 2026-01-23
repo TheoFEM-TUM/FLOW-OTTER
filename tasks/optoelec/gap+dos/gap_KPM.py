@@ -37,7 +37,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     gaps = np.zeros((len(snapshots), 3))
 
     for t in range(len(snapshots)):
-        gaps[t, :] = np.loadtxt(str(dir_H / f"gap+dos/gap_{snapshots[t]}_KPM.txt"), unpack=True, skiprows=1)
+        gaps[t, :] = np.loadtxt(str(dir_H / f"gap+dos/gap/gap_{snapshots[t]}_KPM.txt"), unpack=True, skiprows=1)
 
     avg_gap = np.mean(gaps, axis=0)
     std_gap = np.std(gaps, axis=0)

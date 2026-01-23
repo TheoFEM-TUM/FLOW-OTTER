@@ -49,8 +49,6 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     M = configWF_i["gap+dos"].get("M", 1000)
     N = configWF_i["gap+dos"].get("N", 192)
-    #SLURM_CPUS_PER_TASK = configWF_i.get("SLURM_CPUS_PER_TASK", 1)
-
 
 
     # determine available snapshots based on hamiltonian style
@@ -62,8 +60,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
             for key in f.keys():
                 match = re.search(r"H[kr]__(\d+)", key)
-            if match:
-                t_vals.append(int(match.group(1)))
+                if match:
+                    t_vals.append(int(match.group(1)))
 
         snapshots = np.sort(np.array(t_vals))
 
@@ -86,8 +84,16 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         chosen_snapshots = snapshots[indices]
     elif snapshot_sampling_dos == "random":
         chosen_snapshots = np.sort(np.random.choice(snapshots, size=num_snapshot_dos, replace=False))
+    elif snapshot_sampling_dos == "all":
+        chosen_snapshots = snapshots
+    else:
+        raise Exception(f"snapshot_sampling {snapshot_sampling_dos} not recognized.")
 
     ranks_optoelec = configWF_i.get("ranks_optoelec", 1)
+    threads_optoelec = configWF_i.get("threads_optoelec", 1)
+
+    dir_dos = dir_H / "gap+dos/DOS/"
+    dir_dos.mkdir(parents=True, exist_ok=True)
 
     # calculate DoS of Hamiltonian with Kernel Polynomial Method 
     for t in chosen_snapshots:
@@ -96,9 +102,14 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             "-n", str(ranks_optoelec),
             "julia", 
             #f"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_hamster/", 
-            #"-t", f"{SLURM_CPUS_PER_TASK}", 
+            #"-t", f"{threads_optoelec}", 
             str(dir_code / "optoelec/gap+dos/KPM_DOS.jl"), 
-            str(M), str(N), str(dir_H / "hamiltonian/"), str(dir_H / "gap+dos/"), str(t), hamiltonian_style
+            str(M), 
+            str(N), 
+            str(dir_H / "hamiltonian/"), 
+            str(dir_dos), 
+            str(t), 
+            hamiltonian_style
         ], check=True)        
 
     optoelec_type = "gap+dos_KPM"

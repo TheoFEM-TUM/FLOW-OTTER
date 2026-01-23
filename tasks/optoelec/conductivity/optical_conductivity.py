@@ -36,7 +36,6 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     dir_config = dir_project_i / configWF_i.get("dir_config", "3-conductivity/")
     config_file = Path(configWF_i.get("config_file", "conductivity_config.yaml"))
     dir_output = Path(configWF_i.get("dir_output", None))  # Output directory, if not set, defaults to dir_config
-    SLURM_CPUS_PER_TASK = configWF_i.get("SLURM_CPUS_PER_TASK", 1)
 
     N_avg = configWF_i.get("N_avg", 1)  # Number of averages for optical conductivity
     if N_avg == 1: # If N_avg is 1, no averaging is done
@@ -81,14 +80,15 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         yaml.dump(input_params, f)
 
     ranks_optoelec = configWF_i.get("ranks_optoelec", os.environ.get("SLURM_NTASKS"))
+    threads_optoelec = configWF_i.get("threads_optoelec", 1)
 
     result = subprocess.run([
         "srun", 
         "-n", str(ranks_optoelec),
         "julia", 
         #f"--project={dir_conductivity}", 
-        f"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_pq/", 
-        "-t", f"{SLURM_CPUS_PER_TASK}", 
+        #f"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_pq/", 
+        "-t", f"{threads_optoelec}", 
         str(dir_conductivity / "cluster_run.jl"), 
         str(dir_config), str(config_file)])
 

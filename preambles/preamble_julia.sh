@@ -8,7 +8,7 @@
 
 
 
-echo "This script is running safely."
+#echo "This script is running safely."
 #deactivate
 #workflow_pq/MD_TB_PQ_wf/preambles/preamble_julia.sh
 #module purge
@@ -28,4 +28,4 @@ module load imkl
 
 module load Julia
 
-julia --version
+#julia --version

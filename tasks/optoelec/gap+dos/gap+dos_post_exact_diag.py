@@ -48,12 +48,12 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     arr_dos = np.zeros((len(snapshots), E_grid_points))
 
     # average DoS over snapshots
-    EV0 = np.loadtxt(str(dir_H / f"gap+dos/EV_{snapshots[0]}.txt"), unpack=True, skiprows=1)
+    EV0 = np.loadtxt(str(dir_H / f"gap+dos/EV/EV_{snapshots[0]}.txt"), unpack=True, skiprows=1)
     avg_EV = np.zeros(len(EV0))
 
     for t in range(len(snapshots)):
 
-        EV = np.loadtxt(str(dir_H / f"gap+dos/EV_{snapshots[t]}.txt"), unpack=True, skiprows=1)
+        EV = np.loadtxt(str(dir_H / f"gap+dos/EV/EV_{snapshots[t]}.txt"), unpack=True, skiprows=1)
         avg_EV += EV/len(snapshots)
 
         E_min, E_max = EV.min(), EV.max()
@@ -102,7 +102,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     # collect gaps, VBM, CBM for all snapshots
     for t in range(len(snapshots)):
 
-        EV = np.loadtxt(str(dir_H / f"gap+dos/EV_{snapshots[t]}.txt"), unpack=True, skiprows=1)
+        EV = np.loadtxt(str(dir_H / f"gap+dos/EV/EV_{snapshots[t]}.txt"), unpack=True, skiprows=1)
 
         for ix in range(len(largest_gap_indices)):
 

@@ -103,7 +103,7 @@ sg0_check_simulation = SwitchGroup({"sweep": {t_buffer_s: [], swg1_MD: [t_buffer
 
 ### 2. Hamiltonian tasks
 
-t2_checkH = Task( H / "check_H_type.py", None, resources_short, name="check_H_type")
+t2_checkH = Task( H / "check_H_type.py", None, resources_instant, name="check_H_type")
 t2_skipH = Task( H / "skip_H.py", None, resources_instant, name="skip_H")
 
 # empirical Tight Binding tasks

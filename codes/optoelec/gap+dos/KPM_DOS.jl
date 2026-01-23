@@ -203,3 +203,5 @@ t = parse(Int, ARGS[5])
 hamiltonian_style = ARGS[6]
 
 KPM_DOS(M, N,H_path, output_path, t, hamiltonian_style)
+
+println("KPM DoS calculation for snapshot $t completed.")

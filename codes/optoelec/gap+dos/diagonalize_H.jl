@@ -9,6 +9,7 @@ output_path = ARGS[2]
 t = parse(Int, ARGS[3])
 hamiltonian_style = ARGS[4]  
 
+
 ### set Hamiltonian matrix
 MPI.Init()
 H = get_dense_H(H_path, t, hamiltonian_style)
@@ -42,3 +43,5 @@ else
 
     error("Error: Eigenvalues are not purely real!")
 end
+
+println("Diagonalization for snapshot $t completed.")

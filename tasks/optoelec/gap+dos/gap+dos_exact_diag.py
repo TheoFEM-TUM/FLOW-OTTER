@@ -8,6 +8,8 @@ import re
 import random
 
 
+
+
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
     # Read in global configurations
@@ -57,8 +59,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
             for key in f.keys():
                 match = re.search(r"H[kr]__(\d+)", key)
-            if match:
-                t_vals.append(int(match.group(1)))
+                if match:
+                    t_vals.append(int(match.group(1)))
 
         snapshots = np.sort(np.array(t_vals))
 
@@ -80,13 +82,28 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         chosen_snapshots = snapshots[indices]
     elif snapshot_sampling_dos == "random":
         chosen_snapshots = np.sort(np.random.choice(snapshots, size=num_snapshot_dos, replace=False))
+    elif snapshot_sampling_dos == "all":
+        chosen_snapshots = snapshots
+    else:
+        raise Exception(f"snapshot_sampling {snapshot_sampling_dos} not recognized.")
+
+    print(f"Available snapshots: {snapshots}", flush=True)
+    print(f"Chosen snapshots for exact diagonalization: {chosen_snapshots}", flush=True)
+
+    dir_EV = dir_H / "gap+dos/EV/"
+    dir_EV.mkdir(parents=True, exist_ok=True)
 
     # perform exact diagonalization for chosen snapshots
     for t in chosen_snapshots:
+        print(f"Diagonalizing Hamiltonian for snapshot {t}", flush=True)
         result = subprocess.run([
             "julia", 
             #"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_hamster/", 
-            str(dir_code / "optoelec/gap+dos/diagonalize_H.jl"), str(dir_H / "hamiltonian/"), str(dir_H / "gap+dos/"), str(t), hamiltonian_style
+            str(dir_code / "optoelec/gap+dos/diagonalize_H.jl"), 
+            str(dir_H / "hamiltonian/"), 
+            str(dir_EV), 
+            str(t), 
+            hamiltonian_style
         ], check=True)        
 
     optoelec_type = "gap+dos_exact_diag"
