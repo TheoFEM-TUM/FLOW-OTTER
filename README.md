@@ -54,7 +54,7 @@ Here you find the definition of parameters that can be used within the workflow 
 **dir_H** (str): (*dir_project + "2-H"*)  
 **dir_input_H** (str):  
 
-**hamiltonian_style** (str): (*"Hk"*, "Hr")  
+**hamiltonian_style** (str): (*"Hk"*, "Hr", "TB")  
 
 **cell_size** (int):  
 
@@ -107,8 +107,15 @@ Here you find the definition of parameters that can be used within the workflow 
 
 ### gap+dos:
 
+**num_snapshot_dos** (int): (*last_snapshot - first_snapshot + 1*)
+**snapshot_sampling** (int): (*"all"*, "uniform", "random")
+
 **N** (int): (*100*)  
-**M** (int): (*192*)
+**M** (int): (*192*)  
+
+**guess_E_v** (float):  (*None*)  
+**guess_E_c** (float):  (*None*)  
+
 
 
 ### optoelec:
