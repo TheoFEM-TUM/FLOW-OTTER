@@ -20,9 +20,9 @@ Here you find the definition of parameters that can be used within the workflow 
 **resources_short** (str): myqueue string specifying resources for jobs which should only run shortly (*resources of resources_H with walltime = 2h*)  
 **resources_long** (str): myqueue string specifying resources for jobs which should run very long (*resources of resources_H with walltime = 1d*)  
 
-**simulation_type** (str): determines in which order different simulation branches are started (*"sweep"*, "cascade")
-- sweep -> different MD simulations are started in parallel
-- cascade -> different MD simulation starts consecutively after each other using the restart from the former simulation  
+**simulation_type** (str): determines in which order different simulation branches are started (*"sweep"*, "cascade") - sweep -> different MD simulations are started in parallel
+- cascade -> different MD simulation starts consecutively after each other using the restart from the former simulation
+
 **num_simulations** (int): number of simulation branches (*1*)  
 **param_to_vary** (str): parameter which varies among the branches; choose one of the parameters from this list  
 **param_group_for_vary** (str): specify the parameter group if the chosen parameter is part of a group  
