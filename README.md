@@ -10,8 +10,8 @@ Here you find the definition of parameters that can be used within the workflow 
 
 
 ### global:  
-**dir_project** (str): directory of project output (*"./"*)  
-**dir_code** (str): directory of this repo  
+**dir_project** (str): directory to project output (*"./"*)  
+**dir_code** (str): directory to this repo  
 
 **resources_MD** (str): myqueue string specifying resources for MD jobs  
 **resources_H**  (str): myqueue string specifying resources for H jobs  
@@ -20,54 +20,55 @@ Here you find the definition of parameters that can be used within the workflow 
 **resources_short** (str): myqueue string specifying resources for jobs which should only run shortly (*resources of resources_H with walltime = 2h*)  
 **resources_long** (str): myqueue string specifying resources for jobs which should run very long (*resources of resources_H with walltime = 1d*)  
 
-**simulation_type** (str):  (*"sweep"*, "cascade")  
-**num_simulations** (int): (*1*)  
-**param_to_vary** (str):  
-**param_group_for_vary** (str):   
-**array_to_vary** (array of str):  
-**simulation_index** (int):  (internally set by PQ)  
+**simulation_type** (str): sweep -> different MD simulations are started in parallel; cascade -> different MD simulation start consecutive after each other using the restart from the former simulation (*"sweep"*, "cascade")  
+**num_simulations** (int): number of simulation branches (*1*)  
+**param_to_vary** (str): parameter which varies among the branches; choose one of the parameters from this list  
+**param_group_for_vary** (str): specify the parameter group if the chosen parameter is part of a group  
+**array_to_vary** (array of param type): array of values (of fitting type); each branch gets one of the values (len(array) == num_simulations)  
+**simulation_index** (int): branch index which is equivalent to pq_index (sweep) or pq_iteration (cascade) (*internally set by PQ*)  
 
-**human_in_loop** (bool): (*false*)  
-**run_test_MD** (bool): (*true*)  
+**human_in_loop** (bool): if true, workflow fails after each test to allow uslattice_constantser to verify results of this step (*false*)  
+**run_test_MD** (bool): if true, VDOS and histograms of positions, velocities, forces are calculated to test MD reliability (*true*)  
 
 **temperature** (float): global temperature override; if set, replaces `lammps.T`  
 
-**MD_type** (str): (*"skip_MD"*, "lammps", "lammps+VASP", "lammps+MACE", "lammps+MACE_no_mliap")  
-**input_type_lammps** (str): (*"write_input"*, "existing_input", "python_input")  
-**ranks_MD** (int): (*os.environ.get("SLURM_NTASKS")*)  
+**MD_type** (str): "skip_MD" -> no MD is performed (to use existing trajectory); "lammps" -> perform LAMMPS calculation with empirical FF; "lammps+VASP" -> perform LAMMPS calculation with VASP ML-FF; "lammps+MACE" -> perform LAMMPS calculation with MACE FF on GPU(s); "lammps+MACE_no_mliap" -> perform LAMMPS calculation with MACE FF on one GPU without mliap option (*"skip_MD"*, "lammps", "lammps+VASP", "lammps+MACE", "lammps+MACE_no_mliap")  
+**input_type_lammps** (str): specify for "lammps": "write_input" -> LAMMPS input file is written to dir_MD, "existing_input" -> use already exising LAMMPS input in dir_MD, "python_input" -> use python to call LAMMPS (compatible LAMMPS version needed!) (*"write_input"*, "existing_input", "python_input")  
+**ranks_MD** (int): parallelization of LAMMPS calculation for srun -n {ranks_MD} (*os.environ.get("SLURM_NTASKS")*)  
 
-**dir_MD** (str): (*dir_project + "1-MD/"*)  
-**dir_ini_MD** (str): (*dir_MD*)  
+**dir_MD** (str): output directory for MD calculation (*dir_project + "1-MD/"*)  
+**dir_ini_MD** (str): input directory for initial atomic configuration for MD (*dir_MD*)  
 **path_FF_MD** (str): path to force-field file (*dir_MD*)  
 
-**equilibrate** (bool): (*true* if not restart, *false* if restart)  
-**npt_equilibrate** (bool): enable NPT equilibration after NVT (*true*)  
+**equilibrate** (bool): if true, equilibration before the production run (*true* if not restart, *false* if restart)  
+**npt_equilibrate** (bool): enable NPT equilibration after NVT equilibraion (*true*)  
  
-**size** (int): isotropic replication factor; replicates system `size × size × size`  
-**volume_scale** (float or array of float): scale simulation cell lengths (`x y z`)  
+**size** (int): isotropic replication factor of simulation box; size > 1 provides supercell of size x size x size with the original cell as unit cell
+**volume_scale** (float or array of float): scale simulation cell lengths with isotropic factor (float) or with anisotropic factors (array of floats)  
 
-**window_size** (int):  (*20*)  
+**window_size** (int): number of steps over which is averaged to get one point in the moving average (*20*)  
 
-**vdos_omega_max** (float): (*None*)  
+**vdos_omega_max** (float): maximal frequency shown in the VDOS plots in reciprocal units of the time in the MD (*None*)  
 
-**H_type** (str): (*"skip_H"*, "hamster", "empTB")  
-**dir_H** (str): (*dir_project + "2-H"*)  
-**dir_input_H** (str):  
+**H_type** (str): "skip_H" -> no Hamiltonians are calculated (to use existing Hamiltonians); "hamster" -> the Hamster code predicts Hamiltonians; "empTB" -> an empirical Tight Binding code calculates the Hamiltonians (*"skip_H"*, "hamster", "empTB")  
+**dir_H** (str): output directory for Hamiltonians (*dir_project + "2-H"*)  
+**dir_input_H** (str): input directory for parameters for Hamiltonian prediction  
 
-**hamiltonian_style** (str): (*"Hk"*, "Hr", "TB")  
+**hamiltonian_style** (str): "Hk" -> Hamiltonian lives in reciprocal space; "Hr" -> Hamiltonian lives in real space; "TB" -> Hamiltonian is an empirical Tight Binding H (*"Hk"*, "Hr", "TB")  
 
-**cell_size** (int):  
+**cell_size** (int): size of supercell in comparison to unit cell (only needed for "empTB")  
 
-**first_snapshot** (int): (*0*)  
-**N_snapshots** (int):  
-**last_snapshot** (int):  (*first_snapshot + N_snapshots - 1*)  
+**first_snapshot** (int): first snapshot of MD trajectory used for H calculation (*0*)  
+**N_snapshots** (int): total number of snapshots used for H calculation  
+**last_snapshot** (int): last snapshot of MD trajectory used for H calculation (*first_snapshot + N_snapshots - 1*)  
 
-**threads_H** (int): (*1*)  
-**ranks_H** (int): (*N_snapshots*)  
+**threads_H** (int): number of Julia threads for H calculation (*1*)  
+**ranks_H** (int): number of MPI ranks for H calculation (*N_snapshots*)  
 
-**hamiltonian_unit** (str): (*"eV"*)
+**hamiltonian_unit** (str): units of Hamiltonian shown in plots (*"eV"*)
 
 ### lammps:
+(details can also be found in LAMMPS documentation; the parameter are named the same)
 
 **units** (str): LAMMPS unit style  
 **dimension** (int): system dimensionality  
@@ -98,23 +99,24 @@ Here you find the definition of parameters that can be used within the workflow 
 **eqsteps_npt_expansion** (int): NPT expansion steps  
 **eqsteps_npt** (int): NPT equilibration steps  
 
-**prodrun_stepsize** (int): dump interval for trajectories  
-**prodrun_numsteps** (int): number of production MD steps  
+**prodrun_stepsize** (int): dump interval for the trajectories of the production run  
+**prodrun_numsteps** (int): number of MD steps in the production run  
 
-**units_array** (array of string): ["temperature unit", "energy unit", "lattice constant unit", "volume unit", "pressure unit"]
+**units_array** (array of string): specify for individual units shown in the MD plots ["temperature unit", "energy unit", "lattice constant unit", "volume unit", "pressure unit"]
 
 **optoelec_type** (str): (*None*)
 
+
 ### gap+dos:
 
-**num_snapshot_dos** (int): (*last_snapshot - first_snapshot + 1*)
-**snapshot_sampling** (int): (*"all"*, "uniform", "random")
+**num_snapshot_dos** (int): number of snapshots used to calculate an average DOS (*last_snapshot - first_snapshot + 1*)
+**snapshot_sampling** (int): determines how num_snapshot_dos snapshots are chosen out of the the N_snapshots snapshots for which H exist: "all" -> all snapshots are used; "uniform" -> num_snapshot_dos are uniformly distributed over the interval [first_snapshot, last_snapshot]; "random" -> the snapshots are randomly distributed over the interval [first_snapshot, last_snapshot] (*"all"*, "uniform", "random")
 
-**N** (int): (*100*)  
-**M** (int): (*192*)  
+**N** (int): number of stochastic vectors in the stochastic trace approximation; only needed if matrix is too large for exact diagonalization (*100*)  
+**M** (int): number of moments in kernel polynomial method; only needed if matrix is too large for exact diagonalization (*192*)  
 
-**guess_E_v** (float):  (*None*)  
-**guess_E_c** (float):  (*None*)  
+**guess_E_v** (float): guess for valence band maximum which should be close to the actual eigenvalue for convergence; only needed if matrix is too large for exact diagonalization (*None*)  
+**guess_E_c** (float): guess for conduction band minimum which should be close to the actual eigenvalue for convergence; only needed if matrix is too large for exact diagonalization (*None*)  
 
 
 
