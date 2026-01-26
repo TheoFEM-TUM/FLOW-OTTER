@@ -16,9 +16,9 @@ Here you find the definition of parameters that can be used within the workflow 
 **resources_MD** (str): myqueue string specifying resources for MD jobs  
 **resources_H**  (str): myqueue string specifying resources for H jobs  
 **resources_optoelec** (str): myqueue string specifying resources for optoelec jobs  
-**resources_instant** (str): myqueue string specifying resources for jobs which should be finished instantaneously (*resources of resources_H with walltime = 5m)  
-**resources_short** (str): myqueue string specifying resources for jobs which should only run shortly (*resources of resources_H with walltime = 2h)  
-**resources_long** (str): myqueue string specifying resources for jobs which should run very long (*resources of resources_H with walltime = 1d)  
+**resources_instant** (str): myqueue string specifying resources for jobs which should be finished instantaneously (*resources of resources_H with walltime = 5m*)  
+**resources_short** (str): myqueue string specifying resources for jobs which should only run shortly (*resources of resources_H with walltime = 2h*)  
+**resources_long** (str): myqueue string specifying resources for jobs which should run very long (*resources of resources_H with walltime = 1d*)  
 
 **simulation_type** (str):  (*"sweep"*, "cascade")  
 **num_simulations** (int): (*1*)  
@@ -27,9 +27,21 @@ Here you find the definition of parameters that can be used within the workflow 
 **array_to_vary** (array of str):  
 **simulation_index** (int):  (internally set by PQ)  
 
+**temperatur** (float):  
 
+**MD_type** (str): (*"skip_MD"*, "lammps", "lammps+VASP", "lammps+MACE", "lammps+MACE_no_mliap")  
+**dir_MD** (str): (*dir_project + "1-MD/"*)  
+**input_type_lammps** (str): (*"write_input"*, "existing_input", "python_input")  
+**ranks_MD** (int): (*os.environ.get("SLURM_NTASKS")*)  
+
+
+
+**dir_ini_MD** (str): 
+**equilibrate** (bool): (*true*)
 
 ### lammps:
+
+**T** (float): temperature within the MD simulation
 
 
 ### hamster:
