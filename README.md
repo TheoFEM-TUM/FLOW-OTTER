@@ -20,7 +20,9 @@ Here you find the definition of parameters that can be used within the workflow 
 **resources_short** (str): myqueue string specifying resources for jobs which should only run shortly (*resources of resources_H with walltime = 2h*)  
 **resources_long** (str): myqueue string specifying resources for jobs which should run very long (*resources of resources_H with walltime = 1d*)  
 
-**simulation_type** (str): sweep -> different MD simulations are started in parallel; cascade -> different MD simulation start consecutive after each other using the restart from the former simulation (*"sweep"*, "cascade")  
+**simulation_type** (str): determines in which order different simulation branches are started (*"sweep"*, "cascade")  
+- sweep -> different MD simulations are started in parallel
+- cascade -> different MD simulation starts consecutively after each other using the restart from the former simulation 
 **num_simulations** (int): number of simulation branches (*1*)  
 **param_to_vary** (str): parameter which varies among the branches; choose one of the parameters from this list  
 **param_group_for_vary** (str): specify the parameter group if the chosen parameter is part of a group  
@@ -32,7 +34,12 @@ Here you find the definition of parameters that can be used within the workflow 
 
 **temperature** (float): global temperature override; if set, replaces `lammps.T`  
 
-**MD_type** (str): "skip_MD" -> no MD is performed (to use existing trajectory); "lammps" -> perform LAMMPS calculation with empirical FF; "lammps+VASP" -> perform LAMMPS calculation with VASP ML-FF; "lammps+MACE" -> perform LAMMPS calculation with MACE FF on GPU(s); "lammps+MACE_no_mliap" -> perform LAMMPS calculation with MACE FF on one GPU without mliap option (*"skip_MD"*, "lammps", "lammps+VASP", "lammps+MACE", "lammps+MACE_no_mliap")  
+**MD_type** (str): determines program/type of MD simulation (*"skip_MD"*, "lammps", "lammps+VASP", "lammps+MACE", "lammps+MACE_no_mliap")  
+- "skip_MD" -> no MD is performed (to use existing trajectory)
+- "lammps" -> perform LAMMPS calculation with empirical FF
+- "lammps+VASP" -> perform LAMMPS calculation with VASP ML-FF
+- "lammps+MACE" -> perform LAMMPS calculation with MACE FF on GPU(s)
+- "lammps+MACE_no_mliap" -> perform LAMMPS calculation with MACE FF on one GPU without mliap option  
 **input_type_lammps** (str): specify for "lammps": "write_input" -> LAMMPS input file is written to dir_MD, "existing_input" -> use already exising LAMMPS input in dir_MD, "python_input" -> use python to call LAMMPS (compatible LAMMPS version needed!) (*"write_input"*, "existing_input", "python_input")  
 **ranks_MD** (int): parallelization of LAMMPS calculation for srun -n {ranks_MD} (*os.environ.get("SLURM_NTASKS")*)  
 
