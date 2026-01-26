@@ -28,7 +28,7 @@ Here you find the definition of parameters that can be used within the workflow 
 **simulation_index** (int):  (internally set by PQ)  
 
 **human_in_loop** (bool): (*false*)  
-**run_test_MD** (bool): (*true*)
+**run_test_MD** (bool): (*true*)  
 
 **temperature** (float): global temperature override; if set, replaces `lammps.T`  
 
@@ -38,7 +38,7 @@ Here you find the definition of parameters that can be used within the workflow 
 
 **dir_MD** (str): (*dir_project + "1-MD/"*)  
 **dir_ini_MD** (str): (*dir_MD*) 
-**path_FF_MD** (str): path to force-field file (*dir_MD*) 
+**path_FF_MD** (str): path to force-field file (*dir_MD*)  
 
 **equilibrate** (bool): (*true* if not restart, *false* if restart)  
 **npt_equilibrate** (bool): enable NPT equilibration after NVT (*true*)  
