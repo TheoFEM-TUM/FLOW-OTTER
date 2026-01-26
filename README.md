@@ -9,15 +9,15 @@ example:
 
 
 global:
-**dir_project** (str): directory of project output (*"./"*)
-**dir_code** (str): directory of this repo 
+**dir_project** (str): directory of project output (*"./"*)  
+**dir_code** (str): directory of this repo  
 
-**resources_MD** (str): myqueue string specifying resources for MD jobs 
-**resources_H**  (str): myqueue string specifying resources for H jobs 
-**resources_optoelec** (str): myqueue string specifying resources for optoelec jobs 
-**resources_instant** (str): myqueue string specifying resources for jobs which should be finished instantaneously (*resources of resources_H with walltime = 5m)
-**resources_short** (str): myqueue string specifying resources for jobs which should only run shortly (*resources of resources_H with walltime = 2h)
-**resources_long** (str): myqueue string specifying resources for jobs which should run very long (*resources of resources_H with walltime = 1d)
+**resources_MD** (str): myqueue string specifying resources for MD jobs  
+**resources_H**  (str): myqueue string specifying resources for H jobs  
+**resources_optoelec** (str): myqueue string specifying resources for optoelec jobs  
+**resources_instant** (str): myqueue string specifying resources for jobs which should be finished instantaneously (*resources of resources_H with walltime = 5m)  
+**resources_short** (str): myqueue string specifying resources for jobs which should only run shortly (*resources of resources_H with walltime = 2h)  
+**resources_long** (str): myqueue string specifying resources for jobs which should run very long (*resources of resources_H with walltime = 1d)  
 
 **simulation_type** (str):  (*"sweep"*, "cascade")
 **num_simulations** (int): (*1*)
