@@ -1,7 +1,7 @@
 # MD_TB_PQ_workflow
 
 
-## Parameter
+## Parameters
 
 Here you find the definition of parameters that can be used within the workflow manager:
 
