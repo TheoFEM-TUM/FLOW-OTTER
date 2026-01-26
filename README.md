@@ -118,5 +118,5 @@ Here you find the definition of parameters that can be used within the workflow 
 
 
 
-### optoelec:
+### conductivity:
 **N_avg** (int): (*1)
