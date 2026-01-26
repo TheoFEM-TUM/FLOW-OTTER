@@ -37,7 +37,7 @@ Here you find the definition of parameters that can be used within the workflow 
 **ranks_MD** (int): (*os.environ.get("SLURM_NTASKS")*)  
 
 **dir_MD** (str): (*dir_project + "1-MD/"*)  
-**dir_ini_MD** (str): (*dir_MD*) 
+**dir_ini_MD** (str): (*dir_MD*)  
 **path_FF_MD** (str): path to force-field file (*dir_MD*)  
 
 **equilibrate** (bool): (*true* if not restart, *false* if restart)  
