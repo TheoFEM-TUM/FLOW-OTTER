@@ -84,7 +84,7 @@ Here you find the definition of parameters that can be used within the workflow 
 **dt** (float): MD timestep  
 **thermo_output_step_size** (int): thermo output frequency (*100*)  
 
-**T** (float): temperature within the MD simulation
+**T** (float): temperature within the MD simulation  
 **T_damp** (float): thermostat damping parameter  
 **T_start** (float): initial temperature for heating phase (*T*)  
 
