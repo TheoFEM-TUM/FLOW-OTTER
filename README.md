@@ -4,12 +4,7 @@
 
 Here you find the definition of parameters that can be used within the workflow manager:
 
-param: 
-- meaning
-- options
-- default
+param (type): meaning (*"default_option"*, "option1", "option2", ...)
 
-simulation_type:
-- 
-- sweep, cascade
-- default: sweep
+
+simulation_type (str):  (*"sweep"*, "cascade")
