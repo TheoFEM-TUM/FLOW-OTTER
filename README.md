@@ -32,6 +32,7 @@ Here you find the definition of parameters that can be used within the workflow 
 
 **human_in_loop** (bool): if true, workflow fails after each test to allow uslattice_constantser to verify results of this step (*false*)  
 **run_test_MD** (bool): if true, VDOS and histograms of positions, velocities, forces are calculated to test MD reliability (*true*)  
+**run_test_H** (bool): if true, distribution of H elements and test DOS are calculated for a random snapshot (*true*)  
 
 **temperature** (float): global temperature override; if set, replaces `lammps.T`  
 
