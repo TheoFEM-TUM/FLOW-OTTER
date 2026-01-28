@@ -97,7 +97,7 @@ Here you find the definition of parameters that can be used within the workflow 
 **atom_style** (str): atom style  
 
 **ini_MD_file** (str): initial structure file (data or restart)  
-**elements** (array of str): chemical element symbols 
+**elements** (array of str): chemical element symbols  
 **restart** (bool): read restart file instead of data file  
 **replicate** (array of int): anisotropic replication factors `[nx, ny, nz]`  
 **lattice_constants** (float or array of float): set absolute box dimensions  
