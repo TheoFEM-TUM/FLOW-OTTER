@@ -89,7 +89,7 @@ Here you find the definition of parameters that can be used within the workflow 
 **hamiltonian_unit** (str): units of Hamiltonian shown in plots (*"eV"*)
 
 ### lammps:
-(details can also be found in LAMMPS documentation; the parameter are named the same)
+(details can also be found in LAMMPS documentation; the parameters are often named the same)
 
 **units** (str): LAMMPS unit style  
 **dimension** (int): system dimensionality  
