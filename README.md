@@ -13,7 +13,7 @@ Here you find the definition of parameters that can be used within the workflow 
 **dir_project** (str): directory to project output (*"./"*)  
 **dir_code** (str): directory to this repo  
 
-**resources** (str): myqueue string specifying resources for standard jobs with adjusted wall times (see below resources_instant, resources_short, resources_long); if None, resources_H is used or error is raised when using workflow_MD.py (*None*)
+**resources** (str): myqueue string specifying resources for standard jobs with adjusted wall times (see below resources_instant, resources_short, resources_long); if None, resources_H is used or an error is raised when using workflow_MD.py (*None*)  
 **resources_MD** (str): myqueue string specifying resources for MD jobs  
 **resources_H**  (str): myqueue string specifying resources for H jobs  
 **resources_optoelec** (str): myqueue string specifying resources for optoelec jobs  
