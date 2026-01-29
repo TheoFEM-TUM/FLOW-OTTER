@@ -31,6 +31,12 @@ test_H = H / "test/"
 gap_dos = optoelec / "gap+dos/"
 conductivity = optoelec / "conductivity/"
 
+# preambles for task environments
+preamble_global = dir_code / "preambles/preamble_global.sh"
+preamble_lammps = dir_code / "preambles/preamble_lammps.sh"
+preamble_julia = dir_code / "preambles/preamble_julia.sh"
+preamble_hamster = dir_code / "preambles/preamble_hamster.sh"
+
 # resources for tasks
 resources = configWF.get("resources", None)
 resources_MD = configWF["resources_MD"]
@@ -72,8 +78,8 @@ t0_check_simulation = Task( tasks / "check_simulation_type.py", dict_simulation,
 
 ### 1. Molecular Dynamics tasks
 
-t1_checkMD = Task( MD / "check_MD_type.py", None, resources_instant, name="check_MD_type")
-t1_MD = Task( MD / "lammps_MD.py", None, resources_MD, name="lammps_MD")
+t1_checkMD = Task( MD / "check_MD_type.py", None, resources_instant, name="check_MD_type", preamble_path=str(preamble_julia))
+t1_MD = Task( MD / "lammps_MD.py", None, resources_MD, preamble_path=str(preamble_lammps), name="lammps_MD")
 t1_skipMD = Task( MD / "skip_MD.py", None, resources_instant, name="skip_MD")
 
 # which MD type: lammps or skip?
@@ -107,20 +113,20 @@ t2_checkH = Task( H / "check_H_type.py", None, resources_instant, name="check_H_
 t2_skipH = Task( H / "skip_H.py", None, resources_instant, name="skip_H")
 
 # empirical Tight Binding tasks
-t2_prep_empTB = Task( empTB / "prep_fit_empTB.py", None, resources_short, name="prep_fit_empTB")
-t2_empTB = Task( empTB / "fit_empTB.py", None, resources_H, name="fit_empTB")
+t2_prep_empTB = Task( empTB / "prep_fit_empTB.py", None, resources_short, preamble_path=str(preamble_julia), name="prep_fit_empTB")
+t2_empTB = Task( empTB / "fit_empTB.py", None, resources_H, preamble_path=str(preamble_julia), name="fit_empTB")
 
 # Hamiltonian learning tasks with Hamster package
-t2_prep_hamster = Task( hamster / "prep_hamster.py", None, resources_short, name="prep_hamster")
-t2_hamster = Task( hamster / "hamster.py", None, resources_H, name="hamster")
+t2_prep_hamster = Task( hamster / "prep_hamster.py", None, resources_short, preamble_path=str(preamble_hamster), name="prep_hamster")
+t2_hamster = Task( hamster / "hamster.py", None, resources_H, preamble_path=str(preamble_hamster), name="hamster")
 
 # which H type: empirical TB, hamster or skip?
 sg2_H = SwitchGroup({"empTB": {t2_prep_empTB: [], t2_empTB: [t2_prep_empTB]}, "hamster": {t2_prep_hamster: [], t2_hamster: [t2_prep_hamster]}, "skip_H": t2_skipH})
 
 # test Hamiltonian tasks
-t2_testH = Task( test_H / "check_test_H.py", None, resources_instant, name="check_test_H")
-t2_testH_KPM = Task( test_H / "test_H_KPM.py", None, resources_H, name="test_H_KPM")
-t2_testH_dia = Task( test_H / "test_H_exact_diag.py", None, resources_H, name="test_H_exact_diag")
+t2_testH = Task( test_H / "check_test_H.py", None, resources_instant, preamble_path=str(preamble_julia), name="check_test_H")
+t2_testH_KPM = Task( test_H / "test_H_KPM.py", None, resources_H, preamble_path=str(preamble_hamster), name="test_H_KPM")
+t2_testH_dia = Task( test_H / "test_H_exact_diag.py", None, resources_H, preamble_path=str(preamble_hamster), name="test_H_exact_diag")
 t2_testH_post_KPM = Task( test_H / "test_H_post_KPM.py", None, resources_short, name="test_H_post_KPM")
 t2_testH_post_dia = Task( test_H / "test_H_post_exact_diag.py", None, resources_short, name="test_H_post_exact_diag")
 #t2_testH_a = Task( test_H / "test_H_gaps.py", None, resources_short, name="test_H_gaps")
@@ -140,15 +146,15 @@ t3_skipOpto = Task( optoelec / "skip_optoelec.py", None, resources_instant, name
 t3_skipOpto_plot = Task( optoelec / "skip_optoelec.py", None, resources_instant, name="skip_optoelec")
 
 # band gap + density of states tasks
-t3_dia = Task( gap_dos / "gap+dos_exact_diag.py", None, resources_optoelec, name="gap+dos_exact_diag")
-t3_KPM = Task( gap_dos / "gap+dos_KPM.py", None, resources_optoelec, name="gap+dos_KPM")
-t3_post_dia = Task( gap_dos / "gap+dos_post_exact_diag.py", None, resources_optoelec, name="gap+dos_post_exact_diag")
-t3_post_KPM = Task( gap_dos / "gap+dos_post_KPM.py", None, resources_optoelec, name="gap+dos_post_KPM")
+t3_dia = Task( gap_dos / "gap+dos_exact_diag.py", None, resources_optoelec, preamble_path=str(preamble_hamster),name="gap+dos_exact_diag")
+t3_KPM = Task( gap_dos / "gap+dos_KPM.py", None, resources_optoelec, preamble_path=str(preamble_hamster), name="gap+dos_KPM")
+t3_post_dia = Task( gap_dos / "gap+dos_post_exact_diag.py", None, resources_optoelec, preamble_path=str(preamble_hamster), name="gap+dos_post_exact_diag")
+t3_post_KPM = Task( gap_dos / "gap+dos_post_KPM.py", None, resources_optoelec, preamble_path=str(preamble_hamster), name="gap+dos_post_KPM")
 t3_gap_KPM = Task( gap_dos / "gap_KPM.py", None, resources_instant, name="gap_KPM")
 t3_plot_KPM = Task( gap_dos / "plot_avg_dos.py", None, resources_instant, name="plot_avg_dos")
 
 # optical conductivity tasks
-t3_optC = Task( conductivity / "optical_conductivity.py", None, resources_optoelec, name="optical_conductivity")
+t3_optC = Task( conductivity / "optical_conductivity.py", None, resources_optoelec, preamble_path=str(preamble_julia), name="optical_conductivity")
 t3_plot_optC = Task( conductivity / "plot_optical_conductivity.py", None, resources_instant, name="plot_optical_conductivity")
 
 N_avg = configWF.get("N_avg", 1)  # number of averages for optical conductivity

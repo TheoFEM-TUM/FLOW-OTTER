@@ -6,6 +6,8 @@ import subprocess
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1,  t: int = 0, **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: test_H_exact_diag", flush=True)
+
     # Read in global configurations
     with open(path_configWF, "r") as f:
         configWF = yaml.safe_load(f)
@@ -37,6 +39,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
 
     # perform exact diagonalization of Hamiltonian
+    print("Start exact diagonalization of test Hamiltonian...", flush=True)
     result = subprocess.run([
         "julia", 
         #"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_hamster/", 
@@ -45,5 +48,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     ], check=True)        
 
     test_H_type = "exact_diag"
+
+    print("Finish task: test_H_exact_diag", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, "t": t}

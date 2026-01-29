@@ -6,6 +6,8 @@ import shutil
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
     
+    print("Start task: prep_hamster", flush=True)
+
     yaml = YAML()
 
     # Read in global configurations
@@ -51,6 +53,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         "vamp", "lammps", "write_poscar",
         "--lmp_file", str(path_traj),
         "--p", str(dir_MD)], check=True)
+    print("Extracted POSCAR from LAMMPS trajectory.", flush=True)
 
     path_structures_h5 = dir_MD / "structures.h5"
     if path_structures_h5.exists():
@@ -61,6 +64,9 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         "vamp", "lammps", "read",
         "--lmp_file", str(path_traj),
         "--o", str(dir_MD / "structures.h5")], check=True)
+    print("Converted LAMMPS trajectory to Hamster input format.", flush=True)
 
+
+    print("Finish task: prep_hamster", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}

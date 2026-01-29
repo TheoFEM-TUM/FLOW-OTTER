@@ -5,6 +5,7 @@ from pathlib import Path
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: fit_empTB", flush=True)
 
     # Read in global configurations
     with open(path_configWF, 'r') as f:
@@ -62,6 +63,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         str(dir_code / "H/empTB/compute_superH.jl"), 
         str(dir_H), str(dir_input_H), str(cell_size), str(first_snapshot), str(last_snapshot), str(N_snapshots), hamiltonian_style], check=True)
     
+    print("Finish task: fit_empTB", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}
 

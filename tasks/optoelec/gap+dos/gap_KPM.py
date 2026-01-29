@@ -5,6 +5,8 @@ from pathlib import Path
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, snapshots: np.ndarray = np.arange(0, 47, 1), **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: gap_KPM", flush=True)
+
     # Read in global configurations
     with open(path_configWF, "r") as f:
         configWF = yaml.safe_load(f)
@@ -46,5 +48,6 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     data_gap = np.column_stack((avg_gap, std_gap))
     np.savetxt(str(dir_H / "gap+dos/gap_KPM.txt"), data_gap, header=f" average of gap/VBM/CBM/{hamiltonian_unit}   std of gap/VBM/CBM/{hamiltonian_unit}")
 
+    print("Finish task: gap_KPM", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}

@@ -38,7 +38,7 @@ def parse_masses(data_file):
                 atype = int(parts[0])
                 mass = float(parts[1])
                 masses[atype] = mass
-    print(masses)
+    print("masses:", masses)
     return masses
 
 # ----------------------------
@@ -86,7 +86,7 @@ def get_VACF(velocities, masses):
     vsq = []
     for atype, arr in velocities.items():
         nsteps, natoms, _ = arr.shape
-        print(masses)
+        print("masses:", masses)
         m = masses[atype]
         vsq.append(m * np.sum(arr**2))
         for j in range(natoms):
@@ -115,7 +115,7 @@ def plot_vdos(omega, vdos, title, outfile, unit, omega_max=None):
         omega_max = np.max(omega)
     plt.figure()
     plt.plot(omega[omega >= 0], vdos[omega >= 0], color="black")
-    plt.xlabel(f"Frequency{unit}")
+    plt.xlabel(f"Frequency/{unit}")
     plt.ylabel("VDOS (arb. units)")
     plt.title(title)
     plt.xlim(0, omega_max)
@@ -180,7 +180,7 @@ def get_vdos(input_dir, output_dir, potim, type_names, unit, omega_max=None):
         raise FileNotFoundError("*.data file not found")
     data_file = data_files[0]
 
-    print(data_file)
+    print("data_file with masses:", data_file)
     masses = parse_masses(data_file)
 
     # Total VDOS

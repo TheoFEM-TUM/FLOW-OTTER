@@ -6,6 +6,8 @@ import shutil
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
     
+    print("Start task: prep_hamster", flush=True)
+
     yaml = YAML()
 
     # Read in global configurations
@@ -119,7 +121,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         path_ham.unlink()
 
     # calculate Hamster hamiltonians
-    print("Start Hamster!")
+    print("Start Hamster...", flush=True)
     result = subprocess.run([
         #"srun", 
         #"--mpi=pmi2",
@@ -127,5 +129,6 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         "hamster",
         ], cwd = str(dir_H), check=True)
 
+    print("Finish task: prep_hamster", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}

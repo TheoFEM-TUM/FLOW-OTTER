@@ -8,6 +8,8 @@ import subprocess
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1,  t: int = 0, **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: test_H_KPM", flush=True)
+
     # Read in global configurations
     with open(path_configWF, "r") as f:
         configWF = yaml.safe_load(f)
@@ -42,6 +44,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     N = configWF_i["gap+dos"].get("N", 192)
 
     # calculate DoS of Hamiltonian with Kernel Polynomial Method 
+    print("Start KPM calculation of test Hamiltonian...", flush=True)
     result = subprocess.run([
         "srun", 
         "-n", "1",
@@ -54,5 +57,6 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     test_H_type = "KPM"
 
+    print("Finish task: test_H_KPM", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, "t": t}

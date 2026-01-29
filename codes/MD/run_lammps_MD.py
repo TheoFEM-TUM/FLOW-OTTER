@@ -23,7 +23,7 @@ else:
 
 # set force field path
 path_FF_MD = Path(configWF.get("path_FF_MD", str(dir_MD)))
-print(path_FF_MD)
+print("path_FF_MD:", path_FF_MD)
 
 # start LAMMPS
 from mpi4py import MPI
@@ -115,7 +115,7 @@ lmp.command("variable Y equal ly")
 lmp.command("variable Z equal lz")
 lmp.command("variable V equal vol")
 lmp.command("variable P equal press")
-lmp.command(f"fix thermolog all print {thermo_output_step_size} '$t $T $E $X $Y $Z $V $P' file " + str(dir_MD / "thermo_output.txt") + " screen no")
+lmp.command(f"fix thermolog all print {thermo_output_step_size} '$t $T $E $X $Y $Z $V $P' file " + str(dir_MD / "thermo_output.txt") + " screen no title '# Step Temp E_total Lx Ly Lz Volume Density Pressure'")
 
 T_damp = input_params["T_damp"]
 prodrun_stepsize = input_params['prodrun_stepsize']

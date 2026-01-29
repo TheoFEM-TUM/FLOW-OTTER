@@ -1,0 +1,160 @@
+from typing import Tuple
+import yaml
+import numpy as np
+import matplotlib.pyplot as plt
+from pathlib import Path
+import scipy.integrate as integrate
+import subprocess
+
+
+def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
+
+    print("Start task: test_MD_plot_comparison", flush=True)
+
+    # Read in global configurations
+    with open(path_configWF, "r") as f:
+        configWF = yaml.safe_load(f)
+
+    run_test_MD = configWF.get("run_test_MD", True)
+
+    if run_test_MD:
+
+            dir_project = Path(configWF.get("dir_project", "./"))
+
+        # determine units for plotting
+        units_type = configWF["lammps"].get("units")
+
+        if units_type == "real":
+            units = ["A", "(A/fs)", "((kcal/mol)/A)", "PHz"]
+        elif units_type == "metal":
+            units = ["A", "(A/ps)", "(eV/A)", "THz"]
+        elif units_type == "si":
+            units = ["m", "(m/s)", "N", "Hz"]
+        elif units_type == "cgs":
+            units = ["cm", "(cm/s)", "dynes", "Hz"]
+        elif units_type == "electron":
+            units = ["Bohr", "(Bohr/atomic time units)", "(Hartrees/Bohr)", "PHz"]
+        elif units_type == "micro": 
+            units = ["μm", "(m/s)", "nN", "MHz"]
+        elif units_type == "nano":
+            units = ["nm", "(m/s)", "pN", "GHz"]
+        else:
+            if configWF["lammps"].get("units_array") is not None:
+                units = configWF["lammps"]["units_array"][5:]
+            else:
+                print("Unknown units type. Using no units.", flush=True)
+                units = ["", "", "", ""]
+
+
+        # Handle multiple simulations (branching)
+        if num_simulations > 1:
+
+            dir_plots = dir_project / "plots/"
+            dir_plots.mkdir(parents=True, exist_ok=True)
+
+            # determine correct branch config file
+            param_to_vary = configWF["param_to_vary"]
+            array_to_vary = configWF["array_to_vary"]
+
+            # read in element names for each atom type
+            elements = configWF["lammps"]["elements"]
+            type_elements = ["type_" + e for e in elements]
+
+            # get maximal frequency for plotting if specified
+            omega_max = configWF.get("vdos_omega_max", None)
+
+            dir_plot_vdos = dir_plots / "VDOS"
+            dir_plot_vdos.mkdir(parents=True, exist_ok=True)
+
+            # plot VDOS comparison for each atom type and total VDOS
+            for e in ["total", *type_elements]:
+
+                fig1, (ax1) = plt.subplots()
+                plt.title(f"VDOS ({e}) comparison between different MD trajectories")
+
+                # plot vdos for each branch
+                for i in range(len(array_to_vary)):
+
+                    # read in branch configuration
+                    dir_project_i = dir_project / f"{param_to_vary}_{array_to_vary[i]}/"
+
+                    with open(str(dir_project_i / 'branch_config.yaml'), 'r') as f:
+                        configWF_i = yaml.safe_load(f)
+
+                    dir_MD = Path(configWF_i.get("dir_MD", str(dir_project_i / "1-MD/")))
+
+                    # read in VDOS
+                    freq, vdos = np.loadtxt(str(dir_MD / f"test_MD/vdos/VDOS_{e}.txt"), unpack=True, skiprows=1)
+
+                    # plot VDOS
+                    label = f"{param_to_vary} {array_to_vary[i]}"
+                    plt.plot(freq, vdos, label=label)
+
+                # finalize plot
+                plt.xlabel(f"Frequency/{units[3]}")
+                plt.ylabel(f"VDOS (arb. units)")
+                if omega_max is not None:
+                    plt.xlim(0, omega_max)
+                plt.legend()
+
+                outfile = dir_plot_vdos / f"VDOS_comparison_{e}.pdf"
+                plt.tight_layout()
+                plt.savefig(outfile)
+                plt.close(fig1)
+                print(f"✅ Saved VDOS ({e}) comparison plot → {outfile}", flush=True)
+
+            dir_plot_dis = dir_plots / "displacement_distribution"
+
+            # plot distribution comparison for each atom type
+            for e in type_elements: 
+
+                fig2, axes2 = plt.subplots(3, 1)
+                plt.suptitle(f"Displacement distribution ({e}) comparison between different MD trajectories")
+
+                # plot distributions for each branch
+                for i in range(len(array_to_vary)):
+
+                    # read in branch configuration
+                    dir_project_i = dir_project / f"{param_to_vary}_{array_to_vary[i]}/"
+
+                    with open(str(dir_project_i / 'branch_config.yaml'), 'r') as f:
+                        configWF_i = yaml.safe_load(f)
+
+                    dir_MD = Path(configWF_i.get("dir_MD", str(dir_project_i / "1-MD/")))
+
+                    # read in distributions
+                    disp_x, dens_x = np.loadtxt(str(dir_MD / f"test_MD/displacements_histogram/displacements_histogram_{e}_Δx.txt"), unpack=True, skiprows=1)
+                    disp_y, dens_y = np.loadtxt(str(dir_MD / f"test_MD/displacements_histogram/displacements_histogram_{e}_Δy.txt"), unpack=True, skiprows=1)
+                    disp_z, dens_z = np.loadtxt(str(dir_MD / f"test_MD/displacements_histogram/displacements_histogram_{e}_Δz.txt"), unpack=True, skiprows=1)
+
+                    # plot distributions
+                    label = f"{param_to_vary} {array_to_vary[i]}"
+                    axes2[0].plot(disp_x, dens_x, label=label)
+                    axes2[1].plot(disp_y, dens_y, label=label)
+                    axes2[2].plot(disp_z, dens_z, label=label)
+
+                # finalize plot
+                axes2[0].set_xlabel(f"Δx/{units[0]}")
+                axes2[0].set_ylabel("Probability density")
+                axes2[1].set_xlabel(f"Δy/{units[0]}")
+                axes2[1].set_ylabel("Probability density")
+                axes2[2].set_xlabel(f"Δz/{units[0]}")
+                axes2[2].set_ylabel("Probability density")
+
+                plt.legend()
+                outfile = dir_plot_dis / f"Displacement_distribution_comparison_{e}.pdf"
+                plt.tight_layout()
+                plt.savefig(outfile)
+                plt.close(fig2)
+                print(f"✅ Saved Displacement distribution ({e}) comparison plot → {outfile}", flush=True)
+
+
+        else:
+            print("No comparison of different MDs trajectories needed since only one MD trajectory was calculated.", flush=True)
+
+    else:
+        print("Skip test_MD_plot_comparison.", flush=True)
+
+    print("Finish task: test_MD_plot_comparison", flush=True)
+
+    return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}

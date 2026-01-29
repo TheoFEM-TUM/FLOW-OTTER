@@ -7,6 +7,7 @@ from typing import Tuple
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: prep_fit_empTB", flush=True)
 
     # Read in global configurations
     with open(path_configWF, 'r') as f:
@@ -57,25 +58,29 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     # determine dimensions of lattice cell 
     result0 = subprocess.run([str(dir_code / "H/empTB/get_celldimensions.sh"), str(dir_MD)], check=True)
+    path_celldim = dir_MD / "celldimensions.txt"
+    shutil.copy2(path_celldim, dir_H)    
+    print("Calculated cell dimensions.", flush=True)
 
     # extract snapshots from trajectory and save in individual files "snapshots/traj*.xyz"
     result1 = subprocess.run([str(dir_code / "H/empTB/extractMDsnapshots.o"), str(dir_MD), str(dir_H), str(cell_size), str(first_snapshot), str(last_snapshot), str(N_snapshots)], check=True)
-
-
-    path_celldim = dir_MD / "celldimensions.txt"
-    shutil.copy2(path_celldim, dir_H)
+    print("Extracted MD snapshots.", flush=True)
 
     # calculate nearst neighbour list 
     result2 = subprocess.run([
         "julia", 
         "--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_julia/", 
         str(dir_code / "H/empTB/find_nearst_neighbour.jl"), str(dir_snapshots), f"traj{first_snapshot}.xyz", str(path_celldim)], check=True)
+    print("Calculated nearest neighbour list.", flush=True)
 
     # calculate  neighbour list for unitcells
     result3 = subprocess.run([
         "julia", 
         "--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_julia/", 
         str(dir_code / "H/empTB/find_unitcell.jl"), str(dir_snapshots), f"traj{first_snapshot}.xyz", str(path_celldim), str(cell_size)], check=True)
+    print("Calculated unitcell neighbour list.", flush=True)
 
+
+    print("Finish task: prep_fit_empTB", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}

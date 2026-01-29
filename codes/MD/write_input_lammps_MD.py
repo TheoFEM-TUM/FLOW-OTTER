@@ -18,7 +18,7 @@ else:
 
 
 path_FF_MD = Path(configWF.get("path_FF_MD", str(dir_MD)))
-print(path_FF_MD)
+print("path_FF_MD:", path_FF_MD)
 
 # LAMMPS input file
 lammps_input_file = dir_MD / "lmp.inp"
@@ -125,7 +125,7 @@ with open(lammps_input_file, "w") as f:
     w(
         f"fix thermolog all print {thermo_output_step_size} "
         f"'$t $T $E $X $Y $Z $V $P' "
-        f"file {dir_MD / 'thermo_output.txt'} screen no"
+        f"file {dir_MD / 'thermo_output.txt'} screen no title '# Step Temp E_total Lx Ly Lz Volume Density Pressure'"
     )
 
     T_damp = input_params["T_damp"]

@@ -3,6 +3,7 @@ import pathlib
 import numpy as np
 import matplotlib.pyplot as plt
 import MDAnalysis as mda
+import numpy as np
 
 def parse_atom_types(data_file):
     """Parse atom types and names from a LAMMPS .data file (Masses section ending at 'Atoms')."""
@@ -44,7 +45,7 @@ def parse_atom_types(data_file):
 def plot_histograms(data_dict, atom_types, type_names, output_dir, filename, labels):
     """Generic histogram plotting with one color per atom type and real names."""
     n_types = len(atom_types)
-    print(type_names)
+    print("type_names:", type_names)
     cmap = plt.cm.tab10  # distinct colors
     colors = {atype: cmap(i % cmap.N) for i, atype in enumerate(atom_types)}
 
@@ -53,7 +54,7 @@ def plot_histograms(data_dict, atom_types, type_names, output_dir, filename, lab
         axes = axes[np.newaxis, :]  # ensure 2D axes
 
     for i, atype in enumerate(atom_types):
-        print(i, atype)
+        print(i, " = ", atype)
         data = data_dict[atype]
         atom_label = type_names.get(atype, f"Type {atype}")
         for j in range(3):
@@ -69,11 +70,26 @@ def plot_histograms(data_dict, atom_types, type_names, output_dir, filename, lab
             axes[i, j].set_title(f"Atom type {type_names[int(atype)]}")
             axes[i, j].set_xlim(np.min(data[:, j]), np.max(data[:, j]))
 
+
+            hist, bin_edges = np.histogram(data[:, j], bins=25, density=True)
+            bin_centers = 0.5 * (bin_edges[:-1] + bin_edges[1:])
+            hist_data = np.column_stack((bin_centers, hist))
+
+            output_subdir = output_dir / f"{filename.rstrip('.pdf')}"
+            output_subdir.mkdir(parents=True, exist_ok=True)
+            outfile_txt = output_subdir /  f"{filename.rstrip('.pdf')}_{type_names[int(atype)]}_{labels[j].rstrip('/').replace('/', '_')}.txt"
+            
+            np.savetxt(outfile_txt, hist_data, header="bin_center density")
+
+
     plt.tight_layout()
     outfile = output_dir / filename
     plt.savefig(outfile)
     plt.close(fig)
+
     print(f"✅ Saved histogram → {outfile}")
+
+
 
 
 def position_histogram(input_dir, output_dir, type_names, unit):
@@ -98,7 +114,7 @@ def position_histogram(input_dir, output_dir, type_names, unit):
     u = mda.Universe(traj_file, format="LAMMPSDUMP", atom_style="id type element x y z")
     atom_types = np.unique(u.atoms.types)
     #atom_types = u.atoms.types
-    print(atom_types)
+    print("atom_types:", atom_types)
 
 
     # Initial positions
@@ -123,7 +139,7 @@ def position_histogram(input_dir, output_dir, type_names, unit):
 
 
     plot_histograms(all_displacements, atom_types, type_names, output_dir,
-                    "displacements_histogram.pdf", [f"Δx{unit}", f"Δy{unit}", f"Δz{unit}"])
+                    "displacements_histogram.pdf", [f"Δx/{unit}", f"Δy/{unit}", f"Δz/{unit}"])
 
 
 def parse_lammps_dump(file_path, n_fields=3):
@@ -171,7 +187,7 @@ def velocities_histogram(input_dir, output_dir, type_names, unit):
     atom_types = list(all_velocities.keys())
 
     plot_histograms(all_velocities, atom_types, type_names, output_dir,
-                    "velocities_histogram.pdf", [f"Vx{unit}", f"Vy{unit}", f"Vz{unit}"])
+                    "velocities_histogram.pdf", [f"Vx/{unit}", f"Vy/{unit}", f"Vz/{unit}"])
 
 
 def forces_histogram(input_dir, output_dir, type_names, unit):
@@ -187,7 +203,7 @@ def forces_histogram(input_dir, output_dir, type_names, unit):
     atom_types = list(all_forces.keys())
 
     plot_histograms(all_forces, atom_types, type_names, output_dir,
-                    "forces_histogram.pdf", [f"Fx{unit}", f"Fy{unit}", f"Fz{unit}"])
+                    "forces_histogram.pdf", [f"Fx/{unit}", f"Fy/{unit}", f"Fz/{unit}"])
 
 
 def main():

@@ -7,6 +7,8 @@ import os
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: optical_conductivity", flush=True)
+
     yaml = YAML()
 
     with open(path_configWF, "r") as f:
@@ -51,7 +53,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
         dir_config = dir_config / f"start{t_start}/"
         if dir_output != None:
-            print(f"Warning: dir_output is set to dir_config: {str(dir_output)}")
+            print(f"Warning: dir_output is set to dir_config: {str(dir_output)}", flush=True)
         dir_output = dir_config
     else:
         if dir_output == None:
@@ -82,6 +84,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     ranks_optoelec = configWF_i.get("ranks_optoelec", os.environ.get("SLURM_NTASKS"))
     threads_optoelec = configWF_i.get("threads_optoelec", 1)
 
+    print(f"Running optical conductivity calculation with {ranks_optoelec} ranks and {threads_optoelec} threads...", flush=True)
     result = subprocess.run([
         "srun", 
         "-n", str(ranks_optoelec),
@@ -92,5 +95,6 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         str(dir_conductivity / "cluster_run.jl"), 
         str(dir_config), str(config_file)])
 
+    print("Finish task: optical_conductivity", flush=True)
     
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}

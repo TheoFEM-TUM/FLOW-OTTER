@@ -9,6 +9,8 @@ import subprocess
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: plot_avg_dos", flush=True)
+
     # Read in global configurations
     with open(path_configWF, "r") as f:
         configWF = yaml.safe_load(f)
@@ -17,6 +19,9 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     # Handle multiple simulations (branching)
     if num_simulations > 1:
+
+        dir_plot_dos = dir_project / "plots/dos/"
+        dir_plot_dos.mkdir(parents=True, exist_ok=True)
 
         # determine correct branch config file
         param_to_vary = configWF["param_to_vary"]
@@ -59,14 +64,15 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         plt.xlabel(f"Energy/{hamiltonian_unit}")
         plt.ylabel(f"Density of States/({hamiltonian_unit})" + r"$^{-1}$")
         plt.legend()
-        dir_plots = dir_project / "plots/"
-        dir_plots.mkdir(parents=True, exist_ok=True)
-        plt.savefig(str(dir_plots / "avg_dos.pdf"))
+        outfile = dir_plot_dos / f"avg_dos.pdf"
+        plt.savefig(outfile)
         plt.close(fig1)
 
-
+        print(f"✅ Saved average DOS comparison plot → {outfile}", flush=True)
+        
     else:
-        print("No comparison of different DOS needed since only one average DOS was calculated.")
+        print("No comparison of different DOS needed since only one average DOS was calculated.", flush=True)
 
+    print("Finish task: plot_avg_dos", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}

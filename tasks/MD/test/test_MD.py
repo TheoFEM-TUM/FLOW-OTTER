@@ -31,6 +31,8 @@ def read_element_masses(filename):
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: test_MD", flush=True)
+
     # Read in global configurations
     with open(path_configWF, "r") as f:
         configWF = yaml.safe_load(f)
@@ -92,30 +94,30 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         for i in range(len(elements)):
             type_names[i+1] = elements[i]
 
-        print(f"typenames {type_names}")
+        print(f"typenames: {type_names}", flush=True)
 
         # determine units for plotting
         units_type = configWF_i["lammps"].get("units")
 
         if units_type == "real":
-            units = ["/A", "/(A/fs)", "/((kcal/mol)/A)", "/PHz"]
+            units = ["A", "(A/fs)", "((kcal/mol)/A)", "PHz"]
         elif units_type == "metal":
-            units = ["/A", "/(A/ps)", "/(eV/A)", "/THz"]
+            units = ["A", "(A/ps)", "(eV/A)", "THz"]
         elif units_type == "si":
-            units = ["/m", "/(m/s)", "/N", "/Hz"]
+            units = ["m", "(m/s)", "N", "Hz"]
         elif units_type == "cgs":
-            units = ["/cm", "/(cm/s)", "/dynes", "/Hz"]
+            units = ["cm", "(cm/s)", "dynes", "Hz"]
         elif units_type == "electron":
-            units = ["/Bohr", "/(Bohr/atomic time units)", "/(Hartrees/Bohr)", "/PHz"]
+            units = ["Bohr", "(Bohr/atomic time units)", "(Hartrees/Bohr)", "PHz"]
         elif units_type == "micro": 
-            units = ["/μm", "/(m/s)", "/nN", "/MHz"]
+            units = ["μm", "(m/s)", "nN", "MHz"]
         elif units_type == "nano":
-            units = ["/nm", "/(m/s)", "/pN", "/GHz"]
+            units = ["nm", "(m/s)", "pN", "GHz"]
         else:
             if configWF_i["lammps"].get("units_array") is not None:
                 units = configWF_i["lammps"]["units_array"][5:]
             else:
-                print("Unknown units type. Using no units.")
+                print("Unknown units type. Using no units.", flush=True)
                 units = ["", "", "", ""]
 
         # calculation of distributions
@@ -133,11 +135,12 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
         # human_in_loop flag allows for human check before continuing
         if configWF_i.get("human_in_loop", False):
-            print("human_in_loop is set to True. Stopping workflow after each test.")
+            print("human_in_loop is set to True. Stopping workflow after each test.", flush=True)
             raise Exception("MD test done. Please check the plots in " + str(dir_MD / "test_MD/") + " and continue the workflow manually.")
 
     else:
-        print("Skip MD test.")
+        print("Skip MD test.", flush=True)
 
+    print("Finish task: test_MD", flush=True)
 
     return True, {CYCLICALGROUP_KEY: cg_criteria, "path_configWF": path_configWF, "num_simulations": num_simulations}

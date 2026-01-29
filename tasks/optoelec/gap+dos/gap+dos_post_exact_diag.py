@@ -8,6 +8,8 @@ import subprocess
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, optoelec_type: str = "KPM", snapshots: np.ndarray = np.arange(0, 47, 1), **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: gap+dos_post_exact_diag", flush=True)
+
     # Read in global configurations
     with open(path_configWF, "r") as f:
         configWF = yaml.safe_load(f)
@@ -124,5 +126,6 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     data_gaps = np.squeeze(np.array([[avg_gap, std_gap, avg_VBM, std_VBM, avg_CBM, std_CBM]]))
     np.savetxt(str(dir_H / f"gap+dos/gaps_avg_std_exact_diag.txt"), data_gaps, header=f" average of gap/{hamiltonian_unit}      std of gap/{hamiltonian_unit}      average of VBM/{hamiltonian_unit}      std of VBM/{hamiltonian_unit}      average of CBM/{hamiltonian_unit}      std of VBM/{hamiltonian_unit}")
 
+    print("Finish task: gap+dos_post_exact_diag", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, "snapshots": snapshots}

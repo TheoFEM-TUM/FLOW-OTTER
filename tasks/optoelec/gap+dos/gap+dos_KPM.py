@@ -10,6 +10,8 @@ import random
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: gap+dos_exact_diag", flush=True)
+
     # Read in global configurations
     with open(path_configWF, "r") as f:
         configWF = yaml.safe_load(f)
@@ -89,6 +91,9 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     else:
         raise Exception(f"snapshot_sampling {snapshot_sampling_dos} not recognized.")
 
+    print(f"Available snapshots: {snapshots}", flush=True)
+    print(f"Chosen snapshots for exact diagonalization: {chosen_snapshots}", flush=True)
+
     ranks_optoelec = configWF_i.get("ranks_optoelec", 1)
     threads_optoelec = configWF_i.get("threads_optoelec", 1)
 
@@ -97,6 +102,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     # calculate DoS of Hamiltonian with Kernel Polynomial Method 
     for t in chosen_snapshots:
+        print(f"Diagonalizing Hamiltonian for snapshot {t} ...", flush=True)
         result = subprocess.run([
             "srun", 
             "-n", str(ranks_optoelec),
@@ -113,5 +119,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         ], check=True)        
 
     optoelec_type = "gap+dos_KPM"
+
+    print("Finish task: gap+dos_KPM", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, "optoelec_type": optoelec_type, "snapshots": snapshots}

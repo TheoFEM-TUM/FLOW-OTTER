@@ -5,6 +5,8 @@ from pathlib import Path
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: plot_optical_conductivity", flush=True)
+
     with open(path_configWF, "r") as f:
         configWF = yaml.safe_load(f)
 
@@ -37,7 +39,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         result = subprocess.run([str(dir_conductivity / "plotting_scripts/multi_plot/multi_plot.sh"), outputs], check=True)
 
     else:
-        print("No comparison of different conductivity output needed since only one calculation was performed.")
+        print("No comparison of different conductivity output needed since only one calculation was performed.", flush=True)
 
+    print("Finish task: plot_optical_conductivity", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}

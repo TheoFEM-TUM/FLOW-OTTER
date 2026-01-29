@@ -12,6 +12,7 @@ def moving_average(a, w):
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: test_MD_equilibration", flush=True)
 
     # Read in global configurations
     with open(path_configWF, "r") as f:
@@ -49,7 +50,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     dir_MD = Path(configWF_i.get("dir_MD", str(dir_project_i / "1-MD/")))
     equilibrate = configWF_i.get("equilibrate", False)
-    npt_equilibrate = configWF_i["lammps"].get("npt_equilibrate", True)
+    npt_equilibrate = configWF_i.get("npt_equilibrate", True)
 
     if equilibrate:
 
@@ -129,7 +130,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             if configWF_i["lammps"].get("units_array") is not None:
                 units = configWF_i["lammps"]["units_array"]
             else:
-                print("WARNING: Unknown units type. Using no units.")
+                print("WARNING: Unknown units type. Using no units.", flush=True)
                 units = ["", "", " ", "", ""]
 
 
@@ -152,7 +153,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
         # temperature equilibration criterion
         dT_nvt = T_avg_nvt * np.sqrt(1.5 / N_atoms)
-        dT_npt = T_avg_npt * np.sqrt(1.5 / N_atoms)
+        if npt_equilibrate:
+            dT_npt = T_avg_npt * np.sqrt(1.5 / N_atoms)
 
         with open(str(dir_MD / "test_equilibrate/thermo_avg_std.txt"), "w") as f:
             f.write("TEMPERATURE: \n\n")
@@ -175,24 +177,24 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
         # check for temperature equilibration criterion
         if (dT_nvt < T_eq_std_nvt):
-            print("dT_nvt < T_eq_std_nvt: ", dT_nvt, f" {units[0]}", " < ", T_eq_std_nvt, f" {units[0]}")
+            print("dT_nvt < T_eq_std_nvt: ", dT_nvt, f" {units[0]}", " < ", T_eq_std_nvt, f" {units[0]}", flush=True)
             error = True
         if npt_equilibrate:
             if (dT_npt < T_eq_std_npt):
-                print("dT_npt < T_eq_std_npt: ", dT_npt, f" {units[0]}", " < ", T_eq_std_npt, f" {units[0]}")
+                print("dT_npt < T_eq_std_npt: ", dT_npt, f" {units[0]}", " < ", T_eq_std_npt, f" {units[0]}", flush=True)
                 error = True
         if (abs(T_eq_avg_nvt - T_set) > 2 * T_eq_std_nvt):
-            print("abs(T_eq_avg_nvt - T_set) > 2 * T_eq_std_nvt: ", abs(T_eq_avg_nvt - T_set), f" {units[0]}", " > ", 2 * T_eq_std_nvt, f" {units[0]}")
+            print("abs(T_eq_avg_nvt - T_set) > 2 * T_eq_std_nvt: ", abs(T_eq_avg_nvt - T_set), f" {units[0]}", " > ", 2 * T_eq_std_nvt, f" {units[0]}", flush=True)
             error = True
         if npt_equilibrate:
             if (abs(T_eq_avg_npt - T_set) > 2 * T_eq_std_npt):
-                print("abs(T_eq_avg_npt - T_set) > 2 * T_eq_std_npt: ", abs(T_eq_avg_npt - T_set), f" {units[0]}", " > ", 2 * T_eq_std_npt, f" {units[0]}")
+                print("abs(T_eq_avg_npt - T_set) > 2 * T_eq_std_npt: ", abs(T_eq_avg_npt - T_set), f" {units[0]}", " > ", 2 * T_eq_std_npt, f" {units[0]}", flush=True)
                 error = True
 
         if error:    
             raise Exception("Trajectory is NOT equilibrated with respect to temperature.")
         else:
-            print("Trajectory is equilibrated with respect to temperature.")
+            print("Trajectory is equilibrated with respect to temperature.", flush=True)
 
         # plot temperature data
         fig1, (ax1) =  plt.subplots()
@@ -323,6 +325,9 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             plt.axvline(x=n1+n2+n3+n4, linestyle='--', color="black")
 
         plt.xlim(0, step[-1])
+        if min(V) == max(V):
+            plt.ylim(min(V)*0.99, max(V)*1.01)
+
         plt.legend()
         plt.savefig(str(dir_MD / "test_equilibrate/V.pdf"))
         plt.close()
@@ -373,6 +378,9 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                 plt.axvline(x=n1+n2+n3+n4, linestyle='--', color="black")
 
             plt.xlim(0, step[-1])
+            if min(L[i]) == max(L[i]):
+                plt.ylim(min(L[i])*0.99, max(L[i])*1.01)
+                
             plt.legend()
             plt.savefig(str(dir_MD / f"test_equilibrate/L{i+1}.pdf"))
             plt.close()
@@ -458,15 +466,16 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             if error:    
                 raise Exception("Trajectory is NOT equilibrated with respect to pressure.")
             else:
-                print("Trajectory is equilibrated with respect to pressure.")
+                print("Trajectory is equilibrated with respect to pressure.", flush=True)
 
         # human_in_loop flag allows for human check before continuing
         if configWF_i.get("human_in_loop", False):
-            print("human_in_loop is set to True. Stopping workflow after each test.")
+            print("human_in_loop is set to True. Stopping workflow after each test.", flush=True)
             raise Exception("Equilibration test done. Please check the plots in " + str(dir_MD / "test_equilibrate/") + " and continue the workflow manually.")
 
     else:
-        print("No equilibration was performed.")
+        print("No equilibration was performed.", flush=True)
 
+    print("Finished task: test_MD_equilibration", flush=True)
 
     return True, {CYCLICALGROUP_KEY: cg_criteria, "path_configWF": path_configWF, "num_simulations": num_simulations}

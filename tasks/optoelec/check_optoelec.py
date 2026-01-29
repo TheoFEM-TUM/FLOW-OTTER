@@ -7,6 +7,8 @@ from perqueue.constants import SWITCHGROUP_KEY
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, test_H_type: str = "skip", **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: check_optoelec", flush=True)
+
     # get project directory
     with open(path_configWF, "r") as f:
         configWF = yaml.safe_load(f)
@@ -43,16 +45,18 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         dir_gap_dos = dir_H / "gap+dos/"
         dir_gap_dos.mkdir(parents=True, exist_ok=True)
         if test_H_type == "KPM":
-            print("Dimension of H matrix > 10^4, calculate DoS with Kernel Polynomial method (KPM).")
+            print("Dimension of H matrix > 10^4, calculate DoS with Kernel Polynomial method (KPM).", flush=True)
             optoelec_type = "gap+dos_KPM"
         elif test_H_type == "exact_diag":
-            print("Dimension of H matrix < 10^4, calculate DoS with exact diagonalization.")
+            print("Dimension of H matrix < 10^4, calculate DoS with exact diagonalization.", flush=True)
             optoelec_type = "gap+dos_exact_diag"
         else:
-            print(f"Skip optoelec calculation because test_H_type {test_H_type} is not defined!")
+            print(f"Skip optoelec calculation because test_H_type {test_H_type} is not defined!", flush=True)
             optoelec_type = "skip_optoelec"
 
 
-    print(f"optoelec type: {optoelec_type}")
+    print(f"optoelec type: {optoelec_type}", flush=True)
+
+    print("Finish task: check_optoelec", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, SWITCHGROUP_KEY: optoelec_type}

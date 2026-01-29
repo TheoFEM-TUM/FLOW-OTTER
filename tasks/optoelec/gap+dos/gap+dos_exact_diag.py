@@ -12,6 +12,8 @@ import random
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: gap+dos_exact_diag", flush=True)
+
     # Read in global configurations
     with open(path_configWF, "r") as f:
         configWF = yaml.safe_load(f)
@@ -95,7 +97,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     # perform exact diagonalization for chosen snapshots
     for t in chosen_snapshots:
-        print(f"Diagonalizing Hamiltonian for snapshot {t}", flush=True)
+        print(f"Diagonalizing Hamiltonian for snapshot {t} ...", flush=True)
         result = subprocess.run([
             "julia", 
             #"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_hamster/", 
@@ -107,5 +109,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         ], check=True)        
 
     optoelec_type = "gap+dos_exact_diag"
+
+    print("Finish task: gap+dos_exact_diag", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, "optoelec_type": optoelec_type, "snapshots": snapshots}
