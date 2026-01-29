@@ -13,12 +13,13 @@ Here you find the definition of parameters that can be used within the workflow 
 **dir_project** (str): directory to project output (*"./"*)  
 **dir_code** (str): directory to this repo  
 
+**resources** (str): myqueue string specifying resources for standard jobs with adjusted wall times (see below resources_instant, resources_short, resources_long); if None, resources_H is used or error is raised when using workflow_MD.py (*None*)
 **resources_MD** (str): myqueue string specifying resources for MD jobs  
 **resources_H**  (str): myqueue string specifying resources for H jobs  
 **resources_optoelec** (str): myqueue string specifying resources for optoelec jobs  
-**resources_instant** (str): myqueue string specifying resources for jobs which should be finished instantaneously (*resources of resources_H with walltime = 5m*)  
-**resources_short** (str): myqueue string specifying resources for jobs which should only run shortly (*resources of resources_H with walltime = 2h*)  
-**resources_long** (str): myqueue string specifying resources for jobs which should run very long (*resources of resources_H with walltime = 1d*)  
+**resources_instant** (str): myqueue string specifying resources for jobs which should be finished instantaneously (*resources of resources or resources_H with walltime = 5m*)  
+**resources_short** (str): myqueue string specifying resources for jobs which should only run shortly (*resources of resources or resources_H with walltime = 2h*)  
+**resources_long** (str): myqueue string specifying resources for jobs which should run very long (*resources of resources or resources_H with walltime = 1d*)  
 
 **simulation_type** (str): determines in which order different simulation branches are started (*"sweep"*, "cascade") 
 - sweep -> different MD simulations are started in parallel
