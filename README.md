@@ -60,7 +60,7 @@ Here you find the definition of parameters that can be used within the workflow 
 **npt_equilibrate** (bool): enable NPT equilibration after NVT equilibration (*true*)  
  
 **size** (int): isotropic replication factor of simulation box; size > 1 provides supercell of size x size x size with the original cell as unit cell
-**volume_scale** (float or array of float): scale simulation cell lengths with isotropic factor (float) or with anisotropic factors (array of floats)  
+**volume_scale** (float or array of floats): scale simulation cell lengths with isotropic factor (float) or with anisotropic factors (array of floats)  
 
 **plot_thermo_time** (bool): if True, thermo plots show time instead of step on x-axes (*True*)  
 **window_size** (int): number of steps over which is averaged to get one point in the moving average (*20*)  
@@ -126,7 +126,7 @@ Here you find the definition of parameters that can be used within the workflow 
 **prodrun_stepsize** (int): dump interval for the trajectories of the production run  
 **prodrun_numsteps** (int): number of MD steps in the production run  
 
-**units_array** (array of string): specify for individual units shown in the MD plots ["temperature unit", "energy unit", "lattice constant unit", "volume unit", "pressure unit"]
+**units_array** (array of string): specify for individual units shown in the MD plots ["temperature unit", "energy unit", "lattice constant unit", "volume unit", "pressure unit", "time unit"]
 
 **optoelec_type** (str): (*None*)
 
