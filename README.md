@@ -27,7 +27,7 @@ Here you find the definition of parameters that can be used within the workflow 
 
 **num_simulations** (int): number of simulation branches (*1*)  
 **param_to_vary** (str): parameter which varies among the branches; choose one of the parameters from this list  
-**unit_to_vary** (str): unit of param_to_vary shown in plots (*""*)
+**unit_to_vary** (str): unit of param_to_vary shown in plots (*""*)  
 **param_group_for_vary** (str): specify the parameter group if the chosen parameter is part of a group  
 **array_to_vary** (array of param type): array of values (of fitting type); each branch gets one of the values (len(array) == num_simulations)  
 **simulation_index** (int): branch index which is equivalent to pq_index (sweep) or pq_iteration (cascade) (*internally set by PQ*)  
