@@ -62,6 +62,7 @@ Here you find the definition of parameters that can be used within the workflow 
 **size** (int): isotropic replication factor of simulation box; size > 1 provides supercell of size x size x size with the original cell as unit cell
 **volume_scale** (float or array of float): scale simulation cell lengths with isotropic factor (float) or with anisotropic factors (array of floats)  
 
+**plot_thermo_time** (bool): if True, thermo plots show time instead of step on x-axes (*True*)  
 **window_size** (int): number of steps over which is averaged to get one point in the moving average (*20*)  
 
 **vdos_omega_max** (float): maximal frequency shown in the VDOS plots in reciprocal units of the time in the MD (*None*)  
