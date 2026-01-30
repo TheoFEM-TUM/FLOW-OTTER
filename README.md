@@ -62,7 +62,7 @@ Here you find the definition of parameters that can be used within the workflow 
 **size** (int): isotropic replication factor of simulation box; size > 1 provides supercell of size x size x size with the original cell as unit cell
 **volume_scale** (float or array of floats): scale simulation cell lengths with isotropic factor (float) or with anisotropic factors (array of floats)  
 
-**plot_thermo_time** (bool): if True, thermo plots show time instead of step on x-axes (*True*)  
+**plot_MD_time** (bool): if True, MD plots show time instead of step on x-axes (*True*)  
 **window_size** (int): number of steps over which is averaged to get one point in the moving average (*20*)  
 
 **vdos_omega_max** (float): maximal frequency shown in the VDOS plots in reciprocal units of the time in the MD (*None*)  
@@ -90,6 +90,8 @@ Here you find the definition of parameters that can be used within the workflow 
 **ranks_H** (int): number of MPI ranks for H calculation (*N_snapshots*)  
 
 **hamiltonian_unit** (str): units of Hamiltonian shown in plots (*"eV"*)
+
+**optoelec_type** (str): (*None*)  
 
 ### lammps:
 (details can also be found in LAMMPS documentation; the parameters are often named the same)
@@ -126,10 +128,11 @@ Here you find the definition of parameters that can be used within the workflow 
 **prodrun_stepsize** (int): dump interval for the trajectories of the production run  
 **prodrun_numsteps** (int): number of MD steps in the production run  
 
+**compute_msd** (bool): if True, compute mean squared displacements (msd) of all atoms and each atom species (*True*)
+**compute_rdf** (bool): if True, compute radial distribution functions (rdf) of all atoms and each atom species (*True*)
+**rdf_bins** (int): number of bins which are used to histogram the atom distances for the radial distribution function (*100*)  
+
 **units_array** (array of string): specify for individual units shown in the MD plots ["temperature unit", "energy unit", "lattice constant unit", "volume unit", "pressure unit", "time unit", "atom distance unit", "velocity unit", "force unit", "frequency unit"]  
-
-**optoelec_type** (str): (*None*)
-
 
 ### gap+dos:
 
