@@ -27,6 +27,7 @@ Here you find the definition of parameters that can be used within the workflow 
 
 **num_simulations** (int): number of simulation branches (*1*)  
 **param_to_vary** (str): parameter which varies among the branches; choose one of the parameters from this list  
+**unit_to_vary** (str): unit of param_to_vary shown in plots (*""*)  
 **param_group_for_vary** (str): specify the parameter group if the chosen parameter is part of a group  
 **array_to_vary** (array of param type): array of values (of fitting type); each branch gets one of the values (len(array) == num_simulations)  
 **simulation_index** (int): branch index which is equivalent to pq_index (sweep) or pq_iteration (cascade) (*internally set by PQ*)  
@@ -47,7 +48,7 @@ Here you find the definition of parameters that can be used within the workflow 
 **input_type_lammps** (str): only specify for "lammps" how to input the LAMMPS configuration (*"write_input"*, "existing_input", "python_input")  
 - "write_input" -> LAMMPS input file is written to dir_MD
 - "existing_input" -> use already existing LAMMPS input in dir_MD,
-- "python_input" -> use python to call LAMMPS (compatible LAMMPS version needed!)
+- "python_input" -> use Python to call LAMMPS (compatible LAMMPS version needed!)
   
 **ranks_MD** (int): parallelization of LAMMPS calculation for srun -n {ranks_MD} (*os.environ.get("SLURM_NTASKS")*)  
 
@@ -59,8 +60,9 @@ Here you find the definition of parameters that can be used within the workflow 
 **npt_equilibrate** (bool): enable NPT equilibration after NVT equilibration (*true*)  
  
 **size** (int): isotropic replication factor of simulation box; size > 1 provides supercell of size x size x size with the original cell as unit cell
-**volume_scale** (float or array of float): scale simulation cell lengths with isotropic factor (float) or with anisotropic factors (array of floats)  
+**volume_scale** (float or array of floats): scale simulation cell lengths with isotropic factor (float) or with anisotropic factors (array of floats)  
 
+**plot_MD_time** (bool): if True, MD plots show time instead of step on x-axes (*True*)  
 **window_size** (int): number of steps over which is averaged to get one point in the moving average (*20*)  
 
 **vdos_omega_max** (float): maximal frequency shown in the VDOS plots in reciprocal units of the time in the MD (*None*)  
@@ -88,6 +90,8 @@ Here you find the definition of parameters that can be used within the workflow 
 **ranks_H** (int): number of MPI ranks for H calculation (*N_snapshots*)  
 
 **hamiltonian_unit** (str): units of Hamiltonian shown in plots (*"eV"*)
+
+**optoelec_type** (str): (*None*)  
 
 ### lammps:
 (details can also be found in LAMMPS documentation; the parameters are often named the same)
@@ -124,10 +128,11 @@ Here you find the definition of parameters that can be used within the workflow 
 **prodrun_stepsize** (int): dump interval for the trajectories of the production run  
 **prodrun_numsteps** (int): number of MD steps in the production run  
 
-**units_array** (array of string): specify for individual units shown in the MD plots ["temperature unit", "energy unit", "lattice constant unit", "volume unit", "pressure unit"]
+**compute_msd** (bool): if True, compute mean squared displacements (msd) of all atoms and each atom species (*True*)  
+**compute_rdf** (bool): if True, compute radial distribution functions (rdf) of all atoms and each atom species (*True*)  
+**rdf_bins** (int): number of bins which are used to histogram the atom distances for the radial distribution function (*100*)  
 
-**optoelec_type** (str): (*None*)
-
+**units_array** (array of string): specify for individual units shown in the MD plots ["temperature unit", "energy unit", "lattice constant unit", "volume unit", "pressure unit", "time unit (thermo)", "atom distance unit", "velocity unit", "force unit", "frequency unit", "time unit (MSD)"]  
 
 ### gap+dos:
 
@@ -140,10 +145,10 @@ Here you find the definition of parameters that can be used within the workflow 
 **N** (int): number of stochastic vectors in the stochastic trace approximation; only needed if matrix is too large for exact diagonalization (*100*)  
 **M** (int): number of moments in kernel polynomial method; only needed if matrix is too large for exact diagonalization (*192*)  
 
-**guess_E_v** (float): guess for valence band maximum which should be close to the actual eigenvalue for convergence; only needed if matrix is too large for exact diagonalization (*None*)  
-**guess_E_c** (float): guess for conduction band minimum which should be close to the actual eigenvalue for convergence; only needed if matrix is too large for exact diagonalization (*None*)  
+**guess_E_v** (float): guess for valence band maximum, which should be close to the actual eigenvalue for convergence; only needed if matrix is too large for exact diagonalization (*None*)  
+**guess_E_c** (float): guess for conduction band minimum, which should be close to the actual eigenvalue for convergence; only needed if matrix is too large for exact diagonalization (*None*)  
 
-
+**gap_index** (int): choose one of the five band gap candidates calculated with exact diagonalization (*0*, 1, 2, 3, 4)
 
 ### conductivity:
 **N_avg** (int): (*1)
