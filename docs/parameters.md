@@ -103,7 +103,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 **ini_MD_file** (str): initial structure file (data or restart)  
 **elements** (array of str): chemical element symbols  
 **restart** (bool): read restart file instead of data file  
-**replicate** (array of int): anisotropic replication factors `[nx, ny, nz]`  
+**replicate** (array of int): anisotropic replication factors set as `[nx, ny, nz]`  
 **lattice_constants** (float or array of float): set absolute box dimensions  
 
 **dt** (float): MD timestep  
@@ -130,7 +130,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 **compute_rdf** (bool): if True, compute radial distribution functions (rdf) of all atoms and each atom species (*True*)  
 **rdf_bins** (int): number of bins which are used to histogram the atom distances for the radial distribution function (*100*)  
 
-**units_array** (array of string): specify for individual units shown in the MD plots as ["temperature unit", "energy unit", "lattice constant unit", "volume unit", "pressure unit", "time unit (thermo)", "atom distance unit", "velocity unit", "force unit", "frequency unit", "time unit (MSD)"]  
+**units_array** (array of string): individual units shown in the MD plots set as ["temperature unit", "energy unit", "lattice constant unit", "volume unit", "pressure unit", "time unit (thermo)", "atom distance unit", "velocity unit", "force unit", "frequency unit", "time unit (MSD)"]  
 
 ## gap+dos:
 
