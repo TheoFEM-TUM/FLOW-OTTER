@@ -1,12 +1,10 @@
-## Parameters
+# Parameters
 
-Here you find the definition of parameters that can be used within the workflow manager: [Click here to view the parameters](docs/parameters.md)
-
-### example:  
+## example:  
 **param** (type): meaning (*"default_option"*, "option1", "option2", ...)  
 
 
-### global:  
+## global:  
 **dir_project** (str): directory to project output (*"./"*)  
 **dir_code** (str): directory to this repo  
 
@@ -90,7 +88,7 @@ Here you find the definition of parameters that can be used within the workflow 
 
 **optoelec_type** (str): (*None*)  
 
-### lammps:
+## lammps:
 (details can also be found in LAMMPS documentation; the parameters are often named the same)
 
 **units** (str): LAMMPS unit style  
@@ -131,7 +129,7 @@ Here you find the definition of parameters that can be used within the workflow 
 
 **units_array** (array of string): specify for individual units shown in the MD plots ["temperature unit", "energy unit", "lattice constant unit", "volume unit", "pressure unit", "time unit (thermo)", "atom distance unit", "velocity unit", "force unit", "frequency unit", "time unit (MSD)"]  
 
-### gap+dos:
+## gap+dos:
 
 **num_snapshot_dos** (int): number of snapshots used to calculate an average DOS (*last_snapshot - first_snapshot + 1*)
 **snapshot_sampling** (int): determines how num_snapshot_dos snapshots are chosen out of the the N_snapshots snapshots for which H exist (*"all"*, "uniform", "random")
@@ -147,6 +145,6 @@ Here you find the definition of parameters that can be used within the workflow 
 
 **gap_index** (int): choose one of the five band gap candidates calculated with exact diagonalization (*0*, 1, 2, 3, 4)
 
-### conductivity:
+## conductivity:
 **N_avg** (int): (*1)
 
