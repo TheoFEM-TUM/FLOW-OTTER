@@ -127,7 +127,7 @@
 **compute_rdf** (bool): if True, compute radial distribution functions (rdf) of all atoms and each atom species (*True*)  
 **rdf_bins** (int): number of bins which are used to histogram the atom distances for the radial distribution function (*100*)  
 
-**units_array** (array of string): specify for individual units shown in the MD plots ["temperature unit", "energy unit", "lattice constant unit", "volume unit", "pressure unit", "time unit (thermo)", "atom distance unit", "velocity unit", "force unit", "frequency unit", "time unit (MSD)"]  
+**units_array** (array of string): specify for individual units shown in the MD plots as ["temperature unit", "energy unit", "lattice constant unit", "volume unit", "pressure unit", "time unit (thermo)", "atom distance unit", "velocity unit", "force unit", "frequency unit", "time unit (MSD)"]  
 
 ## gap+dos:
 
