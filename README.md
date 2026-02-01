@@ -3,7 +3,7 @@
 
 ## Parameters
 
-Here you find the definition of parameters that can be used within the workflow manager:
+Here you find the definition of parameters that can be used within the workflow manager: [Click here to view the parameters](docs/parameters.md)
 
 ### example:  
 **param** (type): meaning (*"default_option"*, "option1", "option2", ...)  
