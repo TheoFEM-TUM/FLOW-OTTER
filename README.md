@@ -36,7 +36,7 @@ Here you find the definition of parameters that can be used within the workflow 
 **run_test_MD** (bool): if true, VDOS and histograms of positions, velocities, forces are calculated to test MD reliability (*true*)  
 **run_test_H** (bool): if true, distribution of H elements and test DOS are calculated for a random snapshot (*true*)  
 
-**temperature** (float): global temperature override; if set, replaces `lammps.T`  
+**temperature** (float): global temperature; if set, replaces `lammps.T`  
 
 **MD_type** (str): determines program/type of MD simulation (*"skip_MD"*, "lammps", "lammps+VASP", "lammps+MACE", "lammps+MACE_no_mliap")
 - "skip_MD" -> no MD is performed (to use existing trajectory)
