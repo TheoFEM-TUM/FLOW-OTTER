@@ -1,4 +1,3 @@
-from typing import Tuple
 import yaml
 import numpy as np
 from pathlib import Path
@@ -109,29 +108,39 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
         w = configWF_i.get("window_size", 20)  # window size for moving average
 
+        # convert step to time
+        plot_MD_time = configWF_i.get("plot_MD_time", True)
+        if plot_MD_time:
+            dt = configWF_i["lammps"]["dt"] * configWF_i["lammps"].get("thermo_output_step_size", 100)
+            step *= dt  
+            n1 *= dt
+            n2 *= dt
+            n3 *= dt
+            n4 *= dt
+
         # determine units for plotting
         units_type = configWF_i["lammps"].get("units")
 
         if units_type == "real":
-            units = ["K", "kcal/mol", "A", "A^3", "atm"]
+            units = ["K", "kcal/mol", "A", "A^3", "atm", "fs"]
         elif units_type == "metal":
-            units = ["K", "eV", "A", "A^3", "bar"]
+            units = ["K", "eV", "A", "A^3", "bar", "ps"]
         elif units_type == "si":
-            units = ["K", "J", "m", "m^3", "Pa"]
+            units = ["K", "J", "m", "m^3", "Pa", "s"]
         elif units_type == "cgs":
-            units = ["K", "erg", "cm", "cm^3", "barye"]
+            units = ["K", "erg", "cm", "cm^3", "barye", "s"]
         elif units_type == "electron":
-            units = ["K", "Hartrees", "Bohr", "Bohr^3", "Pa"]
+            units = ["K", "Hartrees", "Bohr", "Bohr^3", "Pa", "fs"]
         elif units_type == "micro": 
-            units = ["K", "fJ", "μm", "μm^3", "kPa"]
+            units = ["K", "fJ", "μm", "μm^3", "kPa", "μs"]
         elif units_type == "nano":
-            units = ["K", "zJ", "nm", "nm^3", "MPa"]
+            units = ["K", "zJ", "nm", "nm^3", "MPa", "ns"]
         else:
             if configWF_i["lammps"].get("units_array") is not None:
                 units = configWF_i["lammps"]["units_array"]
             else:
                 print("WARNING: Unknown units type. Using no units.", flush=True)
-                units = ["", "", " ", "", ""]
+                units = ["", "", "", "", "", ""]
 
 
         ### ### ### ### ### ### ### 
@@ -199,7 +208,10 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         # plot temperature data
         fig1, (ax1) =  plt.subplots()
         fig1.suptitle("Temperature")
-        plt.xlabel("Step")
+        if plot_MD_time:
+            plt.xlabel("Time/" + units[5])
+        else:
+            plt.xlabel("Step")
         plt.ylabel(f"Temperature/{units[0]}")
         plt.plot(step, T, color='blue', label="Temperature")
         plt.plot(moving_average(step, w), moving_average(T, w), color='orange', label="moving average")
@@ -257,7 +269,10 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         # plot energy data
         fig1, (ax1) =  plt.subplots()
         fig1.suptitle("Energy per atom")
-        plt.xlabel("Step")
+        if plot_MD_time:
+            plt.xlabel("Time/" + units[5])
+        else:
+            plt.xlabel("Step")
         plt.ylabel(f"Energy per atom/{units[1]}")
         plt.plot(step, E/N_atoms, color='blue', label="energy")
         plt.plot(moving_average(step, w), moving_average(E, w)/N_atoms, color='orange', label="moving average")
@@ -307,7 +322,10 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         # plot volume data
         fig1, (ax1) =  plt.subplots()
         fig1.suptitle("Volume")
-        plt.xlabel("Step")
+        if plot_MD_time:
+            plt.xlabel("Time/" + units[5])
+        else:
+            plt.xlabel("Step")
         plt.ylabel(f"Volume/{units[3]}")
         plt.plot(step, V, color='blue', label="Volume")
         plt.plot(moving_average(step, w), moving_average(V, w), color='orange', label="moving average")
@@ -360,7 +378,10 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             # plot lattice constants data
             fig1, (ax1) =  plt.subplots()
             fig1.suptitle(f"Lattice constant {i+1}")
-            plt.xlabel("Step")
+            if plot_MD_time:
+                plt.xlabel("Time/" + units[5])
+            else:
+                plt.xlabel("Step")
             plt.ylabel(f"Lattice constant/{units[2]}")
             plt.plot(step, L[i], color="blue", label=f"lattice constant {i+1}")
             plt.plot(moving_average(step, w), moving_average(L[i], w), color='orange', label="moving average")
@@ -424,7 +445,10 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         # plot pressure data
         fig1, (ax1) =  plt.subplots()
         fig1.suptitle("Pressure")
-        plt.xlabel("Step")
+        if plot_MD_time:
+            plt.xlabel("Time/" + units[5])
+        else:
+            plt.xlabel("Step")
         plt.ylabel(f"Pressure/{units[4]}")
         plt.plot(step, p, color='blue', label="Pressure")
         plt.plot(moving_average(step, w), moving_average(p, w), color='orange', label="moving average")

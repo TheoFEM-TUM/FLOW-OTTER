@@ -100,25 +100,25 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         units_type = configWF_i["lammps"].get("units")
 
         if units_type == "real":
-            units = ["A", "(A/fs)", "((kcal/mol)/A)", "PHz"]
+            units = ["A", "(A/fs)", "((kcal/mol)/A)", "PHz", "fs"]
         elif units_type == "metal":
-            units = ["A", "(A/ps)", "(eV/A)", "THz"]
+            units = ["A", "(A/ps)", "(eV/A)", "THz", "ps"]
         elif units_type == "si":
-            units = ["m", "(m/s)", "N", "Hz"]
+            units = ["m", "(m/s)", "N", "Hz", "s"]
         elif units_type == "cgs":
-            units = ["cm", "(cm/s)", "dynes", "Hz"]
+            units = ["cm", "(cm/s)", "dynes", "Hz", "s"]
         elif units_type == "electron":
-            units = ["Bohr", "(Bohr/atomic time units)", "(Hartrees/Bohr)", "PHz"]
+            units = ["Bohr", "(Bohr/atomic time units)", "(Hartrees/Bohr)", "PHz", "fs"]
         elif units_type == "micro": 
-            units = ["μm", "(m/s)", "nN", "MHz"]
+            units = ["μm", "(m/s)", "nN", "MHz", "μs"]
         elif units_type == "nano":
-            units = ["nm", "(m/s)", "pN", "GHz"]
+            units = ["nm", "(m/s)", "pN", "GHz", "ns"]
         else:
             if configWF_i["lammps"].get("units_array") is not None:
-                units = configWF_i["lammps"]["units_array"][5:]
+                units = configWF_i["lammps"]["units_array"][6:]
             else:
                 print("Unknown units type. Using no units.", flush=True)
-                units = ["", "", "", ""]
+                units = ["", "", "", "", ""]
 
         # calculation of distributions
         dir_test_hist = dir_test / "histograms/"
@@ -132,6 +132,74 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         dir_test_vdos.mkdir(parents=True, exist_ok=True)
         #vdos.calc_vdos(str(dir_MD), dir_test, potim, masses)
         vdos.get_vdos(str(dir_MD), dir_test_vdos, potim, type_names, units[3], omega_max=configWF_i.get("vdos_omega_max", None))
+
+        # plot MSD
+        if configWF_i["lammps"].get("compute_msd", True):
+
+            dir_test_msd = dir_test / "msd/"
+            dir_test_msd.mkdir(parents=True, exist_ok=True)
+
+            plot_MD_time = configWF_i.get("plot_MD_time", True)
+
+            msd_files = sorted(dir_MD.glob("msd_*.txt"))
+            
+            for file in msd_files:
+                data = np.loadtxt(file)
+
+                step = data[:, 0]
+                msd_x = data[:, 1]
+                msd_y = data[:, 2]
+                msd_z = data[:, 3]
+                msd_tot = data[:, 4]
+
+                # convert step to time
+                plot_MD_time = configWF_i.get("plot_MD_time", True)
+                if plot_MD_time:
+                    dt = configWF_i["lammps"]["dt"] * configWF_i["lammps"].get("thermo_output_step_size", 100)
+                    step *= dt  
+
+                plt.figure()
+                plt.plot(step, msd_tot, label="MSD total", color="black")
+                plt.plot(step, msd_x, "--", label="MSD x", color="blue")
+                plt.plot(step, msd_y, "--", label="MSD y", color="green")
+                plt.plot(step, msd_z, "--", label="MSD z", color="red")
+
+                if plot_MD_time:
+                    plt.xlabel("Time/" + units[5])
+                else:
+                    plt.xlabel("Step")
+                plt.ylabel("MSD/" + units[0] + "^2")
+                plt.title("MSD")
+                plt.legend()
+                plt.tight_layout()
+                plt.savefig(dir_test_msd / (file.stem + ".pdf"))
+                plt.close()
+
+        # plot RDF
+        if configWF_i.get("compute_rdf", True):
+
+            dir_test_rdf = dir_test / "rdf/"
+            dir_test_rdf.mkdir(parents=True, exist_ok=True)
+
+            rdf_files = sorted(dir_MD.glob("rdf_*.txt"))
+            
+            for file in rdf_files:
+                data = np.loadtxt(file)
+
+                r = data[:, 0]
+                rdf = data[:, 1]
+
+                plt.figure()
+                plt.plot(r, rdf, label="RDF", color="black")
+
+                plt.xlabel("r/" + units[0])
+                plt.ylabel("g(r)")
+                plt.title("Radial Distribution Function")
+                plt.legend()
+                plt.tight_layout()
+                plt.savefig(dir_test_rdf / (file.stem + ".pdf"))
+                plt.close()
+
 
         # human_in_loop flag allows for human check before continuing
         if configWF_i.get("human_in_loop", False):

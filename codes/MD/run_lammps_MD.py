@@ -67,7 +67,6 @@ if "lattice_constants" in input_params:
         lmp.command(f"change_box all x final 0 {L} y final 0 {L} z final 0 {L} remap")
     else:
         lmp.command(f"change_box all x final 0 {L[0]} y final 0 {L[1]} z final 0 {L[2]} remap")
-    lmp.command("")
 
 
 if "volume_scale" in configWF:
@@ -76,7 +75,6 @@ if "volume_scale" in configWF:
         lmp.command(f"change_box all x scale {scale} y scale {scale} z scale {scale} remap")
     else:
         lmp.command(f"change_box all x scale {scale[0]} y scale {scale[1]} z scale {scale[2]} remap")
-    lmp.command("")
 
 
 # Define force field
@@ -173,9 +171,9 @@ if equilibrate:
     lmp.command("undump 0")
     
 
-lmp.command(f"write_data " + str(dir_MD / "pre_run.data"))
+lmp.command(f"write_data " + str(dir_MD / "pre_run.txta"))
 
-# Dump file settings
+# Dump file settings for trajectory, velocity, forces
 lmp.command(f"dump 1 all custom {prodrun_stepsize} " + str(dir_MD / "position.lammpstrj") + " id type element x y z")
 lmp.command("dump_modify 1 sort id")
 lmp.command(f"dump_modify 1 element {elements_str}")
@@ -188,12 +186,55 @@ lmp.command(f"dump 3 all custom {prodrun_stepsize} " + str(dir_MD / "forces.lamm
 lmp.command("dump_modify 3 sort id")
 lmp.command(f"dump_modify 3 element {elements_str}")
 
+# mean squared distribution (MSD) calculation
+compute_msd = input_params.get("compute_msd", True)
+if compute_msd:
+    lmp.command("compute msd_all all msd")
+    lmp.command(
+        f"fix msd_all_out all ave/time {prodrun_stepsize} 1 {prodrun_stepsize} "
+        "c_msd_all[*] file msd_all.txt mode vector"
+    )
+    for i, el in enumerate(elements, start=1):
+        lmp.command(f"group grp_{el} type {i}")
+        lmp.command(f"compute msd_{el} grp_{el} msd")
+        lmp.command(
+            f"fix msd_{el}_out all ave/time {prodrun_stepsize} 1 {prodrun_stepsize} "
+            f"c_msd_{el}[*] file msd_{el}.txt mode vector"
+        )
+
+# radial distribution function (RDF) calculation
+compute_rdf = input_params.get("compute_rdf", True)
+if compute_rdf:
+    rdf_bins = input_params.get("rdf_bins", 100)
+    lmp.command(f"compute rdf_all all rdf {rdf_bins}")
+    lmp.command(
+        f"fix rdf_all_out all ave/time {prodrun_stepsize} 1 {prodrun_stepsize} "
+        f"c_rdf_all[*] file rdf_all.txt mode vector"
+    )
+    for i, el in enumerate(elements, start=1):
+        lmp.command(f"compute rdf_{el}{el} all rdf ${rdf_bins} {i} {i}")
+        lmp.command(
+            f"fix rdf_{el}{el}_out all ave/time {thermo_output_step_size} 1 {thermo_output_step_size} "
+            f"c_rdf_{el}{el}[*] file rdf_{el}-{el}.txt mode vector"
+        )
 
 # NVT production run
 lmp.command(f"fix 1 all nvt temp {T} {T} {T_damp}")
 lmp.command(f"run {input_params['prodrun_numsteps']}")
 lmp.command("unfix 1")
 
+# clean up fixes
+lmp.command("unfix thermolog")
+if compute_msd:
+    lmp.command("unfix msd_all_out")
+    for el in elements:
+        lmp.command(f"unfix msd_{el}_out")
+if compute_rdf:
+    lmp.command("unfix rdf_all_out")
+    for i, el in enumerate(elements, start=1):
+        lmp.command(f"unfix rdf_{el}{el}_out")
+
+# write final restart file
 restart_file = f"restart_{T}"
 path_restart = dir_MD / restart_file
 lmp.command(f"write_restart {path_restart}")

@@ -51,7 +51,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     print(f"MD type: {MD_type}", flush=True)
 
     if "lammps" in MD_type:
-        MD_type = "lammps", flush=True
+        MD_type = "lammps"
 
     print("Finish task: check_MD_type", flush=True)
 

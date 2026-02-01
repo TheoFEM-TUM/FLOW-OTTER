@@ -25,25 +25,25 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         units_type = configWF["lammps"].get("units")
 
         if units_type == "real":
-            units = ["A", "(A/fs)", "((kcal/mol)/A)", "PHz"]
+            units = ["A", "(A/fs)", "((kcal/mol)/A)", "PHz", "fs"]
         elif units_type == "metal":
-            units = ["A", "(A/ps)", "(eV/A)", "THz"]
+            units = ["A", "(A/ps)", "(eV/A)", "THz", "ps"]
         elif units_type == "si":
-            units = ["m", "(m/s)", "N", "Hz"]
+            units = ["m", "(m/s)", "N", "Hz", "s"]
         elif units_type == "cgs":
-            units = ["cm", "(cm/s)", "dynes", "Hz"]
+            units = ["cm", "(cm/s)", "dynes", "Hz", "s"]
         elif units_type == "electron":
-            units = ["Bohr", "(Bohr/atomic time units)", "(Hartrees/Bohr)", "PHz"]
+            units = ["Bohr", "(Bohr/atomic time units)", "(Hartrees/Bohr)", "PHz", "fs"]
         elif units_type == "micro": 
-            units = ["μm", "(m/s)", "nN", "MHz"]
+            units = ["μm", "(m/s)", "nN", "MHz", "μs"]
         elif units_type == "nano":
-            units = ["nm", "(m/s)", "pN", "GHz"]
+            units = ["nm", "(m/s)", "pN", "GHz", "ns"]
         else:
             if configWF["lammps"].get("units_array") is not None:
                 units = configWF["lammps"]["units_array"][5:]
             else:
                 print("Unknown units type. Using no units.", flush=True)
-                units = ["", "", "", ""]
+                units = ["", "", "", "", ""]
 
 
         # Handle multiple simulations (branching)
@@ -97,7 +97,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                     plt.xlim(0, omega_max)
                 plt.legend()
 
-                outfile = dir_plot_vdos / f"VDOS_comparison_{e}.pdf"
+                outfile = dir_plot_vdos / f"vdos_{e}_comparison.pdf"
                 plt.tight_layout()
                 plt.savefig(outfile)
                 plt.close(fig1)
@@ -142,11 +142,103 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                 axes2[2].set_ylabel("Probability density")
 
                 plt.legend()
-                outfile = dir_plot_dis / f"Displacement_distribution_comparison_{e}.pdf"
+                outfile = dir_plot_dis / f"displacement_distribution_{e}_comparison.pdf"
                 plt.tight_layout()
                 plt.savefig(outfile)
                 plt.close(fig2)
                 print(f"✅ Saved Displacement distribution ({e}) comparison plot → {outfile}", flush=True)
+
+
+            if configWF.get("compare_MSD", True):
+                dir_plot_msd = dir_plots / "msd/"
+                dir_plot_msd.mkdir(parents=True, exist_ok=True)
+
+                # convert step to time
+                plot_MD_time = configWF.get("plot_MD_time", True)
+                if plot_MD_time:
+                    dt = configWF["lammps"]["dt"] * configWF["lammps"].get("thermo_output_step_size", 100)
+
+                for e in ["total", *type_elements]:
+
+                    # plot MSD comparison
+                    fig3, (ax3) = plt.subplots()
+                    plt.title(f"MSD comparison for {e} between different MD trajectories")
+
+                    # plot MSD for each branch
+                    for i in range(len(array_to_vary)):
+
+                        # read in branch configuration
+                        dir_project_i = dir_project / f"{param_to_vary}_{array_to_vary[i]}/"
+
+                        with open(str(dir_project_i / 'branch_config.yaml'), 'r') as f:
+                            configWF_i = yaml.safe_load(f)
+
+                        dir_MD = Path(configWF_i.get("dir_MD", str(dir_project_i / "1-MD/")))
+
+                        # read in MSD
+                        step, msd_x, msd_y, msd_z, msd_tot = np.loadtxt(str(dir_MD / f"msd_{e}.txt"), unpack=True, skiprows=1)
+
+                        # convert step to time
+                        if plot_MD_time:
+                            step *= dt
+
+                        # plot MSD
+                        label = f"{param_to_vary} {array_to_vary[i]}"
+                        plt.plot(step, msd_tot, label=label)
+
+                    # finalize plot
+                    if plot_MD_time:
+                        plt.xlabel(f"Time/{units[5]}")
+                    else:
+                        plt.xlabel("Step")
+                    plt.ylabel(f"MSD/{units[0]}^2")
+                    plt.legend()
+
+                    outfile = dir_plot_msd / f"msd_{e}_comparison.pdf"
+                    plt.tight_layout()
+                    plt.savefig(outfile)
+                    plt.close(fig3)
+                    print(f"✅ Saved MSD comparison plot → {outfile}", flush=True)
+
+
+
+                for e in ["total", *type_elements]:
+
+                    # plot RDF comparison
+                    fig4, (ax4) = plt.subplots()
+                    plt.title(f"RDF comparison for {e} between different MD trajectories")
+
+                    # plot RDF for each branch
+                    for i in range(len(array_to_vary)):
+
+                        # read in branch configuration
+                        dir_project_i = dir_project / f"{param_to_vary}_{array_to_vary[i]}/"
+
+                        with open(str(dir_project_i / 'branch_config.yaml'), 'r') as f:
+                            configWF_i = yaml.safe_load(f)
+
+                        dir_MD = Path(configWF_i.get("dir_MD", str(dir_project_i / "1-MD/")))
+
+                        # read in RDF
+                        if e == "total":
+                            r, rdf = np.loadtxt(str(dir_MD / f"rdf_total.txt"), unpack=True, skiprows=1)
+                        else:
+                            r, rdf = np.loadtxt(str(dir_MD / f"rdf_{e}-{e}.txt"), unpack=True, skiprows=1)
+
+                        # plot RDF
+                        label = f"{param_to_vary} {array_to_vary[i]}"
+                        plt.plot(r, rdf, label=label)
+
+                    # finalize plot
+                    plt.xlabel(f"r/{units[0]}")
+                    plt.ylabel("g(r)")
+                    plt.legend()
+
+                    outfile = dir_plot_msd / f"rdf_{e}_comparison.pdf"
+                    plt.tight_layout()
+                    plt.savefig(outfile)
+                    plt.close(fig4)
+                    print(f"✅ Saved RDF comparison plot → {outfile}", flush=True)
 
 
         else:

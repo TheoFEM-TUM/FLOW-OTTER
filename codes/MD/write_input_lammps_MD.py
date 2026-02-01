@@ -190,9 +190,10 @@ with open(lammps_input_file, "w") as f:
         w("")
 
     # Pre-production
-    w(f"write_data {dir_MD / 'pre_run.data'}")
+    w(f"write_data {dir_MD / 'pre_run.txta'}")
+    w("")
 
-    # Dump settings
+    # Dump settings for trajectory, velocity, forces
     w(
         f"dump 1 all custom {prodrun_stepsize} "
         f"{dir_MD / 'position.lammpstrj'} id type element x y z"
@@ -215,11 +216,59 @@ with open(lammps_input_file, "w") as f:
     w(f"dump_modify 3 element {elements_str}")
     w("")
 
+    # mean squared distribution (MSD) calculation
+    compute_msd = input_params.get("compute_msd", True)
+    if compute_msd:
+        w("compute msd_all all msd")
+        w(
+            f"fix msd_all_out all ave/time {prodrun_stepsize} 1 {prodrun_stepsize} "
+            "c_msd_all[*] file msd_all.txt mode vector"
+        )
+        for i, el in enumerate(elements, start=1):
+            w(f"group grp_{el} type {i}")
+            w(f"compute msd_{el} grp_{el} msd")
+            w(
+                f"fix msd_{el}_out all ave/time {prodrun_stepsize} 1 {prodrun_stepsize} "
+                f"c_msd_{el}[*] file msd_{el}.txt mode vector"
+            )
+        w("")
+
+    # radial distribution function (RDF) calculation
+    compute_rdf = input_params.get("compute_rdf", True)
+    if compute_rdf:
+        rdf_bins = input_params.get("rdf_bins", 100)
+        w(f"compute rdf_all all rdf {rdf_bins}")
+        w(
+            f"fix rdf_all_out all ave/time {prodrun_stepsize} 1 {prodrun_stepsize} "
+            f"c_rdf_all[*] file rdf_all.txt mode vector"
+        )
+        for i, el in enumerate(elements, start=1):
+            w(f"compute rdf_{el}{el} all rdf ${rdf_bins} {i} {i}")
+            w(
+                f"fix rdf_{el}{el}_out all ave/time {thermo_output_step_size} 1 {thermo_output_step_size} "
+                f"c_rdf_{el}{el}[*] file rdf_{el}-{el}.txt mode vector"
+            )
+        w("")
+
     # NVT production run
     w(f"fix 1 all nvt temp {T} {T} {T_damp}")
     w(f"run {input_params['prodrun_numsteps']}")
     w("unfix 1")
+    w("")
 
+    # Clean up fixes
+    w("unfix thermolog")
+    if compute_msd:
+        w("unfix msd_all_out")
+        for el in elements:
+            w(f"unfix msd_{el}_out")
+    if compute_rdf:
+        w("unfix rdf_all_out")
+        for i, el in enumerate(elements, start=1):
+            w(f"unfix rdf_{el}{el}_out")
+    w("")
+
+    # Final restart file
     w(f"write_restart {dir_MD / f'restart_{T}'}")
 
 print(f"LAMMPS input file written to: {lammps_input_file}")
