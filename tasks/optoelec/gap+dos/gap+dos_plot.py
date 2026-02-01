@@ -23,10 +23,10 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         
         hamiltonian_unit = configWF.get("hamiltonian_unit", "eV")
 
-        dir_plot_dos = dir_project / "plots/dos/"
+        dir_plot_dos = dir_project / "plots/optoelec/dos/"
         dir_plot_dos.mkdir(parents=True, exist_ok=True)
 
-        dir_plot_gap = dir_project / "plots/gap/"
+        dir_plot_gap = dir_project / "plots/optoelec/gap/"
         dir_plot_gap.mkdir(parents=True, exist_ok=True)
 
         # determine correct branch config file
@@ -72,7 +72,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         plt.xlabel(f"Energy/{hamiltonian_unit}")
         plt.ylabel(f"Density of States/({hamiltonian_unit})" + r"$^{-1}$")
         plt.legend()
-        outfile = dir_plot_dos / f"avg_dos.pdf"
+        outfile = dir_plot_dos / f"avg_dos_comparison.pdf"
         plt.savefig(outfile)
         plt.close(fig1)
 

@@ -1,3 +1,4 @@
+from typing import Tuple
 import yaml
 import numpy as np
 from pathlib import Path
@@ -111,7 +112,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         # convert step to time
         plot_MD_time = configWF_i.get("plot_MD_time", True)
         if plot_MD_time:
-            dt = configWF_i["lammps"]["dt"] * configWF_i["lammps"].get("thermo_output_step_size", 100)
+            dt = configWF_i["lammps"]["dt"] 
             step *= dt  
             n1 *= dt
             n2 *= dt

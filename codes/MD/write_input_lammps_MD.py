@@ -150,16 +150,22 @@ with open(lammps_input_file, "w") as f:
             #w("minimize 1.0e-4 1.0e-6 100 1000")
             w(" ")
 
+        total_steps = 0
+
         # Heating phase
         if T_start != T:
+            eqsteps_nvt_heating = input_params['eqsteps_nvt_heating']
+            total_steps += eqsteps_nvt_heating
             w(f"fix 1 all nvt temp {T_start} {T} {T_damp}")
-            w(f"run {input_params['eqsteps_nvt_heating']}")
+            w(f"run {eqsteps_nvt_heating}")
             w("unfix 1")
             w("")
 
         # NVT equilibration run
+        eqsteps_nvt = input_params['eqsteps_nvt']
+        total_steps += eqsteps_nvt
         w(f"fix 1 all nvt temp {T} {T} {T_damp}")
-        w(f"run {input_params['eqsteps_nvt']}")
+        w(f"run {eqsteps_nvt}")
         w("unfix 1")
         w("")
 
@@ -174,14 +180,18 @@ with open(lammps_input_file, "w") as f:
 
             # Expansion phase
             if P_start != P:
+                eqsteps_npt_expansion = input_params['eqsteps_npt_expansion']
+                total_steps += eqsteps_npt_expansion
                 w(f"fix 1 all npt temp {T} {T} {T_damp} {barostat} {P_start} {P} {P_damp}")
-                w(f"run {input_params['eqsteps_npt_expansion']}")
+                w(f"run {eqsteps_npt_expansion}")
                 w("unfix 1")
                 w("")
 
             # NPT equilibration run
+            eqsteps_npt = input_params['eqsteps_npt']
+            total_steps += eqsteps_npt
             w(f"fix 1 all npt temp {T} {T} {T_damp} {barostat} {P} {P} {P_damp}")
-            w(f"run {input_params['eqsteps_npt']}")
+            w(f"run {eqsteps_npt}")
             w("unfix 1")
             w("")
 
@@ -190,7 +200,7 @@ with open(lammps_input_file, "w") as f:
         w("")
 
     # Pre-production
-    w(f"write_data {dir_MD / 'pre_run.txta'}")
+    w(f"write_data {dir_MD / 'pre_run.data'}")
     w("")
 
     # Dump settings for trajectory, velocity, forces
@@ -219,40 +229,51 @@ with open(lammps_input_file, "w") as f:
     # mean squared distribution (MSD) calculation
     compute_msd = input_params.get("compute_msd", True)
     if compute_msd:
+        dir_msd = dir_MD / "msd/"
+        dir_msd.mkdir(parents=True, exist_ok=True)
+
         w("compute msd_all all msd")
         w(
             f"fix msd_all_out all ave/time {prodrun_stepsize} 1 {prodrun_stepsize} "
-            "c_msd_all[*] file msd_all.txt mode vector"
+            f"c_msd_all[1] c_msd_all[2] c_msd_all[3] c_msd_all[4] "
+            f"file {dir_msd}/msd_all.txt title2 '# TimeStep MSD_x   MSD_y   MSD_z   MSD_total'"
         )
         for i, el in enumerate(elements, start=1):
             w(f"group grp_{el} type {i}")
             w(f"compute msd_{el} grp_{el} msd")
             w(
                 f"fix msd_{el}_out all ave/time {prodrun_stepsize} 1 {prodrun_stepsize} "
-                f"c_msd_{el}[*] file msd_{el}.txt mode vector"
+                f"c_msd_{el}[1] c_msd_{el}[2] c_msd_{el}[3] c_msd_{el}[4] "
+                f"file {dir_msd}/msd_{el}.txt title2 '# TimeStep MSD_x   MSD_y   MSD_z   MSD_total'"
             )
         w("")
+
+    prod_numsteps = input_params['prodrun_numsteps']
+    total_steps += prod_numsteps
 
     # radial distribution function (RDF) calculation
     compute_rdf = input_params.get("compute_rdf", True)
     if compute_rdf:
+        dir_rdf = dir_MD / "rdf/"
+        dir_rdf.mkdir(parents=True, exist_ok=True)
+
         rdf_bins = input_params.get("rdf_bins", 100)
         w(f"compute rdf_all all rdf {rdf_bins}")
         w(
-            f"fix rdf_all_out all ave/time {prodrun_stepsize} 1 {prodrun_stepsize} "
-            f"c_rdf_all[*] file rdf_all.txt mode vector"
+            f"fix rdf_all_out all ave/time {prodrun_stepsize} {int(prod_numsteps/prodrun_stepsize)} {total_steps} "
+            f"c_rdf_all[*] file {dir_rdf}/rdf_all.txt mode vector title3 '# bin     r   g(r)    coordination number'"
         )
         for i, el in enumerate(elements, start=1):
-            w(f"compute rdf_{el}{el} all rdf ${rdf_bins} {i} {i}")
+            w(f"compute rdf_{el}{el} all rdf {rdf_bins} {i} {i}")
             w(
-                f"fix rdf_{el}{el}_out all ave/time {thermo_output_step_size} 1 {thermo_output_step_size} "
-                f"c_rdf_{el}{el}[*] file rdf_{el}-{el}.txt mode vector"
+                f"fix rdf_{el}{el}_out all ave/time {prodrun_stepsize} {int((prod_numsteps)/prodrun_stepsize)} {total_steps} "
+                f"c_rdf_{el}{el}[*] file {dir_rdf}/rdf_{el}-{el}.txt mode vector title3 '# bin r   g(r)    coordination number'"
             )
         w("")
 
     # NVT production run
     w(f"fix 1 all nvt temp {T} {T} {T_damp}")
-    w(f"run {input_params['prodrun_numsteps']}")
+    w(f"run {prod_numsteps}")
     w("unfix 1")
     w("")
 

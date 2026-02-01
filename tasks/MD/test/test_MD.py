@@ -141,12 +141,14 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
             plot_MD_time = configWF_i.get("plot_MD_time", True)
 
-            msd_files = sorted(dir_MD.glob("msd_*.txt"))
+            dir_msd = dir_MD / "msd/"
+
+            msd_files = sorted(dir_msd.glob("msd_*.txt"))
             
             for file in msd_files:
-                data = np.loadtxt(file)
+                data = np.loadtxt(file, skiprows=2)
 
-                step = data[:, 0]
+                step = data[:, 0] - data[0, 0]
                 msd_x = data[:, 1]
                 msd_y = data[:, 2]
                 msd_z = data[:, 3]
@@ -155,7 +157,6 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                 # convert step to time
                 plot_MD_time = configWF_i.get("plot_MD_time", True)
                 if plot_MD_time:
-                    dt = configWF_i["lammps"]["dt"] * configWF_i["lammps"].get("thermo_output_step_size", 100)
                     step *= dt  
 
                 plt.figure()
@@ -165,11 +166,12 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                 plt.plot(step, msd_z, "--", label="MSD z", color="red")
 
                 if plot_MD_time:
-                    plt.xlabel("Time/" + units[5])
+                    plt.xlabel("Time/" + units[4])
                 else:
                     plt.xlabel("Step")
                 plt.ylabel("MSD/" + units[0] + "^2")
-                plt.title("MSD")
+                e = str(file).split("_", 1)[1].rsplit(".", 1)[0]
+                plt.title(f"MSD ({e})")
                 plt.legend()
                 plt.tight_layout()
                 plt.savefig(dir_test_msd / (file.stem + ".pdf"))
@@ -181,20 +183,23 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             dir_test_rdf = dir_test / "rdf/"
             dir_test_rdf.mkdir(parents=True, exist_ok=True)
 
-            rdf_files = sorted(dir_MD.glob("rdf_*.txt"))
+            dir_rdf = dir_MD / "rdf/"
+
+            rdf_files = sorted(dir_rdf.glob("rdf_*.txt"))
             
             for file in rdf_files:
-                data = np.loadtxt(file)
+                data = np.loadtxt(file, skiprows=4)
 
-                r = data[:, 0]
-                rdf = data[:, 1]
+                r = data[:, 1]
+                rdf = data[:, 2]
 
                 plt.figure()
-                plt.plot(r, rdf, label="RDF", color="black")
+                plt.plot(r, rdf, label="RDF")
 
                 plt.xlabel("r/" + units[0])
                 plt.ylabel("g(r)")
-                plt.title("Radial Distribution Function")
+                e = str(file).split("_", 1)[1].rsplit(".", 1)[0]
+                plt.title(f"Radial Distribution Function ({e})")
                 plt.legend()
                 plt.tight_layout()
                 plt.savefig(dir_test_rdf / (file.stem + ".pdf"))

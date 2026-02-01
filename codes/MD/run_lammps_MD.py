@@ -171,7 +171,7 @@ if equilibrate:
     lmp.command("undump 0")
     
 
-lmp.command(f"write_data " + str(dir_MD / "pre_run.txta"))
+lmp.command(f"write_data " + str(dir_MD / "pre_run.data"))
 
 # Dump file settings for trajectory, velocity, forces
 lmp.command(f"dump 1 all custom {prodrun_stepsize} " + str(dir_MD / "position.lammpstrj") + " id type element x y z")
@@ -192,14 +192,14 @@ if compute_msd:
     lmp.command("compute msd_all all msd")
     lmp.command(
         f"fix msd_all_out all ave/time {prodrun_stepsize} 1 {prodrun_stepsize} "
-        "c_msd_all[*] file msd_all.txt mode vector"
+        "c_msd_all file msd_all.txt mode vector"
     )
     for i, el in enumerate(elements, start=1):
         lmp.command(f"group grp_{el} type {i}")
         lmp.command(f"compute msd_{el} grp_{el} msd")
         lmp.command(
             f"fix msd_{el}_out all ave/time {prodrun_stepsize} 1 {prodrun_stepsize} "
-            f"c_msd_{el}[*] file msd_{el}.txt mode vector"
+            f"c_msd_{el} file msd_{el}.txt mode vector"
         )
 
 # radial distribution function (RDF) calculation
@@ -212,7 +212,7 @@ if compute_rdf:
         f"c_rdf_all[*] file rdf_all.txt mode vector"
     )
     for i, el in enumerate(elements, start=1):
-        lmp.command(f"compute rdf_{el}{el} all rdf ${rdf_bins} {i} {i}")
+        lmp.command(f"compute rdf_{el}{el} all rdf {rdf_bins} {i} {i}")
         lmp.command(
             f"fix rdf_{el}{el}_out all ave/time {thermo_output_step_size} 1 {thermo_output_step_size} "
             f"c_rdf_{el}{el}[*] file rdf_{el}-{el}.txt mode vector"
