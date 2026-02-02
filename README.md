@@ -7,6 +7,7 @@ Here you find a detailed description of how to set up the workflow manager: [Cli
 
 ## Usage
 
+[PerQueue](https://gitlab.com/asm-dtu/perqueue)
 
 
 ## Parameters
