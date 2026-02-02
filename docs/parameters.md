@@ -173,6 +173,6 @@ This section contains parameters for the MD+Kubo method. It is, so far, an exper
 
 **output_dir** (str): output dir ?  
 
-**TB_path** (str): path to H file
-**celldim_path** (str): path to celldimension file
+**TB_path** (str): path to H file  
+**celldim_path** (str): path to celldimension file  
 
