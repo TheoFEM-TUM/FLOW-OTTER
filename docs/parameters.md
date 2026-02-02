@@ -26,8 +26,12 @@ These are all parameters with detailed descriptions that can be used in the conf
 **param_to_vary** (str): parameter which varies among the branches; choose one of the parameters from this list or make one up just to get the folder structure
 **unit_to_vary** (str): unit of param_to_vary shown in plots (*""*)  
 **param_group_for_vary** (str): specify the parameter group if the chosen parameter is part of a subgroup  
-**array_to_vary** (array of param type): array of values (of fitting type); each branch gets one of the values (len(array) == num_simulations)  
+**array_to_vary** (array of param type): array of values (of matching type); each branch gets one of the values (len(array) == num_simulations)  
 **simulation_index** (int): branch index which is equivalent to pq_index (sweep) or pq_iteration (cascade) (*internally set by PQ*)  
+
+**param_to_vary2** and **param_to_vary3** (str): additional parameters which vary among the branches (compare param_to_vary); choose one of the parameters from this list 
+**param_group_for_vary2** and **param_group_for_vary3** (str): specify the parameter group if the chosen parameters for additional param_to_vary* are part of a subgroup (compare param_group_for_vary)    
+**array_to_vary2** and **array_to_vary3** (array of param type): array of values (of matching type) for additional param_to_vary* (compare array_to_vary); each branch gets one of the values (len(array) == num_simulations) 
 
 **human_in_loop** (bool): if true, workflow fails after each test to allow the user to verify the results of this step (*false*)  
 **run_test_MD** (bool): if true, VDOS and histograms of positions, velocities, and forces are calculated to test MD reliability (*true*)  
