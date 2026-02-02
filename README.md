@@ -2,7 +2,7 @@
 
 ## Set Up
 
-Here you find a detailed description of how to set up the workflow manager: [Click here to view the parameters](docs/set_up.md)
+[Here](docs/set_up.md), you find a detailed description of how to set up the workflow manager.
 
 
 ## Usage
@@ -12,7 +12,7 @@ Here you find a detailed description of how to set up the workflow manager: [Cli
 
 ## Parameters
 
-Here you find the definition of parameters that can be used within the workflow manager: [Click here to view the parameters](docs/parameters.md)
+[Here](docs/parameters.md), you can find the definitions of the parameters that can be used within the workflow manager. 
 
 
 ## Examples
