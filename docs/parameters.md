@@ -106,7 +106,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 
 
 ## lammps:
-Details can also be found in LAMMPS documentation. The parameters are often named the same.
+Details can also be found in [LAMMPS documentation](https://docs.lammps.org/Manual.html). The parameters are often named the same.
 
 **units** (str): LAMMPS unit style  
 **dimension** (int): system dimensionality  
