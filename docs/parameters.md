@@ -89,7 +89,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 
 **hamiltonian_unit** (str): units of Hamiltonian shown in plots (*"eV"*)
 
-**optoelec_type** (str): determines type of optoelectronic property to be calculated (*"skip_optoelec"*, "gas+dos", "conductivity")
+**optoelec_type** (str): determines type of optoelectronic property to be calculated (*"gas+dos"*, "skip_optoelec", "conductivity")
 - "skip_optoelec" -> no optoelectronic properties are calculated
 - "gap+dos" -> band gap and density of states (dos) are calculated; depending on the H size, exact diagonalization ("gap+dos_exact_diag" for dim(H) < 10⁴) or the kernel polynomial method ("gap+dos_KPM" for dim(H) > 10⁴) are used
 - "conductivity" -> optical conductivity is calculated with the MD+Kubo method (so far experimental/not supported feature!)  
