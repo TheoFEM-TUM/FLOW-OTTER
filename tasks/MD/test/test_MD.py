@@ -123,15 +123,16 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         # calculation of distributions
         dir_test_hist = dir_test / "histograms/"
         dir_test_hist.mkdir(parents=True, exist_ok=True)
-        dist.position_histogram(str(dir_MD), dir_test_hist, type_names, units[0])
-        dist.velocities_histogram(str(dir_MD), dir_test_hist, type_names, units[1])
-        dist.forces_histogram(str(dir_MD), dir_test_hist, type_names, units[2])
+        num_bins = configWF_i.get("num_bins", 25)
+        dist.position_histogram(str(dir_MD), dir_test_hist, type_names, units[0], num_bins)
+        dist.velocities_histogram(str(dir_MD), dir_test_hist, type_names, units[1], num_bins)
+        dist.forces_histogram(str(dir_MD), dir_test_hist, type_names, units[2], num_bins)
 
         # calculation of vdos
         dir_test_vdos = dir_test / "vdos/"
         dir_test_vdos.mkdir(parents=True, exist_ok=True)
         #vdos.calc_vdos(str(dir_MD), dir_test, potim, masses)
-        vdos.get_vdos(str(dir_MD), dir_test_vdos, potim, type_names, units[3], omega_max=configWF_i.get("vdos_omega_max", None))
+        vdos.get_vdos(str(dir_MD), dir_test_vdos, potim, type_names, units[3], omega_max=configWF_i.get("vdos_omega_max", None), smearing=configWF_i.get("gaussian_smearing_vdos", None))
 
         # plot MSD
         if configWF_i["lammps"].get("compute_msd", True):

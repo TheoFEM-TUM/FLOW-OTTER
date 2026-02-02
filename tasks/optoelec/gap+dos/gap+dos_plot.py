@@ -80,7 +80,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         
 
         # plot param_to_vary vs average gaps 
-        data_gap = np.zeros((len(array_to_vary), 3))
+        data_gap = np.zeros((len(array_to_vary), 3), dtype=object)
 
         fig1, (ax1) = plt.subplots()
         plt.title(f"{param_to_vary} vs band gap")
@@ -117,7 +117,6 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
             data_gap[i, :] = np.array([array_to_vary[i], gap, std_gap])
 
-
         plt.xlabel(f"{param_to_vary}{unit_to_vary}")
         plt.ylabel(f"Band gap/{hamiltonian_unit}")
         plt.legend()
@@ -125,7 +124,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         plt.savefig(outfile)
         plt.close(fig1)
 
-        np.savetxt(str(dir_plot_gap / f"{param_to_vary}_vs_gaps.txt"), data_gap, header=f"{param_to_vary}      average of gap/{hamiltonian_unit}      std of gap/{hamiltonian_unit}")
+        np.savetxt(str(dir_plot_gap / f"{param_to_vary}_vs_gaps.txt"), data_gap, fmt='%s', header=f"{param_to_vary}      average of gap/{hamiltonian_unit}      std of gap/{hamiltonian_unit}")
 
         print(f"✅ Saved {param_to_vary} vs band gap plot → {outfile}", flush=True)
 

@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import scipy.integrate as integrate
 import subprocess
+from scipy.ndimage import gaussian_filter1d
 
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
@@ -87,7 +88,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
                     # plot VDOS
                     label = f"{param_to_vary} {array_to_vary[i]}"
-                    plt.plot(freq, vdos, label=label)
+                    gaussian_smearing = configWF_i.get("gaussian_smearing_vdos", 0.01)
+                    plt.plot(freq, gaussian_filter1d(vdos, gaussian_smearing), label=label)
 
                 # finalize plot
                 plt.xlabel(f"Frequency/{units[3]}")

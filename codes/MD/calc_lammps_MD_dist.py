@@ -42,7 +42,7 @@ def parse_atom_types(data_file):
 
 
 
-def plot_histograms(data_dict, atom_types, type_names, output_dir, filename, labels):
+def plot_histograms(data_dict, atom_types, type_names, output_dir, num_bins, filename, labels):
     """Generic histogram plotting with one color per atom type and real names."""
     n_types = len(atom_types)
     print("type_names:", type_names)
@@ -60,7 +60,7 @@ def plot_histograms(data_dict, atom_types, type_names, output_dir, filename, lab
         for j in range(3):
             axes[i, j].hist(
                 data[:, j],
-                bins=25,
+                bins=num_bins,
                 density=True,
                 color=colors[atype],
                 edgecolor="black",
@@ -71,7 +71,7 @@ def plot_histograms(data_dict, atom_types, type_names, output_dir, filename, lab
             axes[i, j].set_xlim(np.min(data[:, j]), np.max(data[:, j]))
 
 
-            hist, bin_edges = np.histogram(data[:, j], bins=25, density=True)
+            hist, bin_edges = np.histogram(data[:, j], bins=num_bins, density=True)
             bin_centers = 0.5 * (bin_edges[:-1] + bin_edges[1:])
             hist_data = np.column_stack((bin_centers, hist))
 
@@ -92,7 +92,7 @@ def plot_histograms(data_dict, atom_types, type_names, output_dir, filename, lab
 
 
 
-def position_histogram(input_dir, output_dir, type_names, unit):
+def position_histogram(input_dir, output_dir, type_names, unit, num_bins):
     """Compute displacement histograms from position.lammpstrj (needs PBC correction)."""
     input_dir = pathlib.Path(input_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -138,7 +138,7 @@ def position_histogram(input_dir, output_dir, type_names, unit):
         all_displacements[atype] = np.vstack(all_displacements[atype])
 
 
-    plot_histograms(all_displacements, atom_types, type_names, output_dir,
+    plot_histograms(all_displacements, atom_types, type_names, output_dir, num_bins,
                     "displacements_histogram.pdf", [f"Δx/{unit}", f"Δy/{unit}", f"Δz/{unit}"])
 
 
@@ -174,7 +174,7 @@ def parse_lammps_dump(file_path, n_fields=3):
     return data
 
 
-def velocities_histogram(input_dir, output_dir, type_names, unit):
+def velocities_histogram(input_dir, output_dir, type_names, unit, num_bins):
     """Compute velocity histograms from velocity.lammpstrj"""
     input_dir = pathlib.Path(input_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -186,11 +186,11 @@ def velocities_histogram(input_dir, output_dir, type_names, unit):
     all_velocities = parse_lammps_dump(traj_file, n_fields=3)
     atom_types = list(all_velocities.keys())
 
-    plot_histograms(all_velocities, atom_types, type_names, output_dir,
+    plot_histograms(all_velocities, atom_types, type_names, output_dir, num_bins,
                     "velocities_histogram.pdf", [f"Vx/{unit}", f"Vy/{unit}", f"Vz/{unit}"])
 
 
-def forces_histogram(input_dir, output_dir, type_names, unit):
+def forces_histogram(input_dir, output_dir, type_names, unit, num_bins):
     """Compute force histograms from forces.lammpstrj"""
     input_dir = pathlib.Path(input_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -202,17 +202,19 @@ def forces_histogram(input_dir, output_dir, type_names, unit):
     all_forces = parse_lammps_dump(traj_file, n_fields=3)
     atom_types = list(all_forces.keys())
 
-    plot_histograms(all_forces, atom_types, type_names, output_dir,
+    plot_histograms(all_forces, atom_types, type_names, output_dir, num_bins,
                     "forces_histogram.pdf", [f"Fx/{unit}", f"Fy/{unit}", f"Fz/{unit}"])
 
 
 def main():
-    if len(sys.argv) < 3:
-        print("Usage: python script.py <input_dir> <output_dir>")
+    if len(sys.argv) < 5:
+        print("Usage: python script.py <input_dir> <output_dir> <unit_string> <num_bins>")
         sys.exit(1)
 
     input_dir = pathlib.Path(sys.argv[1])
     output_dir = pathlib.Path(sys.argv[2])
+    unit = str(sys.argv[3])
+    num_bins = int(sys.argv[4])
 
     # parse atom type names once
     data_files = list(input_dir.glob("*.data"))
@@ -220,7 +222,7 @@ def main():
         raise FileNotFoundError("❌ No .data file found in input_dir")
     type_names = parse_atom_types(data_files[0])
 
-    position_histogram(input_dir, output_dir, type_names)
+    position_histogram(input_dir, output_dir, type_names, unit, num_bins)
  #   velocities_histogram(input_dir, output_dir, type_names)
  #   forces_histogram(input_dir, output_dir, type_names)
 
