@@ -89,7 +89,20 @@ These are all parameters with detailed descriptions that can be used in the conf
 
 **hamiltonian_unit** (str): units of Hamiltonian shown in plots (*"eV"*)
 
-**optoelec_type** (str): (*None*)  
+**optoelec_type** (str): determines type of optoelectronic property to be calculated (*"skip_optoelec"*, "gas+dos", "conductivity")
+- "skip_optoelec" -> no optoelectronic properties are calculated
+- "gap+dos" -> band gap and density of states (dos) are calculated; depending on the H size, exact diagonalization ("gap+dos_exact_diag" for dim(H) < 10⁴) or the kernel polynomial method ("gap+dos_KPM" for dim(H) > 10⁴) are used
+- "conductivity" -> optical conductivity is calculated with the MD+Kubo method (so far experimental/not supported feature!)  
+
+**threads_optoelec** (int): number of Julia threads for calculation of optoelectronic properties (*1*)  
+**ranks_optoelec** (int): number of MPI ranks for calculation of optoelectronic properties (*os.environ.get("SLURM_NTASKS")*)  
+
+**dir_conducitivity** (str): directory to MD+Kubo code  
+**dir_config** (str): directory to YAML configuration file for MD+Kubo method
+**dir_output** (str): output directory of MD+Kubo method
+
+**N_avg** (int): number of different configurations for the calculation of an average conductivity (*1)
+**dN_avg** (int): consecutive difference of the initial snapshots between the different configurations (*100* if N_avg > 1)
 
 
 ## lammps:
@@ -153,5 +166,13 @@ Details can also be found in LAMMPS documentation. The parameters are often name
 
 ## conductivity:
 
-**N_avg** (int): number of different configurations for the calculation of an average conductivity (*1)
+This section contains parameters for the MD+Kubo method. It is, so far, an experimental/not-supported feature!
+
+**t_start** (int): snapshot index of H snapshots from H file to become the initial snapshot of MD+Kubo method (*0*)  
+**T** (float): temperature within the MD+Kubo method  
+
+**output_dir** (str): output dir ?  
+
+**TB_path** (str): path to H file
+**celldim_path** (str): path to celldimension file
 
