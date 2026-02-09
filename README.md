@@ -11,11 +11,17 @@
 
 After the installation, go to a directory where you would like to set up the workflow. 
 Initialize `perqueue` with
+
 ```pq init```
+
 Then start the workflow with the configuration file you would like to use:
+
 ```python path_to_this_project/workflow.py path_to_config_file.yaml```
+
 This will start the workflow's first job. You can test
+
 ```pq ls``` 
+
 to check that everything works fine.
 
 
