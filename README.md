@@ -34,10 +34,14 @@ to check that everything works fine.
 
 The workflow can be manipulated with the normal [PerQueue](https://gitlab.com/asm-dtu/perqueue) commands (follow the link for further details or use `pq -h`). 
 The most relevant commands are:
-- `pq ls`
-- `pq modify r -i` (submit first job for change of branch config files)
-- `pq resubmit -i`
+```
+pq ls
+```
+-> provides a list of the workflow tasks with their status in order of creation
+- `pq modify r -i ID` -> modify the resources of the job with the requested job ID (submit first job for change of branch config files)
+- `pq resubmit [-i ID] [-m MQ_ID] [-n NAME] [-s sdft]` -> resubmit tasks of the workflow defined by their job ID, their myqueue ID, the task name, or their status 
 
+Each PerQueue command can also be used with the `-h` flag to get further information.
 
 
 
