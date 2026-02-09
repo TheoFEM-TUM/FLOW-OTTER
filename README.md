@@ -5,6 +5,14 @@
 [Here](docs/set_up.md), you find a detailed description of how to set up the workflow manager.
 
 
+## Quickstart
+
+After the installation, go to a directory where you would like to set up the workflow. 
+Initialize the workflow with
+`pq init`
+
+
+
 ## Usage
 
 [PerQueue](https://gitlab.com/asm-dtu/perqueue)
