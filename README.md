@@ -7,7 +7,7 @@
 [Here](docs/set_up.md), you find a detailed description of how to set up the workflow manager.
 
 
-## Quickstart
+## Quick start
 
 After the setup, go to a directory where you would like to set up the workflow. 
 Initialize `PerQueue` with
@@ -49,11 +49,12 @@ to check that everything works fine.
 ## How to cite
 
 Please cite the following references when using this package:  
-***TBD***
+- ***TBD***
+- Sjølin, B. H., Hansen, W. S., Morin-Martinez, A. A., Petersen, M. H., Rieger, L. H., Vegge, T., García-Lastra, J. M., & Castelli, I. E. (2024). PerQueue: managing complex and dynamic workflows. Digital Discovery, 3(9), 1832–1841. (https://doi.org/10.1039/D4DD00134F)
 
-If you use one of the related codes as part of your workflow, follow the links in the underlying list:
-- [LAMMPS]()
-- [Hamster]()
-- [MACE]()
-- [VASP]()
+For instructions for citing external codes called by this project, please follow the links in the list below:
+- [LAMMPS](https://www.lammps.org/cite.html)
+- [Hamster](https://github.com/TheoFEM-TUM/Hamster.jl)
+- [MACE](https://mace-docs.readthedocs.io/en/latest/)
+- [VASP](https://vasp.at/)
 
