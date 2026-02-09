@@ -1,15 +1,22 @@
 # MD_TB_PQ_workflow
 
 
+Please cite the following reference when using this package:
+[1] 
+[2]
 
-## Set Up
+If you use the `Hamster` Hamiltonian prediction, please cite:
+[1]
+[2] 
+
+## Setup
 
 [Here](docs/set_up.md), you find a detailed description of how to set up the workflow manager.
 
 
 ## Quickstart
 
-After the installation, go to a directory where you would like to set up the workflow. 
+After the setup, go to a directory where you would like to set up the workflow. 
 Initialize `PerQueue` with
 ```
 pq init
@@ -30,6 +37,9 @@ to check that everything works fine.
 
 ## Usage
 
+- pq ls
+- pq modify (submit first job for change of branch config files)
+
 [PerQueue](https://gitlab.com/asm-dtu/perqueue)
 
 
@@ -39,4 +49,7 @@ to check that everything works fine.
 
 
 ## Examples
+
+[Here](docs/parameters.md), you can find examples of configuration files.
+
 
