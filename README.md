@@ -1,6 +1,8 @@
 # MD_TB_PQ_workflow
 
 
+[PerQueue](https://gitlab.com/asm-dtu/perqueue)
+
 
 ## Setup
 
@@ -30,10 +32,13 @@ to check that everything works fine.
 
 ## Usage
 
-- pq ls
-- pq modify (submit first job for change of branch config files)
+The workflow can be manipulated with the normal [PerQueue](https://gitlab.com/asm-dtu/perqueue) commands (follow the link for further details or use `pq -h`). 
+The most relevant commands are:
+- `pq ls`
+- `pq modify r -i` (submit first job for change of branch config files)
+- `pq resubmit -i`
 
-[PerQueue](https://gitlab.com/asm-dtu/perqueue)
+
 
 
 ## Parameters
