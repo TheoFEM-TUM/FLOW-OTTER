@@ -50,7 +50,7 @@ to check that everything works fine.
 
 Please cite the following references when using this package:  
 - ***TBD***
-- Sjølin, B. H., Hansen, W. S., Morin-Martinez, A. A., Petersen, M. H., Rieger, L. H., Vegge, T., García-Lastra, J. M., & Castelli, I. E. (2024). PerQueue: managing complex and dynamic workflows. Digital Discovery, 3(9), 1832–1841. (https://doi.org/10.1039/D4DD00134F)
+- B. H. Sjølin, W. S. Hansen, A. A. Morin-Martinez, M. H. Petersen, L. H. Rieger, T. Vegge, J. M. García-Lastra, and I. E. Castelli (2024). **PerQueue: managing complex and dynamic workflows. Digital Discovery**, 3(9), 1832–1841. (https://doi.org/10.1039/D4DD00134F)
 
 For instructions for citing external codes called by this project, please follow the links in the list below:
 - [LAMMPS](https://www.lammps.org/cite.html)
