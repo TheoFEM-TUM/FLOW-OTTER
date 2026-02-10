@@ -1,29 +1,52 @@
 # Setup
-
 Download the repo with 
 ```
 git clone https://github.com/TheoFEM-TUM/MD_TB_PQ_workflow.git
 ```
 to a desired directory.
 
+
 ## Requirements
 This package works on computing clusters with [SLURM](https://slurm.schedmd.com/), [PBS](https://en.wikipedia.org/wiki/Portable_Batch_System), or [LSF](https://en.wikipedia.org/wiki/IBM_Spectrum_LSF) as the job scheduler since the underlying [myqueue](https://myqueue.readthedocs.io/) required one of them.  
 
-To install the package, you need a Python of version **TBD** or higher on you cluster.
+To use the package, you need a Python version of **TBD** or higher on your cluster.
+You can check your Python version with 
+```
+python --version
+```
 
-## Install Python environment 
+## Create virtual Python environment(s)
 
+You can only use the workflow from virtual Python environments that contain the required Python packages.
+
+You can create a Python environment with the name `.venv_pq` with
+```
+python -m venv .venv_pq
+```
+
+Every time you want to load the virtual environment, please use
+```
+source .venv_pq/bin/activate
+```
+
+With `pip`, you can install Python packages. To get all the Python packages (including PerQueue and myqueue) needed to run the workflow, you can simply run the following command:
+```
+pip install -r requirements.txt
+```
+You can find `requirements.txt` in **TBD**. 
+Please note that PerQueue only works with myqueue version of **TBD**.
+
+
+Often, different external softwares have incompatible requirements for Python packages. Then, you can create several virtual environments.
 
 
 ## PerQueue configuration
-
 PerQueue needs to know your cluster's configuration. 
 You can set this in `~/.myqueue/config.py`. 
 In the [myqueue documentation](https://myqueue.readthedocs.io/configuration.html), you can find further details.
 
 
 ## External software
-
 This project manages communication, workflow integration, and pre- and post-processing for several external software packages.
 
 To access the full functionality of this project, all external codes listed below must be installed. However, if you only require specific features, you may install only the corresponding dependencies.
