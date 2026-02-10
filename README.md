@@ -11,7 +11,7 @@
 
 ## Quick start
 
-After the setup, go to a directory where you would like to set up the workflow. 
+After setting up and loading the desired virtual environment, go to a directory where you would like to set up the workflow. 
 Initialize [PerQueue](https://gitlab.com/asm-dtu/perqueue) with
 ```
 pq init
