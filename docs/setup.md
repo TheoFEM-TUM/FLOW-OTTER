@@ -37,8 +37,9 @@ You can find `requirements.txt` in **TBD**.
 Please note that PerQueue only works with myqueue version of **TBD**.
 
 
-Often, different external softwares have incompatible requirements for Python packages. Then, you can create several virtual environments.
-
+Often, different external softwares have incompatible requirements for Python packages. 
+Then, you can create several virtual environments and (re)start the corresponding tasks when you are in a matching environment.
+It can be helpful to create bash scripts that load all you need for specific tasks. 
 
 ## PerQueue configuration
 PerQueue needs to know your cluster's configuration. 
