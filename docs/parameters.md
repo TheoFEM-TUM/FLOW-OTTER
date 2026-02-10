@@ -51,7 +51,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 - "existing_input" &rarr; use already existing LAMMPS input in dir_MD
 - "python_input" &rarr; use Python to call LAMMPS (compatible LAMMPS version needed!)
   
-`ranks_MD` (int): parallelization of LAMMPS calculation for srun -n {ranks_MD} (*os.environ.get("SLURM_NTASKS")*)  
+`ranks_MD` (int): parallelization of LAMMPS calculation for `srun -n ranks_MD` (*os.environ.get("SLURM_NTASKS")*)  
 
 `dir_MD` (str): output directory for MD calculation (*dir_project + "1-MD/"*)  
 `dir_ini_MD` (str): input directory for initial atomic configuration for MD (*dir_MD*)  
@@ -176,7 +176,7 @@ This section contains parameters for the MD+Kubo method. It is, so far, an exper
 `t_start` (int): snapshot index of H snapshots from H file to become the initial snapshot of MD+Kubo method (*0*)  
 `T` (float): temperature within the MD+Kubo method  
 
-`output_dir` (str): output dir ?  
+`output_dir` (str): output dir 
 
 `TB_path` (str): path to H file  
 `celldim_path` (str): path to celldimension file  
