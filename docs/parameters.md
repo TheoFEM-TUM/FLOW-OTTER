@@ -19,8 +19,8 @@ These are all parameters with detailed descriptions that can be used in the conf
 `resources_long` (str): myqueue string specifying resources for jobs which should run very long (*resources of resources or resources_H with walltime = 1d*)  
 
 `simulation_type` (str): determines in which order different simulation branches are started (*"sweep"*, "cascade") 
-- sweep -> different MD simulations are started in parallel
-- cascade -> different MD simulation starts consecutively after each other using the restart from the former simulation
+- sweep &rarr; different MD simulations are started in parallel
+- cascade &rarr; different MD simulation starts consecutively after each other using the restart from the former simulation
 
 `num_simulations` (int): number of simulation branches (*1*)  
 `param_to_vary` (str): parameter which varies among the branches; choose one of the parameters from this list or make one up just to get the folder structure; provides name for subfolder structure  
