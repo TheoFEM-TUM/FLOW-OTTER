@@ -21,6 +21,11 @@ Then start the workflow with the configuration file you would like to use:
 ```
 python path_to_this_project/workflow.py path_to_config/file.yaml
 ```
+or 
+```
+python path_to_this_project/workflow_MD.py path_to_config/file.yaml
+```
+if you are only interested in MD simulations
 
 This will start the workflow's first job. You can test
 ```
@@ -64,5 +69,5 @@ For instructions for citing external software called by this project, please fol
 - [LAMMPS](https://www.lammps.org/cite.html)
 - [MACE](https://mace-docs.readthedocs.io/en/latest/)
 - [VASP](https://vasp.at/)
-- [VAMPIRES](https://github.com/TheoFEM-TUM/Vampires.jl)
+- [Vampires](https://github.com/TheoFEM-TUM/Vampires.jl)
 
