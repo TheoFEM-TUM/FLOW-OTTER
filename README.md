@@ -64,5 +64,5 @@ For instructions for citing external software called by this project, please fol
 - [LAMMPS](https://www.lammps.org/cite.html)
 - [MACE](https://mace-docs.readthedocs.io/en/latest/)
 - [VASP](https://vasp.at/)
-- [VAMPIRES]((https://github.com/TheoFEM-TUM/Vampires.jl)
+- [VAMPIRES](https://github.com/TheoFEM-TUM/Vampires.jl)
 
