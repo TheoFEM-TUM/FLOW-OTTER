@@ -60,7 +60,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 `equilibrate` (bool): if true, equilibration before the production run (*true* if not restart, *false* if restart)  
 `npt_equilibrate` (bool): enable NPT equilibration after NVT equilibration (*true*)  
  
-`size` (int): isotropic replication factor of simulation box; size > 1 provides supercell of `size` x `size` x `size` with the original cell as unit cell
+`size` (int): isotropic replication factor of simulation box; size > 1 provides supercell of `size` x `size` x `size` with the original cell as unit cell  
 `volume_scale` (float or array of floats): scale simulation cell lengths with isotropic factor (float) or with anisotropic factors (array of floats)  
 
 `plot_MD_time` (bool): if True, MD plots show time instead of step on x-axes (*True*)  
