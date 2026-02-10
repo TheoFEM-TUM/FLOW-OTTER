@@ -154,7 +154,7 @@ Details can also be found in [LAMMPS documentation](https://docs.lammps.org/Manu
 
 ## gap+dos:
 
-`num_snapshot_dos` (int): number of snapshots used to calculate an average DOS (*last_snapshot - first_snapshot + 1*)
+`num_snapshot_dos` (int): number of snapshots used to calculate an average DOS (*last_snapshot - first_snapshot + 1*)  
 `snapshot_sampling` (string): determines how num_snapshot_dos snapshots are chosen out of the the N_snapshots snapshots for which H exist (*"all"*, "uniform", "random")
 - "all" -> all snapshots are used
 - "uniform" -> num_snapshot_dos are uniformly distributed over the given interval of H snapshots; set as `[first_snapshot, last_snapshot]`  
