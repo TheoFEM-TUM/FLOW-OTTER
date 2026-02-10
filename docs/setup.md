@@ -1,12 +1,25 @@
 # Setup
 
-tbd
+Download the repo with 
+```
+git clone https://github.com/TheoFEM-TUM/MD_TB_PQ_workflow.git
+```
+to a desired directory.
 
-## Install Python environment with PerQueue 
+## Requirements
+This package works on computing clusters with [SLURM](https://slurm.schedmd.com/), [PBS](https://en.wikipedia.org/wiki/Portable_Batch_System), or [LSF](https://en.wikipedia.org/wiki/IBM_Spectrum_LSF) as the job scheduler since the underlying [myqueue](https://myqueue.readthedocs.io/) required one of them.  
+
+To install the package, you need a Python of version **TBD** or higher on you cluster.
+
+## Install Python environment 
 
 
 
+## PerQueue configuration
 
+PerQueue needs to know your cluster's configuration. 
+You can set this in `~/.myqueue/config.py`. 
+In the [myqueue documentation](https://myqueue.readthedocs.io/configuration.html), you can find further details.
 
 
 ## External software
@@ -41,15 +54,15 @@ Only for `MD_type` = "skip_MD", no LAMMPS installation is needed.
 
 
 ### MACE
-[MACE](https://mace-docs.readthedocs.io/en/latest/) is a machine-learning software package that creates force fields.
+[MACE](https://mace-docs.readthedocs.io/en/latest/) is a machine-learning software package that creates neural-network-based force fields.
 
 If you would like to use MACE force fields in the workflow, follow the instructions to install LAMMPS accordingly, depending on the `MD_type` = ["lammps+MACE_no_mliap"](https://mace-docs.readthedocs.io/en/latest/guide/lammps.html) or `MD_type` = ["lammps+MACE"](https://mace-docs.readthedocs.io/en/latest/guide/lammps_mliap.html).
 
 
 ### VASP
-[VASP](https://vasp.at/) is a density functional theory code that features molecular dynamics simulations from first principles and the generation of machine-learning force fields.
+[VASP](https://vasp.at/) is a density-functional theory code that supports first-principles molecular dynamics simulations and the generation of kernel-based machine-learning force fields.
 
-If you would like to run VASP machine-learning force field in the workflow (`MD_type` = "lammps+VASP"), LAMMPS needs to be installed with a [VASPml patch](https://vasp.at/wiki/Running_machine-learned_force_fields_in_LAMMPS).
+If you would like to run VASP machine-learning force fields in the workflow (`MD_type` = "lammps+VASP"), LAMMPS needs to be installed with a [VASPml patch](https://vasp.at/wiki/Running_machine-learned_force_fields_in_LAMMPS).
 
 
 ### MD+Kubo method
