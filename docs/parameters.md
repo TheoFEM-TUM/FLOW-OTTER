@@ -60,14 +60,14 @@ These are all parameters with detailed descriptions that can be used in the conf
 `equilibrate` (bool): if true, equilibration before the production run (*true* if not restart, *false* if restart)  
 `npt_equilibrate` (bool): enable NPT equilibration after NVT equilibration (*true*)  
  
-`size` (int): isotropic replication factor of simulation box; size > 1 provides supercell of size x size x size with the original cell as unit cell
+`size` (int): isotropic replication factor of simulation box; size > 1 provides supercell of `size` x `size` x `size` with the original cell as unit cell
 `volume_scale` (float or array of floats): scale simulation cell lengths with isotropic factor (float) or with anisotropic factors (array of floats)  
 
 `plot_MD_time` (bool): if True, MD plots show time instead of step on x-axes (*True*)  
 `window_size` (int): number of steps over which is averaged to get one point in the moving average (*20*)  
 
 `vdos_omega_max` (float): maximal frequency shown in the VDOS plots in reciprocal units of the time used in the MD (*None*)  
-`gaussian_smearing_vdos` (float): standard deviation for Gaussian kernel for gaussian smearing of the VDOS in comparison plots (*0.01*)
+`gaussian_smearing_vdos` (float): standard deviation for Gaussian kernel for Gaussian smearing of the VDOS in comparison plots (*0.01*)
 `num_bins` (int): number of bins used to histogram the distance, velocity, and force distributions of the production MD trajectory (*25*)  
 
 `H_type` (str): determines how Hamiltonians are calculated (*"skip_H"*, "hamster", "empTB") 
@@ -107,7 +107,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 `dir_output` (str): output directory of MD+Kubo method
 
 `N_avg` (int): number of different configurations for the calculation of an average conductivity (*1)  
-`dN_avg` (int): consecutive difference of the initial snapshots between the different configurations (*100* if N_avg > 1)  
+`dN_avg` (int): consecutive difference of the initial snapshots between the different configurations (*100* if `N_avg` > 1)  
 
 
 ## lammps:
