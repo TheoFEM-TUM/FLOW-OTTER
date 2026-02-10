@@ -47,7 +47,10 @@ If you would like to use MACE force fields in the workflow, follow the instructi
 
 
 ### VASP
-[VASP](https://vasp.at/)
+[VASP](https://vasp.at/) is a density functional theory code that features molecular dynamics simulations from first principles and the generation of machine-learning force fields.
+
+If you would like to run VASP machine-learning force field in the workflow (`MD_type` = "lammps+VASP"), LAMMPS needs to be installed with a [VASPml patch](https://vasp.at/wiki/Running_machine-learned_force_fields_in_LAMMPS).
+
 
 ### MD+Kubo method
 
