@@ -106,7 +106,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 `dir_config` (str): directory to YAML configuration file for MD+Kubo method
 `dir_output` (str): output directory of MD+Kubo method
 
-`N_avg` (int): number of different configurations for the calculation of an average conductivity (*1)  
+`N_avg` (int): number of different configurations for the calculation of an average conductivity (*1*)  
 `dN_avg` (int): consecutive difference of the initial snapshots between the different configurations (*100* if `N_avg` > 1)  
 
 
