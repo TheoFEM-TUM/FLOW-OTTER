@@ -3,7 +3,7 @@
 These are all parameters with detailed descriptions that can be used in the configuration YAML file. The parameters under **global** can be accessed directly, while the others must live in the corresponding YAML subgroup.
 
 ## example:  
-**param** (type): meaning (*"default_option"*, "option1", "option2", ...)  
+`param` (type): meaning (*"default_option"*, "option1", "option2", ...)  
 
 
 ## global:  
