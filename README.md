@@ -25,7 +25,7 @@ or
 ```
 python path_to_this_project/workflow_MD.py path_to_config/file.yaml
 ```
-if you are only interested in MD simulations
+if you are only interested in MD simulations.
 
 This will start the workflow's first job. You can test
 ```
