@@ -40,16 +40,16 @@ These are all parameters with detailed descriptions that can be used in the conf
 `temperature` (float): global temperature; if set, replaces `lammps.T`  
 
 `MD_type` (str): determines program/type of MD simulation (*"skip_MD"*, "lammps", "lammps+VASP", "lammps+MACE", "lammps+MACE_no_mliap")
-- "skip_MD" -> no MD is performed (to use an existing trajectory)
-- "lammps" -> perform LAMMPS calculation with empirical FF
-- "lammps+VASP" -> perform LAMMPS calculation with VASP ML-FF
-- "lammps+MACE" -> perform LAMMPS calculation with MACE FF on GPU(s)
-- "lammps+MACE_no_mliap" -> perform LAMMPS calculation with MACE FF on one GPU without the mliap option
+- "skip_MD" &rarr; no MD is performed (to use an existing trajectory)
+- "lammps" &rarr; perform LAMMPS calculation with empirical FF
+- "lammps+VASP" &rarr; perform LAMMPS calculation with VASP ML-FF
+- "lammps+MACE" &rarr; perform LAMMPS calculation with MACE FF on GPU(s)
+- "lammps+MACE_no_mliap" &rarr; perform LAMMPS calculation with MACE FF on one GPU without the mliap option
   
 `input_type_lammps` (str): only specify for "lammps" how to input the LAMMPS configuration (*"write_input"*, "existing_input", "python_input")  
-- "write_input" -> LAMMPS input file is written to dir_MD
-- "existing_input" -> use already existing LAMMPS input in dir_MD
-- "python_input" -> use Python to call LAMMPS (compatible LAMMPS version needed!)
+- "write_input" &rarr; LAMMPS input file is written to dir_MD
+- "existing_input" &rarr; use already existing LAMMPS input in dir_MD
+- "python_input" &rarr; use Python to call LAMMPS (compatible LAMMPS version needed!)
   
 `ranks_MD` (int): parallelization of LAMMPS calculation for srun -n {ranks_MD} (*os.environ.get("SLURM_NTASKS")*)  
 
@@ -71,17 +71,17 @@ These are all parameters with detailed descriptions that can be used in the conf
 `num_bins` (int): number of bins used to histogram the distance, velocity, and force distributions of the production MD trajectory (*25*)  
 
 `H_type` (str): determines how Hamiltonians are calculated (*"skip_H"*, "hamster", "empTB") 
-- "skip_H" -> no Hamiltonians are calculated (to use existing Hamiltonians)
-- "hamster" -> the Hamster code predicts Hamiltonians
-- "empTB" -> an empirical Tight Binding code calculates the Hamiltonians
+- "skip_H" &rarr; no Hamiltonians are calculated (to use existing Hamiltonians)
+- "hamster" &rarr; the Hamster code predicts Hamiltonians
+- "empTB" &rarr; an empirical Tight Binding code calculates the Hamiltonians
   
 `dir_H` (str): output directory for Hamiltonians (*dir_project + "2-H"*)  
 `dir_input_H` (str): input directory for parameters for Hamiltonian prediction  
 
 `hamiltonian_style` (str): determines how the Hamiltonian is saved (*"Hk"*, "Hr", "TB")  
-- "Hk" -> Hamiltonian lives in reciprocal space
-- "Hr" -> Hamiltonian lives in real space
-- "TB" -> Hamiltonian is an empirical Tight Binding H 
+- "Hk" &rarr; Hamiltonian lives in reciprocal space
+- "Hr" &rarr; Hamiltonian lives in real space
+- "TB" &rarr; Hamiltonian is an empirical Tight Binding H 
 
 `cell_size` (int): size of supercell in comparison to unit cell (only needed for "empTB")  
 
@@ -95,9 +95,9 @@ These are all parameters with detailed descriptions that can be used in the conf
 `hamiltonian_unit` (str): units of Hamiltonian shown in plots (*"eV"*)
 
 `optoelec_type` (str): determines type of optoelectronic property to be calculated (*"gas+dos"*, "skip_optoelec", "conductivity")
-- "gap+dos" -> band gap and density of states (dos) are calculated; depending on the H size, exact diagonalization ("gap+dos_exact_diag" for dim(H) < 10⁴) or the kernel polynomial method ("gap+dos_KPM" for dim(H) > 10⁴) are used; run_test_H needs to be true to use this option 
-- "skip_optoelec" -> no optoelectronic properties are calculated
-- "conductivity" -> optical conductivity is calculated with the MD+Kubo method (so far experimental/not supported feature!)  
+- "gap+dos" &rarr; band gap and density of states (dos) are calculated; depending on the H size, exact diagonalization ("gap+dos_exact_diag" for dim(H) < 10⁴) or the kernel polynomial method ("gap+dos_KPM" for dim(H) > 10⁴) are used; run_test_H needs to be true to use this option 
+- "skip_optoelec" &rarr; no optoelectronic properties are calculated
+- "conductivity" &rarr; optical conductivity is calculated with the MD+Kubo method (so far experimental/not supported feature!)  
 
 `threads_optoelec` (int): number of Julia threads for calculation of optoelectronic properties (*1*)  
 `ranks_optoelec` (int): number of MPI ranks for calculation of optoelectronic properties (*os.environ.get("SLURM_NTASKS")*)  
@@ -156,9 +156,9 @@ Details can also be found in [LAMMPS documentation](https://docs.lammps.org/Manu
 
 `num_snapshot_dos` (int): number of snapshots used to calculate an average DOS (*last_snapshot - first_snapshot + 1*)  
 `snapshot_sampling` (string): determines how num_snapshot_dos snapshots are chosen out of the the N_snapshots snapshots for which H exist (*"all"*, "uniform", "random")
-- "all" -> all snapshots are used
-- "uniform" -> num_snapshot_dos are uniformly distributed over the given interval of H snapshots; set as `[first_snapshot, last_snapshot]`  
-- "random" -> the snapshots are randomly distributed over the given interval of H snapshots; set as `[first_snapshot, last_snapshot]` 
+- "all" &rarr; all snapshots are used
+- "uniform" &rarr; num_snapshot_dos are uniformly distributed over the given interval of H snapshots; set as `[first_snapshot, last_snapshot]`  
+- "random" &rarr; the snapshots are randomly distributed over the given interval of H snapshots; set as `[first_snapshot, last_snapshot]` 
 
 `N` (int): number of stochastic vectors in the stochastic trace approximation; only needed if matrix is too large for exact diagonalization and therefore, kernel polynomial method is used (*100*)  
 `M` (int): number of moments in kernel polynomial method; only needed if matrix is too large for exact diagonalization and therefore, kernel polynomial method is used (*192*)  
