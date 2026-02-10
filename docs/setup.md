@@ -41,6 +41,7 @@ Often, different external softwares have incompatible requirements for Python pa
 Then, you can create several virtual environments and (re)start the corresponding tasks when you are in a matching environment.
 It can be helpful to create bash scripts that load all you need for specific tasks. 
 
+
 ## PerQueue configuration
 PerQueue needs to know your cluster's configuration. 
 You can set this in `~/.myqueue/config.py`. 
