@@ -39,7 +39,9 @@ Please note that PerQueue only works with myqueue version of **TBD**.
 
 Often, different external softwares have incompatible requirements for Python packages. 
 Then, you can create several virtual environments and (re)start the corresponding tasks when you are in a matching environment.
+Tasks that are started from a non-matching environment crash but can be resubmitted from a matching environment.
 It can be helpful to create bash scripts that load all you need for specific tasks. 
+These scripts will soon be usable as preamble scripts to eliminate the need to resubmit tasks (see the Preamble section below).
 
 
 ## PerQueue configuration
@@ -92,8 +94,9 @@ If you would like to run VASP machine-learning force fields in the workflow (`MD
 
 ### MD+Kubo method
 
-Not supported so far!
+Not supported yet!
 
 
 ## Perambles
 
+Not supported yet!
