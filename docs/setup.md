@@ -41,7 +41,7 @@ Often, different external softwares have incompatible requirements for Python pa
 Then, you can create several virtual environments and (re)start the corresponding tasks when you are in a matching environment.
 Tasks that are started from a non-matching environment crash but can be resubmitted from a matching environment.
 It can be helpful to create bash scripts that load all you need for specific tasks. 
-These scripts will soon be usable as preamble scripts to eliminate the need to resubmit tasks (see the Preamble section below).
+These scripts will soon be usable as preamble scripts, eliminating the need to resubmit tasks (see the Preambles section below).
 
 
 ## PerQueue configuration
