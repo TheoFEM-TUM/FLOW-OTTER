@@ -2,7 +2,7 @@
 
 <p align="center">
   <img width="424" height="424" alt="flow_otter" src="https://github.com/user-attachments/assets/7de65693-bd03-4196-8ec6-d8d095787fec" /><br>
-  <em> <strong>F</strong>ramework for **L**ayered and **O**rganized **W**orkflows: **O**ptoelectronics from **T**rajectory-based **T**ime-dependent **E**lectronic-hamiltonian **R**outines</em>
+  <em> <strong>F</strong>ramework for <strong>L</strong>ayered and <strong>O</strong>rganized <strong>W</strong>orkflows: <strong>O</strong>ptoelectronics from <strong>T</strong>rajectory-based <strong>T</strong>ime-dependent <strong>E</strong>lectronic-hamiltonian <strong>R</strong>outines</em>
 </p>
 
 
