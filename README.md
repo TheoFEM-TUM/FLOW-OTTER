@@ -1,6 +1,10 @@
-# MD_TB_PQ_workflow
+# Flow-Otter
+<img width="1024" height="1024" alt="flow_otter" src="https://github.com/user-attachments/assets/7de65693-bd03-4196-8ec6-d8d095787fec" />
+
+**F**ramework for **L**ayered and **O**rganized **W**orkflows: **O**ptoelectronics from **T**rajectory-based **T**ime-dependent **E**lectronic-hamiltonian **R**outines
 
 [PerQueue](https://gitlab.com/asm-dtu/perqueue)
+
 
 
 ## Setup
