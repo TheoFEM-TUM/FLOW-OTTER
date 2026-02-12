@@ -1,9 +1,9 @@
 # Flow-Otter
 
-<figure align="center">
-  <img width="424" height="424" alt="flow_otter" src="https://github.com/user-attachments/assets/7de65693-bd03-4196-8ec6-d8d095787fec" />
-  <figcaption><em>**F**ramework for **L**ayered and **O**rganized **W**orkflows: **O**ptoelectronics from **T**rajectory-based **T**ime-dependent **E**lectronic-hamiltonian **R**outines</em></figcaption>
-</figure>
+<p align="center">
+  <img width="424" height="424" alt="flow_otter" src="https://github.com/user-attachments/assets/7de65693-bd03-4196-8ec6-d8d095787fec" /><br>
+  <em>**F**ramework for **L**ayered and **O**rganized **W**orkflows: **O**ptoelectronics from **T**rajectory-based **T**ime-dependent **E**lectronic-hamiltonian **R**outines</em>
+</p>
 
 
 **F**ramework for **L**ayered and **O**rganized **W**orkflows: 
