@@ -1,4 +1,4 @@
-# Parameters
+# Parameters 🦦
 
 These are all parameters with detailed descriptions that can be used in the configuration YAML file. The parameters under **global** can be accessed directly, while the others must live in the corresponding YAML subgroup.
 
