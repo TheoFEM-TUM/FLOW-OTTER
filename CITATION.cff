@@ -1,0 +1,54 @@
+cff-version: 1.2.0
+title: "Your Software Name"
+message: "If you use this software, please cite the following works."
+
+authors:
+  - family-names: "Vonhoff"
+    given-names: "Frederik"
+
+references:
+
+  - type: article
+    title: "PerQueue: managing complex and dynamic workflows"
+    authors:
+      - family-names: "Sjølin"
+        given-names: "Benjamin Heckscher"
+      - family-names: "Hansen"
+        given-names: "William Sandholt"
+      - family-names: "Morin-Martinez"
+        given-names: "Armando Antonio"
+      - family-names: "Petersen"
+        given-names: "Martin Hoffmann"
+      - family-names: "Rieger"
+        given-names: "Laura Hannemose"
+      - family-names: "Vegge"
+        given-names: "Tejs"
+      - family-names: "García-Lastra"
+        given-names: "Juan Maria"
+      - family-names: "Castelli"
+        given-names: "Ivano E."
+    journal: "Digital Discovery"
+    year: 2024
+    volume: 3
+    issue: 9
+    start: 1832
+    end: 1841
+    doi: "10.1039/D4DD00134F"
+    url: "http://dx.doi.org/10.1039/D4DD00134F"
+    publisher: "RSC"
+
+  - type: article
+    title: "Second paper title here"
+    authors:
+      - family-names: "Lastname"
+        given-names: "Firstname"
+    year: 2023
+    doi: "DOI_HERE"
+
+  - type: article
+    title: "Third reference title"
+    authors:
+      - family-names: "Another"
+        given-names: "Author"
+    year: 2022
+
