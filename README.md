@@ -64,7 +64,7 @@ See [here](docs/parameters.md) for a complete list of `Flow-Otter` configuration
 
 ## Examples
 
-[Here](docs/parameters.md), you can find examples of configuration files.
+[Here](examples/examples.md), you can find examples of configuration files.
 
 
 ## How to cite
