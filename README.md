@@ -4,9 +4,8 @@
   <img width="424" height="424" alt="flow_otter" src="https://github.com/user-attachments/assets/7de65693-bd03-4196-8ec6-d8d095787fec" /><br>
   <strong>F</strong>ramework for <strong>L</strong>ayered and <strong>O</strong>rganized <strong>W</strong>orkflows:<br><strong>O</strong>ptoelectronics from <strong>T</strong>rajectory-based <strong>T</strong>ime-dependent <strong>E</strong>lectronic-hamiltonian <strong>R</strong>outines
 </p>
-  
-  
-  
+<br>
+<br>
 
 `Flow-Otter` is a Python- and Julia-based workflow framework for automating large-scale, multi-step computational pipelines for materials simulations.
 
