@@ -7,6 +7,7 @@
 <br>
 
 `Flow-Otter` is a Python- and Julia-based workflow framework for automating large-scale, multi-step computational pipelines for materials simulations.
+
 The framework enables efficient computation of optoelectronic properties by constructing electronic Hamiltonian (HAMSTER and empirical tight-binding) from molecular dynamics trajectories (LAMMPS, including machine-learning approaches).
 `Flow-Otter` automates simulation pipelines using [PerQueue](https://gitlab.com/asm-dtu/perqueue), providing structured input/output organization and pre- and post-processing with built-in validation and sanity checks.
 
