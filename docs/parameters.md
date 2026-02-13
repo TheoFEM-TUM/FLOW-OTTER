@@ -10,7 +10,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 `dir_project` (str): directory to project output (*"./"*)  
 `dir_code` (str): directory to this repo  
 
-`resources` (str): myqueue string specifying resources for standard jobs with adjusted wall times (see below resources_instant, resources_short, resources_long) (*resources_H* for workflow.py; definition needed for workflow_MD.py)  
+`resources` (str): myqueue string specifying resources for standard jobs with adjusted wall times (see below resources_instant, resources_short, resources_long) (*resources_H* for workflow.py; definition needed for `workflow_MD.py`)  
 `resources_MD` (str): myqueue string specifying resources for MD jobs  
 `resources_H`  (str): myqueue string specifying resources for H jobs  
 `resources_optoelec` (str): myqueue string specifying resources for optoelec jobs  
