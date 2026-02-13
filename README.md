@@ -7,8 +7,7 @@
 <br>
 
 `Flow-Otter` is a Python- and Julia-based workflow framework for automating large-scale, multi-step computational pipelines for materials simulations.
-
-The code package enables efficient computation of optoelectronic properties by constructing electronic Hamiltonian (HAMSTER and empirical tight-binding) from molecular dynamics trajectories (LAMMPS, including machine-learning approaches).
+The framework enables efficient computation of optoelectronic properties by constructing electronic Hamiltonian (HAMSTER and empirical tight-binding) from molecular dynamics trajectories (LAMMPS, including machine-learning approaches).
 `Flow-Otter` automates simulation pipelines using [PerQueue](https://gitlab.com/asm-dtu/perqueue), providing structured input/output organization and pre- and post-processing with built-in validation and sanity checks.
 
 This code package was originally developed by Frederik Vonhoff and is a collaborative effort between TUM (Prof. D. A. Egger) and DTU (Prof. I. E. Castelli).
@@ -21,7 +20,7 @@ This code package was originally developed by Frederik Vonhoff and is a collabor
 
 ## Quick start
 
-After setting up and loading the desired virtual environment, go to a directory where you would like to set up `Flow-Otter`. 
+After setting up and activating the desired virtual environment, go to a directory where you would like to set up `Flow-Otter`. 
 Initialize [PerQueue](https://gitlab.com/asm-dtu/perqueue) with
 ```
 pq init
@@ -47,7 +46,7 @@ to check that everything works fine.
 
 ## Usage
 
-`Flow-Otter` can be manipulated with the normal [PerQueue](https://gitlab.com/asm-dtu/perqueue) commands (follow the link for further details or use `pq -h`). 
+`Flow-Otter` workflows are managed with the normal [PerQueue](https://gitlab.com/asm-dtu/perqueue) commands (follow the link for further details or use `pq -h`). 
 The most relevant commands are:
 - `pq ls` &rarr; provides a list of the workflow tasks with their status in order of creation
 - `pq modify r -i ID` &rarr; modify the resources of the job with the requested job ID (submit first job for change of branch config files)
@@ -60,8 +59,7 @@ Exceptions are all resource strings (see `pq modify r -i ID`), the parameter `nu
 
 ## Parameters
 
-[Here](docs/parameters.md), you can find the definitions of the parameters that can be used within `Flow-Otter`. 
-
+See [here](docs/parameters.md) for a complete list of `Flow-Otter` configuration parameters.
 
 ## Examples
 
