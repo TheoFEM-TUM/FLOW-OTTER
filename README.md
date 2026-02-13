@@ -16,12 +16,12 @@ The code package enables efficient computation of optoelectronic properties by c
 This code package was originally developed by Frederik Vonhoff and is a collaborative effort between TUM (Prof. D. A. Egger) and DTU (Prof. I. E. Castelli).
 
 
-## 🦦 Setup
+## Setup 
 
 [Here](docs/setup.md), you find a detailed description of how to set up `Flow-Otter`.
 
 
-## 🦦 Quick start
+## Quick start
 
 After setting up and loading the desired virtual environment, go to a directory where you would like to set up `Flow-Otter`. 
 Initialize [PerQueue](https://gitlab.com/asm-dtu/perqueue) with
@@ -47,7 +47,7 @@ to check that everything works fine.
 
 
 
-## 🦦 Usage
+## Usage
 
 `Flow-Otter` can be manipulated with the normal [PerQueue](https://gitlab.com/asm-dtu/perqueue) commands (follow the link for further details or use `pq -h`). 
 The most relevant commands are:
@@ -60,17 +60,17 @@ Each PerQueue command can also be used with the `-h` flag to get further informa
 Almost all parameters are read from the config YAML file at run time and can thus be changed before resubmitting the task.
 Exceptions are all resource strings (see `pq modify r -i ID`), the parameter `num_simulations`, the initially provided path to the config YAML file (both internally saved by PerQueue, checkout `pq modify a -i ID` in the [PerQueue](https://gitlab.com/asm-dtu/perqueue) repo), and the branch config YAML files (for `num_simulations` > 1). If you want to change parameters in the branch config YAML files, you can resubmit the first task `check_simulation_type`.
 
-## 🦦 Parameters
+## Parameters
 
 [Here](docs/parameters.md), you can find the definitions of the parameters that can be used within `Flow-Otter`. 
 
 
-## 🦦 Examples
+## Examples
 
 [Here](docs/parameters.md), you can find examples of configuration files.
 
 
-## 🦦 How to cite
+## How to cite
 
 Please cite the following references when using `Flow-Otter`:  
 - ***TBD***
