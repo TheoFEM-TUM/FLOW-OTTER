@@ -5,12 +5,15 @@
   <strong>F</strong>ramework for <strong>L</strong>ayered and <strong>O</strong>rganized <strong>W</strong>orkflows:<br><strong>O</strong>ptoelectronics from <strong>T</strong>rajectory-based <strong>T</strong>ime-dependent <strong>E</strong>lectronic-hamiltonian <strong>R</strong>outines
 </p>
 
+
+
+
 `Flow-Otter` is a Python- and Julia-based workflow framework for automating large-scale, multi-step computational pipelines for materials simulations.
 
 The code package enables efficient computation of optoelectronic properties by constructing electronic Hamiltonian (HAMSTER and empirical tight-binding) from molecular dynamics trajectories (LAMMPS, including machine-learning approaches).
 `Flow-Otter` automates simulation pipelines using [PerQueue](https://gitlab.com/asm-dtu/perqueue), providing structured input/output organization and pre- and post-processing with built-in validation and sanity checks.
 
-`Flow-Otter` was originally developed by Frederik Vonhoff and is a collaborative effort between TUM (Prof. D. A. Egger) and DTU (Prof. I. E. Castelli).
+This code package was originally developed by Frederik Vonhoff and is a collaborative effort between TUM (Prof. D. A. Egger) and DTU (Prof. I. E. Castelli).
 
 
 ## Setup
