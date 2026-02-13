@@ -1,4 +1,4 @@
-# Setup
+# Setup 🦦
 Download the repo with 
 ```
 git clone https://github.com/TheoFEM-TUM/flow-otter.git
