@@ -46,7 +46,7 @@ to check that everything works fine.
 
 ## Usage
 
-The `Flow-Otter` can be manipulated with the normal [PerQueue](https://gitlab.com/asm-dtu/perqueue) commands (follow the link for further details or use `pq -h`). 
+`Flow-Otter` can be manipulated with the normal [PerQueue](https://gitlab.com/asm-dtu/perqueue) commands (follow the link for further details or use `pq -h`). 
 The most relevant commands are:
 - `pq ls` &rarr; provides a list of the workflow tasks with their status in order of creation
 - `pq modify r -i ID` &rarr; modify the resources of the job with the requested job ID (submit first job for change of branch config files)
