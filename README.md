@@ -15,24 +15,24 @@
 
 ## Setup
 
-[Here](docs/setup.md), you find a detailed description of how to set up the workflow manager.
+[Here](docs/setup.md), you find a detailed description of how to set up `Flow-Otter`.
 
 
 ## Quick start
 
-After setting up and loading the desired virtual environment, go to a directory where you would like to set up the workflow. 
+After setting up and loading the desired virtual environment, go to a directory where you would like to set up `Flow-Otter`. 
 Initialize [PerQueue](https://gitlab.com/asm-dtu/perqueue) with
 ```
 pq init
 ```
 
-Then start the workflow with the configuration file you would like to use:
+Then start `Flow-Otter` with the configuration file you would like to use:
 ```
-python path_to_this_project/workflow.py path_to_config/file.yaml
+python path_to_this_project/flow.py path_to_config_file/otter.yaml
 ```
 or 
 ```
-python path_to_this_project/workflow_MD.py path_to_config/file.yaml
+python path_to_this_project/flow_MD.py path_to_config_file/otter.yaml
 ```
 if you are only interested in MD simulations.
 
@@ -46,7 +46,7 @@ to check that everything works fine.
 
 ## Usage
 
-The workflow can be manipulated with the normal [PerQueue](https://gitlab.com/asm-dtu/perqueue) commands (follow the link for further details or use `pq -h`). 
+The `Flow-Otter` can be manipulated with the normal [PerQueue](https://gitlab.com/asm-dtu/perqueue) commands (follow the link for further details or use `pq -h`). 
 The most relevant commands are:
 - `pq ls` &rarr; provides a list of the workflow tasks with their status in order of creation
 - `pq modify r -i ID` &rarr; modify the resources of the job with the requested job ID (submit first job for change of branch config files)
@@ -59,7 +59,7 @@ Exceptions are all resource strings (see `pq modify r -i ID`), the parameter `nu
 
 ## Parameters
 
-[Here](docs/parameters.md), you can find the definitions of the parameters that can be used within the workflow manager. 
+[Here](docs/parameters.md), you can find the definitions of the parameters that can be used within `Flow-Otter`. 
 
 
 ## Examples
@@ -69,7 +69,7 @@ Exceptions are all resource strings (see `pq modify r -i ID`), the parameter `nu
 
 ## How to cite
 
-Please cite the following references when using this package:  
+Please cite the following references when using `Flow-Otter`:  
 - ***TBD***
 - B. H. Sjølin, W. S. Hansen, A. A. Morin-Martinez, M. H. Petersen, L. H. Rieger, T. Vegge, J. M. García-Lastra, and I. E. Castelli (2024). **PerQueue: managing complex and dynamic workflows. Digital Discovery**, 3(9), 1832–1841. (https://doi.org/10.1039/D4DD00134F)
 
