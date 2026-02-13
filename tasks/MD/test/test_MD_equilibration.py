@@ -201,11 +201,6 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                 print("abs(T_eq_avg_npt - T_set) > 2 * T_eq_std_npt: ", abs(T_eq_avg_npt - T_set), f" {units[0]}", " > ", 2 * T_eq_std_npt, f" {units[0]}", flush=True)
                 error = True
 
-        if error:    
-            raise Exception("Trajectory is NOT equilibrated with respect to temperature.")
-        else:
-            print("Trajectory is equilibrated with respect to temperature.", flush=True)
-
         # plot temperature data
         fig1, (ax1) =  plt.subplots()
         fig1.suptitle("Temperature")
@@ -478,6 +473,11 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         plt.close()
 
         #p_set = configWF_i["lammps"].get("P", 0.0)
+
+        if error:    
+            raise Exception("Trajectory is NOT equilibrated with respect to temperature.")
+        else:
+            print("Trajectory is equilibrated with respect to temperature.", flush=True)
 
         # check if pressure is equilibrated
         if npt_equilibrate:

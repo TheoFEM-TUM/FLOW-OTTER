@@ -89,6 +89,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     data_gaps = np.column_stack((largest_gaps, EV[largest_gap_indices], EV[largest_gap_indices+1]))
     np.savetxt(str(dir_H / f"gap+dos/gaps_candidates_KPM.txt"), data_gaps, header=f" gap/{hamiltonian_unit}    VBM/{hamiltonian_unit}     CBM/{hamiltonian_unit}")
         
+
     # calcate exact gaps from educated guesses for VBM and CBM
     if (guess_E_v == None) or (guess_E_c == None):
         raise Exception(f"Please insert values for guesses for VBM and CBM (see gaps_candidates_KPM.txt).")
@@ -105,7 +106,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                 "julia", 
                 #f"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_pq/", 
                 f"{dir_code}/optoelec/gap+dos/calc_gap.jl", 
-                dir_H + "/hamiltonian/", 
+                str(dir_H / "hamiltonian/"), 
                 str(t), 
                 str(guess_E_v), 
                 str(guess_E_c), 

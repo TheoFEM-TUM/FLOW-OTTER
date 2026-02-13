@@ -2,21 +2,40 @@ import yaml
 import sys
 from pathlib import Path
 
+def add_occurrence_numbers(arr):
+    counts = {}
+    result = []
+    
+    for item in arr:
+        if item in counts:
+            counts[item] = counts.get(item, 0) + 1
+            result.append(f"{item}{counts[item]}")
+        else:
+            counts[item] = 1
+            result.append(item)
+    
+    return result
+
+
+# set input paths
 path_configWF = sys.argv[1]
 dir_MD = Path(sys.argv[2])
 
+# load configuration file
 with open(path_configWF, "r") as f:
     configWF = yaml.safe_load(f) or {}
 
+# set directory for initial MD structure
 dir_ini_MD = Path(configWF.get("dir_ini_MD", str(dir_MD)))
 
+# set input parameters
 input_params = configWF["lammps"]
 if "temperature" in configWF:
     T = configWF["temperature"]  
 else:
     T = input_params["T"]
 
-
+# set force field path
 path_FF_MD = Path(configWF.get("path_FF_MD", str(dir_MD)))
 print("path_FF_MD:", path_FF_MD)
 
@@ -42,6 +61,7 @@ with open(lammps_input_file, "w") as f:
     w(f"atom_style {input_params['atom_style']}")
     w("")
 
+    # specify initial structure
     path_ini = dir_ini_MD / input_params["ini_MD_file"]
 
     if input_params["restart"]:
@@ -51,15 +71,17 @@ with open(lammps_input_file, "w") as f:
         w("atom_modify map yes")
         w(f"read_data {path_ini}")
         equilibrate = True
+        print("WARNING: equilibrate is set to true because read_data is used!")
 
     # Replication
     if "size" in configWF:
         s = configWF["size"]
         if s > 1:
             w(f"replicate {s} {s} {s} bond/periodic")
-    elif "replicate" in input_params:
-        r = input_params["replicate"]
-        w(f"replicate {r[0]} {r[1]} {r[2]} bond/periodic")
+    else:
+        if "replicate" in input_params:
+            r = input_params["replicate"]
+            w(f"replicate {r[0]} {r[1]} {r[2]} bond/periodic")
 
     # change cell volume
     if "lattice_constants" in input_params:
@@ -143,6 +165,7 @@ with open(lammps_input_file, "w") as f:
         w(f"dump_modify 0 element {elements_str}")
         w("")
 
+        # Initial minimization and velocity assignment
         T_start = input_params.get("T_start", T)
 
         if not input_params["restart"]:
@@ -195,7 +218,9 @@ with open(lammps_input_file, "w") as f:
             w("unfix 1")
             w("")
 
+        # write restart file after equilibration
         w(f"write_restart {dir_MD / f'restart_eq_{T}'}")
+        w(f"write_data {dir_MD / f'restart_eq_{T}.data'}")
         w("undump 0")
         w("")
 
@@ -226,6 +251,8 @@ with open(lammps_input_file, "w") as f:
     w(f"dump_modify 3 element {elements_str}")
     w("")
 
+    elements_i = add_occurrence_numbers(elements)
+
     # mean squared distribution (MSD) calculation
     compute_msd = input_params.get("compute_msd", True)
     if compute_msd:
@@ -238,7 +265,7 @@ with open(lammps_input_file, "w") as f:
             f"c_msd_all[1] c_msd_all[2] c_msd_all[3] c_msd_all[4] "
             f"file {dir_msd}/msd_all.txt title2 '# TimeStep MSD_x   MSD_y   MSD_z   MSD_total'"
         )
-        for i, el in enumerate(elements, start=1):
+        for i, el in enumerate(elements_i, start=1):
             w(f"group grp_{el} type {i}")
             w(f"compute msd_{el} grp_{el} msd")
             w(
@@ -254,19 +281,21 @@ with open(lammps_input_file, "w") as f:
     # radial distribution function (RDF) calculation
     compute_rdf = input_params.get("compute_rdf", True)
     if compute_rdf:
+        r_steps = total_steps % prodrun_stepsize
+
         dir_rdf = dir_MD / "rdf/"
         dir_rdf.mkdir(parents=True, exist_ok=True)
 
         rdf_bins = input_params.get("rdf_bins", 100)
         w(f"compute rdf_all all rdf {rdf_bins}")
         w(
-            f"fix rdf_all_out all ave/time {prodrun_stepsize} {int(prod_numsteps/prodrun_stepsize)} {total_steps} "
+            f"fix rdf_all_out all ave/time {prodrun_stepsize} {int(prod_numsteps/prodrun_stepsize)} {total_steps - r_steps} "
             f"c_rdf_all[*] file {dir_rdf}/rdf_all.txt mode vector title3 '# bin     r   g(r)    coordination number'"
         )
-        for i, el in enumerate(elements, start=1):
+        for i, el in enumerate(elements_i, start=1):
             w(f"compute rdf_{el}{el} all rdf {rdf_bins} {i} {i}")
             w(
-                f"fix rdf_{el}{el}_out all ave/time {prodrun_stepsize} {int((prod_numsteps)/prodrun_stepsize)} {total_steps} "
+                f"fix rdf_{el}{el}_out all ave/time {prodrun_stepsize} {int(prod_numsteps/prodrun_stepsize)} {total_steps - r_steps} "
                 f"c_rdf_{el}{el}[*] file {dir_rdf}/rdf_{el}-{el}.txt mode vector title3 '# bin r   g(r)    coordination number'"
             )
         w("")
@@ -281,15 +310,20 @@ with open(lammps_input_file, "w") as f:
     w("unfix thermolog")
     if compute_msd:
         w("unfix msd_all_out")
-        for el in elements:
+        w("uncompute msd_all")
+        for el in elements_i:
             w(f"unfix msd_{el}_out")
+            w(f"uncompute msd_{el}")
     if compute_rdf:
         w("unfix rdf_all_out")
-        for i, el in enumerate(elements, start=1):
+        w("uncompute rdf_all")
+        for i, el in enumerate(elements_i, start=1):
             w(f"unfix rdf_{el}{el}_out")
+            w(f"uncompute rdf_{el}{el}")
     w("")
 
     # Final restart file
     w(f"write_restart {dir_MD / f'restart_{T}'}")
+    w(f"write_data {dir_MD / f'restart_{T}.data'}")
 
 print(f"LAMMPS input file written to: {lammps_input_file}")

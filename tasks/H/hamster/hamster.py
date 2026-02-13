@@ -6,7 +6,7 @@ import shutil
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
     
-    print("Start task: prep_hamster", flush=True)
+    print("Start task: hamster", flush=True)
 
     yaml = YAML()
 
@@ -73,11 +73,13 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         input_params = configWF_i["hamster"]
 
     hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
+    write_current = configWF_i.get("write_current", False)
 
     # modify Hamster configuration params for present simulation 
     input_params["Options"]["init_params"] = str( dir_H / "params.dat")
     input_params["Options"]["skip_diag"] = True
     input_params["Options"]["ham_file"] = str( dir_ham / "ham.h5")
+    input_params["Options"]["write_current"] = write_current
 
     if hamiltonian_style == "Hr":
         input_params["Options"]["write_hr"] = True
@@ -129,6 +131,6 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         "hamster",
         ], cwd = str(dir_H), check=True)
 
-    print("Finish task: prep_hamster", flush=True)
+    print("Finish task: hamster", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}

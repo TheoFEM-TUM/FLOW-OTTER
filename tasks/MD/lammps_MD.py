@@ -162,12 +162,9 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         print("Start LAMMPS MD...", flush=True)
         result2 = subprocess.run([
             "srun",
-            #"--exclusive",
-            #"--gpus-per-task=1",
-            #"--gres=gpu:4",
             #"-n", f"{ranks_MD}",
             "lmp",
-            "-k", "on", "g", "4", "-sf", "kk", "-pk", "kokkos", "newton", "on", "neigh", "half",
+            "-k", "on", "g", "1", "-sf", "kk", "-pk", "kokkos", "newton", "on", "neigh", "half",
             "-in",
             f"{dir_MD}/lmp.inp",
         ], check=True)

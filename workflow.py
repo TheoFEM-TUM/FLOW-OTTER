@@ -1,3 +1,7 @@
+### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
+### total workflow
+### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
+
 from pathlib import Path
 from perqueue import PersistentQueue, Task, Workflow, SwitchGroup, StaticWidthGroup, CyclicalGroup
 import yaml
@@ -32,19 +36,16 @@ gap_dos = optoelec / "gap+dos/"
 conductivity = optoelec / "conductivity/"
 
 # resources for tasks
-resources = configWF.get("resources", None)
 resources_MD = configWF["resources_MD"]
 resources_H = configWF["resources_H"]
 resources_optoelec = configWF["resources_optoelec"]
+resources = configWF.get("resources", resources_H)
 
 instant_time = "5m"
 short_time = "2h"
 long_time = "1d"
 
-if resources is not None:
-    resources_prefix = resources.rsplit(":", 1)[0]
-else:
-    resources_prefix = resources_H.rsplit(":", 1)[0]
+resources_prefix = resources.rsplit(":", 1)[0]
 
 resources_instant = configWF.get("resources_instant", f"{resources_prefix}:{instant_time}")
 resources_short = configWF.get("resources_short", f"{resources_prefix}:{short_time}")

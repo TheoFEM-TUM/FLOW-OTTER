@@ -145,7 +145,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             dir_msd = dir_MD / "msd/"
 
             msd_files = sorted(dir_msd.glob("msd_*.txt"))
-            
+
             for file in msd_files:
                 data = np.loadtxt(file, skiprows=2)
 

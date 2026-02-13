@@ -40,6 +40,10 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             param_to_vary3 = configWF["param_to_vary3"]
             array_to_vary3 = configWF["array_to_vary3"]
 
+        if "param_to_vary4" in configWF:
+            param_group4 = configWF.get("param_group_for_vary4", None)
+            param_to_vary4 = configWF["param_to_vary4"]
+            array_to_vary4 = configWF["array_to_vary4"]
 
         # Loop over different branches
         for i in range(num_simulations):
@@ -71,6 +75,12 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                 else:
                     configWF[param_group3][param_to_vary3] = array_to_vary3[i]
       
+            if "param_to_vary4" in configWF:
+                if param_group4 is None:
+                    configWF[param_to_vary4] = array_to_vary4[i]
+                else:
+                    configWF[param_group4][param_to_vary4] = array_to_vary4[i]
+
 
             if path_pre_configWF_i.exists():
                 with open(str(path_pre_configWF_i), 'r') as f:
@@ -84,6 +94,10 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                 yaml.dump(configWF_i, f)    
 
     print("Finish task: check_simulation_type", flush=True)
+
+    if configWF.get("just_update_branch_config_file", False):
+        raise Exception("just_update_branch_config_file is set to True, stopping workflow after updating branch config files.")
+
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, SWITCHGROUP_KEY: simulation_type}
 

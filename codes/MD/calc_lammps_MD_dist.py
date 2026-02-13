@@ -77,7 +77,7 @@ def plot_histograms(data_dict, atom_types, type_names, output_dir, num_bins, fil
 
             output_subdir = output_dir / f"{filename.rstrip('.pdf')}"
             output_subdir.mkdir(parents=True, exist_ok=True)
-            outfile_txt = output_subdir /  f"{filename.rstrip('.pdf')}_{type_names[int(atype)]}_{labels[j].split("/",1)[0]}.txt"
+            outfile_txt = output_subdir /  f"{filename.rstrip('.pdf')}_{type_names[int(atype)]}_{labels[j].split('/',1)[0]}.txt"
             
             np.savetxt(outfile_txt, hist_data, header="bin_center density")
 

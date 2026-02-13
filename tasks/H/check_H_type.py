@@ -51,7 +51,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         N_snapshots = configWF_i["N_snapshots"]
         last_snapshot = configWF_i.get("last_snapshot", first_snapshot + N_snapshots - 1)
 
-        MD_snapshots = configWF_i["lammps"]['prodrun_numsteps']/configWF_i["lammps"]['dt']
+        MD_snapshots = configWF_i["lammps"]['prodrun_numsteps']/configWF_i["lammps"]['prodrun_stepsize']
     
         if MD_snapshots < N_snapshots:
             raise ValueError(f"Error: number of MD snapshots ({MD_snapshots}) is less than the number of H snapshots ({N_snapshots}). Please increase 'prodrun_numsteps' or decrease 'N_snapshots'.")

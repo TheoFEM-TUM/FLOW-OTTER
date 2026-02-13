@@ -10,7 +10,7 @@ import random
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
-    print("Start task: gap+dos_exact_diag", flush=True)
+    print("Start task: gap+dos_KPM", flush=True)
 
     # Read in global configurations
     with open(path_configWF, "r") as f:
