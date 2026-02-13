@@ -84,6 +84,8 @@ These are all parameters with detailed descriptions that can be used in the conf
 - "Hr" &rarr; Hamiltonian lives in real space
 - "TB" &rarr; Hamiltonian is an empirical Tight Binding H 
 
+`write_current` (bool): if true, writes current matrices (e.g. for transport calculations) to `ham.h5` file (*false*)
+
 `cell_size` (int): size of supercell in comparison to unit cell (only needed for "empTB")  
 
 `first_snapshot` (int): first snapshot of MD trajectory used for H calculation (*0*)  
