@@ -62,7 +62,11 @@ Exceptions are all resource strings (see `pq modify r -i ID`), the parameter `nu
 ## Program logic
 
 Here is a flowchart of the program logic.
-![flowchart](https://github.com/user-attachments/assets/5e5858c7-a683-41b8-9275-b76024814c56)  
+<p align="center">
+  <img width="724" alt="flowchart" src="[https://github.com/user-attachments/assets/7de65693-bd03-4196-8ec6-d8d095787fec](https://github.com/user-attachments/assets/5e5858c7-a683-41b8-9275-b76024814c56)" />
+</p>
+<br>
+  
 
 
 
