@@ -52,7 +52,8 @@ These are all parameters with detailed descriptions that can be used in the conf
 - "existing_input" &rarr; use already existing LAMMPS input in dir_MD
 - "python_input" &rarr; use Python to call LAMMPS (compatible LAMMPS version needed!)
   
-`ranks_MD` (int): parallelization of LAMMPS calculation for `srun -n ranks_MD` (*os.environ.get("SLURM_NTASKS")*)  
+`ranks_MD` (int): parallelization of LAMMPS calculation for `srun -n ranks_MD` (*os.environ.get("SLURM_NTASKS")*) 
+`srun_flags_MD` (list of str): list of flags for `srun` commands for molecular dynamics-related tasks (*[]*)  
 
 `dir_MD` (str): output directory for MD calculation (*dir_project + "1-MD/"*)  
 `dir_ini_MD` (str): input directory for initial atomic configuration for MD (*dir_MD*)  
@@ -61,7 +62,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 `equilibrate` (bool): if true, equilibration before the production run (*true* if not restart, *false* if restart)  
 `npt_equilibrate` (bool): enable NPT equilibration after NVT equilibration (*true*)  
  
-`size` (int): isotropic replication factor of simulation box; size > 1 provides supercell of `size` x `size` x `size` with the original cell as unit cell  
+`size` (int): isotropic replication factor of simulation box; size > 1 provides a supercell of `size` x `size` x `size` with the original cell as unit cell  
 `volume_scale` (float or array of floats): scale simulation cell lengths with isotropic factor (float) or with anisotropic factors (array of floats)  
 
 `plot_MD_time` (bool): if True, MD plots show time instead of step on x-axes (*True*)  
@@ -94,6 +95,9 @@ These are all parameters with detailed descriptions that can be used in the conf
 
 `threads_H` (int): number of Julia threads for H calculation (*1*)  
 `ranks_H` (int): number of MPI ranks for H calculation (*N_snapshots*)  
+`srun_flags_H` (list of str): list of flags for `srun` commands for hamiltonian-related tasks (*[]*)  
+`julia_flags_H` (list of str): list of flags for `julia` commands for hamiltonian-related tasks; e.g., `julia --project=...` (*[]*)  
+
 
 `hamiltonian_unit` (str): units of Hamiltonian shown in plots (*"eV"*)
 
@@ -104,8 +108,8 @@ These are all parameters with detailed descriptions that can be used in the conf
 
 `threads_optoelec` (int): number of Julia threads for calculation of optoelectronic properties (*1*)  
 `ranks_optoelec` (int): number of MPI ranks for calculation of optoelectronic properties (*os.environ.get("SLURM_NTASKS")*)  
-`srun_flags_optoelec (list of str): list of flags for `srun` commands for optoelectronics related tasks (*[]*)  
-`julia_flags_optoelec (list of str): list of flags for `julia` commands for optoelectronics related tasks; e.g. `julia --project=...` (*[]*)  
+`srun_flags_optoelec` (list of str): list of flags for `srun` commands for optoelectronics-related tasks (*[]*)  
+`julia_flags_optoelec` (list of str): list of flags for `julia` commands for optoelectronics-related tasks; e.g., `julia --project=...` (*[]*)  
 
 `dir_conducitivity` (str): directory to MD+Kubo code  
 `dir_config` (str): directory to YAML configuration file for MD+Kubo method
