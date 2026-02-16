@@ -61,7 +61,7 @@ Exceptions are all resource strings (see `pq modify r -i ID`), the parameter `nu
 
 ## Program logic
 
-The available options for the workflow manager are shown in the following flowchart:
+The available options for `Flow-Otter` are shown in the following flowchart:
 <p align="center">
   <img src="https://github.com/user-attachments/assets/739e3ff7-2095-4df3-bccb-9531da3b505e" alt="Flowchart" width="700">
 </p>
