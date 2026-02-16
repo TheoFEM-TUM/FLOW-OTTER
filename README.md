@@ -58,8 +58,10 @@ Each PerQueue command can also be used with the `-h` flag to get further informa
 Almost all parameters are read from the config YAML file at run time and can thus be changed before resubmitting the task.
 Exceptions are all resource strings (see `pq modify r -i ID`), the parameter `num_simulations`, the initially provided path to the config YAML file (both internally saved by PerQueue, checkout `pq modify a -i ID` in the [PerQueue](https://gitlab.com/asm-dtu/perqueue) repo), and the branch config YAML files (for `num_simulations` > 1). If you want to change parameters in the branch config YAML files, you can resubmit the first task `check_simulation_type`.
 
+
 ## Program logic
 
+Here is a flowchart of the program logic.
 [flowchart.pdf](https://github.com/user-attachments/files/25336254/flowchart.pdf)
 
 
