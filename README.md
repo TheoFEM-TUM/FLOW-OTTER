@@ -63,9 +63,11 @@ Exceptions are all resource strings (see `pq modify r -i ID`), the parameter `nu
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/5e5858c7-a683-41b8-9275-b76024814c56" alt="Flowchart" width="600">
-  <em>Flowchart with program options.  </em>
 </p>
-<br>
+
+<p align="center">
+  width="600" alt="flowchart" src="https://github.com/user-attachments/assets/739e3ff7-2095-4df3-bccb-9531da3b505e" />
+</p>
 
 ## Parameters
 
