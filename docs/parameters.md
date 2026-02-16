@@ -169,8 +169,8 @@ Details can also be found in [LAMMPS documentation](https://docs.lammps.org/Manu
 - "uniform" &rarr; num_snapshot_dos are uniformly distributed over the given interval of H snapshots; set as `[first_snapshot, last_snapshot]`  
 - "random" &rarr; the snapshots are randomly distributed over the given interval of H snapshots; set as `[first_snapshot, last_snapshot]` 
 
-`N` (int): number of stochastic vectors in the stochastic trace approximation; only needed if matrix is too large for exact diagonalization and therefore, kernel polynomial method is used (*100*)  
-`M` (int): number of moments in kernel polynomial method; only needed if matrix is too large for exact diagonalization and therefore, kernel polynomial method is used (*192*)  
+`N` (int): number of stochastic vectors in the stochastic trace approximation; only needed if matrix is too large for exact diagonalization and therefore, the kernel polynomial method is used (*48*)  
+`M` (int): number of moments in kernel polynomial method; only needed if matrix is too large for exact diagonalization and therefore, kernel polynomial method is used (*200*)  
 
 `guess_E_v` (float): guess for valence band maximum, which should be close to the actual eigenvalue for convergence; only needed if matrix is too large for exact diagonalization and therefore, kernel polynomial method is used (*None*)  
 `guess_E_c` (float): guess for conduction band minimum, which should be close to the actual eigenvalue for convergence; only needed if matrix is too large for exact diagonalization and therefore, kernel polynomial method is used (*None*)  
