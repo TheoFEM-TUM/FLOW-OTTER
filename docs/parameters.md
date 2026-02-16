@@ -104,6 +104,8 @@ These are all parameters with detailed descriptions that can be used in the conf
 
 `threads_optoelec` (int): number of Julia threads for calculation of optoelectronic properties (*1*)  
 `ranks_optoelec` (int): number of MPI ranks for calculation of optoelectronic properties (*os.environ.get("SLURM_NTASKS")*)  
+`srun_flags_optoelec (list of str): list of flags for `srun` commands for optoelectronics related tasks (*[]*)  
+`julia_flags_optoelec (list of str): list of flags for `julia` commands for optoelectronics related tasks; e.g. `julia --project=...` (*[]*)  
 
 `dir_conducitivity` (str): directory to MD+Kubo code  
 `dir_config` (str): directory to YAML configuration file for MD+Kubo method
