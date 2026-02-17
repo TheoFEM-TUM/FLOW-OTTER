@@ -41,7 +41,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     # read in branch configuration 
     dir_code = Path(configWF_i.get("dir_code", "./")) / "codes/"
     dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
-    
+    julia_flags_optoelec = configWF_i.get("julia_flags_optoelec", [])
+
     hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
 
     first_snapshot = configWF_i.get("first_snapshot", 0)
@@ -99,8 +100,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     for t in chosen_snapshots:
         print(f"Diagonalizing Hamiltonian for snapshot {t} ...", flush=True)
         result = subprocess.run([
-            "julia", 
-            #"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_hamster/", 
+            "julia",
+            *julia_flags_optoelec, 
             str(dir_code / "optoelec/gap+dos/diagonalize_H.jl"), 
             str(dir_H / "hamiltonian/"), 
             str(dir_EV), 

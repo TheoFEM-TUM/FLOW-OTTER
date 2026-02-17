@@ -153,6 +153,8 @@ with open(lammps_input_file, "w") as f:
     T_damp = input_params["T_damp"]
     prodrun_stepsize = input_params["prodrun_stepsize"]
 
+    total_steps = 0
+    
     # Equilibration
     if equilibrate:
 
@@ -173,7 +175,6 @@ with open(lammps_input_file, "w") as f:
             #w("minimize 1.0e-4 1.0e-6 100 1000")
             w(" ")
 
-        total_steps = 0
 
         # Heating phase
         if T_start != T:
@@ -219,8 +220,8 @@ with open(lammps_input_file, "w") as f:
             w("")
 
         # write restart file after equilibration
-        w(f"write_restart {dir_MD / f'restart_eq_{T}'}")
-        w(f"write_data {dir_MD / f'restart_eq_{T}.data'}")
+        w(f"write_restart {dir_MD / f'restart_eq'}")
+        w(f"write_data {dir_MD / f'restart_eq.data'}")
         w("undump 0")
         w("")
 
@@ -323,7 +324,7 @@ with open(lammps_input_file, "w") as f:
     w("")
 
     # Final restart file
-    w(f"write_restart {dir_MD / f'restart_{T}'}")
-    w(f"write_data {dir_MD / f'restart_{T}.data'}")
+    w(f"write_restart {dir_MD / f'restart'}")
+    w(f"write_data {dir_MD / f'restart.data'}")
 
 print(f"LAMMPS input file written to: {lammps_input_file}")

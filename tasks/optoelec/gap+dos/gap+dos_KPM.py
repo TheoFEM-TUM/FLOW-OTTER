@@ -49,8 +49,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     num_snapshot_dos = configWF_i["gap+dos"].get("num_snapshot", last_snapshot - first_snapshot + 1)
     snapshot_sampling_dos = configWF_i["gap+dos"].get("snapshot_sampling", "all")
 
-    M = configWF_i["gap+dos"].get("M", 1000)
-    N = configWF_i["gap+dos"].get("N", 192)
+    M = configWF_i["gap+dos"].get("M", 200)
+    N = configWF_i["gap+dos"].get("N", 48)
 
 
     # determine available snapshots based on hamiltonian style
@@ -97,6 +97,9 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     ranks_optoelec = configWF_i.get("ranks_optoelec", 1)
     threads_optoelec = configWF_i.get("threads_optoelec", 1)
 
+    srun_flags_optoelec = configWF_i.get("srun_flags_optoelec", [])
+    julia_flags_optoelec = configWF_i.get("julia_flags_optoelec", [])
+
     dir_dos = dir_H / "gap+dos/DOS/"
     dir_dos.mkdir(parents=True, exist_ok=True)
 
@@ -106,9 +109,10 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         result = subprocess.run([
             "srun", 
             "-n", str(ranks_optoelec),
+            *srun_flags_optoelec,
             "julia", 
-            #f"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_hamster/", 
-            #"-t", f"{threads_optoelec}", 
+            *julia_flags_optoelec,
+            "-t", f"{threads_optoelec}",            
             str(dir_code / "optoelec/gap+dos/KPM_DOS.jl"), 
             str(M), 
             str(N), 

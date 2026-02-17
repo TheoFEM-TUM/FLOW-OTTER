@@ -186,10 +186,10 @@ if equilibrate:
         lmp.command(f"unfix 1")
 
     # write restart file after equilibration
-    restart_eq_file = f"restart_eq_{T}"
+    restart_eq_file = f"restart_eq"
     path_restart_eq = dir_MD / restart_eq_file
     lmp.command(f"write_restart " + str(path_restart_eq))
-    lmp.command(f"write_data {dir_MD / f'restart_eq_{T}.data'}")
+    lmp.command(f"write_data {dir_MD / f'restart_eq.data'}")
 
     lmp.command("undump 0")
     
@@ -278,7 +278,7 @@ if compute_rdf:
 restart_file = f"restart_{T}"
 path_restart = dir_MD / restart_file
 lmp.command(f"write_restart {path_restart}")
-lmp.command(f"write_data {dir_MD / f'restart_{T}.data'}")
+lmp.command(f"write_data {dir_MD / f'restart.data'}")
 
 me = MPI.COMM_WORLD.Get_rank()
 nprocs = MPI.COMM_WORLD.Get_size()

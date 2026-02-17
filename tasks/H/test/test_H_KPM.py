@@ -39,18 +39,25 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     #SLURM_CPUS_PER_TASK = configWF_i.get("SLURM_CPUS_PER_TASK", 1)
     hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
+    
+    ranks_H = configWF_i.get("ranks_H", 1)
+    threads_H = configWF_i.get("threads_H", 1)
+    srun_flags_H = configWF_i.get("srun_flags_H", [])
+    julia_flags_H = configWF_i.get("julia_flags_H", [])
 
-    M = configWF_i["gap+dos"].get("M", 100)
-    N = configWF_i["gap+dos"].get("N", 192)
+    gap_dos_config = configWF_i.get("gap+dos", {})
+    M = gap_dos_config.get("M", 200)
+    N = gap_dos_config.get("N", 48)
 
     # calculate DoS of Hamiltonian with Kernel Polynomial Method 
     print("Start KPM calculation of test Hamiltonian...", flush=True)
     result = subprocess.run([
         "srun", 
-        "-n", "1",
+        "-n", str(ranks_H),
+        *srun_flags_H,
         "julia", 
-        f"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_hamster/", 
-        #"-t", f"{SLURM_CPUS_PER_TASK}", 
+        *julia_flags_H,
+        "-t", str(threads_H),
         str(dir_code / "optoelec/gap+dos/KPM_DOS.jl"), 
         str(M), str(N), str(dir_H / "hamiltonian/"), str(dir_H / "test_output/"), str(t), hamiltonian_style
     ], check=True)        

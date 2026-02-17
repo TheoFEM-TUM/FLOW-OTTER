@@ -61,24 +61,32 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             if param_group is None:
                 configWF[param_to_vary] = array_to_vary[i]
             else:
+                if configWF.get(param_group) is None:
+                    configWF[param_group] = {}
                 configWF[param_group][param_to_vary] = array_to_vary[i]
 
             if "param_to_vary2" in configWF:
                 if param_group2 is None:
                     configWF[param_to_vary2] = array_to_vary2[i]
                 else:
+                    if configWF.get(param_group2) is None:
+                        configWF[param_group2] = {}
                     configWF[param_group2][param_to_vary2] = array_to_vary2[i]
 
             if "param_to_vary3" in configWF:
                 if param_group3 is None:
                     configWF[param_to_vary3] = array_to_vary3[i]
                 else:
+                    if configWF.get(param_group3) is None:
+                        configWF[param_group3] = {}
                     configWF[param_group3][param_to_vary3] = array_to_vary3[i]
       
             if "param_to_vary4" in configWF:
                 if param_group4 is None:
                     configWF[param_to_vary4] = array_to_vary4[i]
                 else:
+                    if configWF.get(param_group4) is None:
+                        configWF[param_group4] = {}
                     configWF[param_group4][param_to_vary4] = array_to_vary4[i]
 
 

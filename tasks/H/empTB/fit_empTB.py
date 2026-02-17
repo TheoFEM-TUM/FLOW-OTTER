@@ -48,16 +48,17 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     threads_H = configWF_i.get("threads_H", 1)
     ranks_H = configWF_i.get("ranks_H", N_snapshots)
+    srun_flags_H = configWF_i.get("srun_flags_H", [])
+    julia_flags_H = configWF_i.get("julia_flags_H", [])
 
      
     # calculate empirical Tight Binding hamiltonians
     result = subprocess.run([        
         "srun", 
-        #"--mpi=pmi2",
         "-n", str(ranks_H),
-        #"--cpus-per-task", "1",
+        *srun_flags_H,
         "julia", 
-        #"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_julia/", 
+        *julia_flags_H,
         "-t", str(threads_H), 
         #str(dir_code / "H/empTB/compute_H.jl"), 
         str(dir_code / "H/empTB/compute_superH.jl"), 

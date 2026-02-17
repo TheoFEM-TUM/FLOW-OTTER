@@ -61,7 +61,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             with h5py.File(str(dir_H / f"hamiltonian/ham.h5"), "r") as f:
 
                 # select random snapshot
-                random_key = random.choice(list(f.keys()))
+                h_keys = [k for k in f.keys() if k.startswith('H')]
+                random_key = random.choice(h_keys)
                 print(f"Random snapshot selected: {random_key}", flush=True)
                 g = f[random_key]
 

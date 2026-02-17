@@ -38,11 +38,13 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
     hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
 
+    julia_flags_H = configWF_i.get("julia_flags_H", [])
+
     # perform exact diagonalization of Hamiltonian
     print("Start exact diagonalization of test Hamiltonian...", flush=True)
     result = subprocess.run([
         "julia", 
-        #"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_hamster/", 
+        *julia_flags_H,
         str(dir_code / "optoelec/gap+dos/diagonalize_H.jl"), 
         str(dir_H / "hamiltonian/"), str(dir_H / "test_output/"), str(t), hamiltonian_style
     ], check=True)        

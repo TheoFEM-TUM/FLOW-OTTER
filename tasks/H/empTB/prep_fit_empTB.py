@@ -55,6 +55,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     path_traj = dir_MD / "position.lammpstrj"
 
+    julia_flags_H = configWF_i.get("julia_flags_H", [])
+
 
     # determine dimensions of lattice cell 
     result0 = subprocess.run([str(dir_code / "H/empTB/get_celldimensions.sh"), str(dir_MD)], check=True)
@@ -69,14 +71,14 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     # calculate nearst neighbour list 
     result2 = subprocess.run([
         "julia", 
-        "--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_julia/", 
+        *julia_flags_H,
         str(dir_code / "H/empTB/find_nearst_neighbour.jl"), str(dir_snapshots), f"traj{first_snapshot}.xyz", str(path_celldim)], check=True)
     print("Calculated nearest neighbour list.", flush=True)
 
     # calculate  neighbour list for unitcells
     result3 = subprocess.run([
         "julia", 
-        "--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_julia/", 
+        *julia_flags_H,
         str(dir_code / "H/empTB/find_unitcell.jl"), str(dir_snapshots), f"traj{first_snapshot}.xyz", str(path_celldim), str(cell_size)], check=True)
     print("Calculated unitcell neighbour list.", flush=True)
 

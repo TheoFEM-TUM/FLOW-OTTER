@@ -157,8 +157,6 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
                 # convert step to time
                 plot_MD_time = configWF.get("plot_MD_time", True)
-                if plot_MD_time:
-                    dt = configWF["lammps"]["dt"] * configWF["lammps"].get("thermo_output_step_size", 100)
 
                 for e in ["all", *elements]:
 
@@ -176,6 +174,9 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                             configWF_i = yaml.safe_load(f)
 
                         dir_MD = Path(configWF_i.get("dir_MD", str(dir_project_i / "1-MD/")))
+                        
+                        if plot_MD_time:
+                            dt = configWF_i["lammps"]["dt"] * configWF_i["lammps"].get("thermo_output_step_size", 100)
 
                         # read in MSD
                         step, msd_x, msd_y, msd_z, msd_tot = np.loadtxt(str(dir_MD / f"msd/msd_{e}.txt"), unpack=True, skiprows=2)

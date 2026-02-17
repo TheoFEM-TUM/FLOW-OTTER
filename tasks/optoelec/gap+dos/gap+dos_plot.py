@@ -98,15 +98,15 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
             if (dir_H / "gap+dos/gap_avg_std_KPM.txt").is_file():
 
-                gap, std_gap, _, _, _, _ = np.loadtxt(str(dir_H / "gap+dos/gap_avg_std_KPM.txt"), unpack=True, skiprows=1)
+                gap, std_gap, avg_VBM, std_VBM, avg_CBM, std_CBM = np.loadtxt(str(dir_H / "gap+dos/gap_avg_std_KPM.txt"), unpack=True, skiprows=1)
                 label = "KPM"
 
             else:
 
-                gaps, std_gaps, _, _, _, _ = np.loadtxt(str(dir_H / "gap+dos/gaps_avg_std_exact_diag.txt"), unpack=True, skiprows=1)
+                gaps, std_gaps, avg_VBM, std_VBM, avg_CBM, std_CBM = np.loadtxt(str(dir_H / "gap+dos/gaps_avg_std_exact_diag.txt"), unpack=True, skiprows=1)
                 label = "exact diag"
 
-                gap_index = configWF.get("gap_index", 0)
+                gap_index = configWF["gap+dos"].get("gap_index", 0)
                 gap = gaps[gap_index]
                 std_gap = std_gaps[gap_index]
 
@@ -127,6 +127,107 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         np.savetxt(str(dir_plot_gap / f"{param_to_vary}_vs_gaps.txt"), data_gap, fmt='%s', header=f"{param_to_vary}      average of gap/{hamiltonian_unit}      std of gap/{hamiltonian_unit}")
 
         print(f"✅ Saved {param_to_vary} vs band gap plot → {outfile}", flush=True)
+
+
+        ### plot param_to_vary vs average VBMs
+        data_VBM = np.zeros((len(array_to_vary), 3), dtype=object)
+
+        fig1, (ax1) = plt.subplots()
+        plt.title(f"{param_to_vary} vs average VBM")
+
+        for i in range(len(array_to_vary)):
+
+            # read in branch configuration
+            dir_project_i = dir_project / f"{param_to_vary}_{array_to_vary[i]}/"
+
+            with open(str(dir_project_i / 'branch_config.yaml'), 'r') as f:
+                configWF_i = yaml.safe_load(f)
+
+            dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
+
+
+            if (dir_H / "gap+dos/gap_avg_std_KPM.txt").is_file():
+
+                gap, std_gap, VBM, std_VBM, CBM, std_CBM = np.loadtxt(str(dir_H / "gap+dos/gap_avg_std_KPM.txt"), unpack=True, skiprows=1)
+                label = "KPM"
+
+            else:
+
+                gaps, std_gaps, VBMs, std_VBMs, CBMs, std_CBMs = np.loadtxt(str(dir_H / "gap+dos/gaps_avg_std_exact_diag.txt"), unpack=True, skiprows=1)
+                label = "exact diag"
+
+                gap_index = configWF.get("gap_index", 0)
+                VBM = VBMs[gap_index]
+                std_VBM = std_VBMs[gap_index]
+
+            if i == 0:
+                plt.errorbar(array_to_vary[i], VBM, yerr=std_VBM, color="tab:blue", marker="x", markersize=8, label=label)
+            else:
+                plt.errorbar(array_to_vary[i], VBM, yerr=std_VBM, color="tab:blue", marker="x", markersize=8)
+
+            data_VBM[i, :] = np.array([array_to_vary[i], VBM, std_VBM])
+
+        plt.xlabel(f"{param_to_vary}{unit_to_vary}")
+        plt.ylabel(f"VBM/{hamiltonian_unit}")
+        plt.legend()
+        outfile = dir_plot_gap / f"{param_to_vary}_vs_VBMs.pdf"
+        plt.savefig(outfile)
+        plt.close(fig1)
+
+        np.savetxt(str(dir_plot_gap / f"{param_to_vary}_vs_VBMs.txt"), data_VBM, fmt='%s', header=f"{param_to_vary}      average of VBM/{hamiltonian_unit}      std of VBM/{hamiltonian_unit}")
+
+        print(f"✅ Saved {param_to_vary} vs VBM plot → {outfile}", flush=True)
+
+
+        ### plot param_to_vary vs average CBMs
+        data_CBM = np.zeros((len(array_to_vary), 3), dtype=object)
+
+        fig1, (ax1) = plt.subplots()
+        plt.title(f"{param_to_vary} vs average CBM")
+
+        for i in range(len(array_to_vary)):
+
+            # read in branch configuration
+            dir_project_i = dir_project / f"{param_to_vary}_{array_to_vary[i]}/"
+
+            with open(str(dir_project_i / 'branch_config.yaml'), 'r') as f:
+                configWF_i = yaml.safe_load(f)
+
+            dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
+
+
+            if (dir_H / "gap+dos/gap_avg_std_KPM.txt").is_file():
+
+                gap, std_gap, VBM, std_VBM, CBM, std_CBM = np.loadtxt(str(dir_H / "gap+dos/gap_avg_std_KPM.txt"), unpack=True, skiprows=1)
+                label = "KPM"
+
+            else:
+
+                gaps, std_gaps, VBMs, std_VBMs, CBMs, std_CBMs = np.loadtxt(str(dir_H / "gap+dos/gaps_avg_std_exact_diag.txt"), unpack=True, skiprows=1)
+                label = "exact diag"
+
+                gap_index = configWF.get("gap_index", 0)
+                CBM = CBMs[gap_index]
+                std_CBM = std_CBMs[gap_index]
+
+            if i == 0:
+                plt.errorbar(array_to_vary[i], CBM, yerr=std_CBM, color="tab:blue", marker="x", markersize=8, label=label)
+            else:
+                plt.errorbar(array_to_vary[i], CBM, yerr=std_CBM, color="tab:blue", marker="x", markersize=8)
+
+            data_CBM[i, :] = np.array([array_to_vary[i], CBM, std_CBM])
+
+        plt.xlabel(f"{param_to_vary}{unit_to_vary}")
+        plt.ylabel(f"CBM/{hamiltonian_unit}")
+        plt.legend()
+        outfile = dir_plot_gap / f"{param_to_vary}_vs_CBMs.pdf"
+        plt.savefig(outfile)
+        plt.close(fig1)
+
+        np.savetxt(str(dir_plot_gap / f"{param_to_vary}_vs_CBMs.txt"), data_CBM, fmt='%s', header=f"{param_to_vary}      average of CBM/{hamiltonian_unit}      std of CBM/{hamiltonian_unit}")
+
+        print(f"✅ Saved {param_to_vary} vs CBM plot → {outfile}", flush=True)
+
 
     else:
         print("No comparing plots are created because only one simulation was run.", flush=True)

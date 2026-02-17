@@ -1,5 +1,5 @@
+from ruamel.yaml import YAML
 from typing import Tuple
-import yaml
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -10,9 +10,11 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     print("Start task: gap+dos_post_KPM", flush=True)
 
+    yaml = YAML()
+
     # Read in global configurations
     with open(path_configWF, "r") as f:
-        configWF = yaml.safe_load(f)
+        configWF = yaml.load(f)
 
     dir_project = Path(configWF.get("dir_project", "./"))
 
@@ -27,7 +29,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         dir_project_i = dir_project / f"{param_to_vary}_{array_to_vary[i]}/"
 
         with open(str(dir_project_i / 'branch_config.yaml'), 'r') as f:
-            configWF_i = yaml.safe_load(f)
+            configWF_i = yaml.load(f)
 
     else:
         configWF_i = configWF.copy()
@@ -37,16 +39,12 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     dir_code = Path(configWF_i.get("dir_code", "./")) / "codes/"
     dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
 
-    M = configWF_i["gap+dos"].get("M", 1000)
-
-    guess_E_v = configWF_i["gap+dos"].get("guess_E_v", None)
-    guess_E_c = configWF_i["gap+dos"].get("guess_E_c", None)
+    M = configWF_i["gap+dos"].get("M", 200)
 
     hamiltonian_unit = configWF_i.get("hamiltonian_unit", "eV")
     hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
 
-    #SLURM_CPUS_PER_TASK = configWF_i.get("SLURM_CPUS_PER_TASK", 1)
-
+    julia_flags_optoelec = configWF_i.get("julia_flags_optoelec", [])
 
     # read in DoS from KPM calculation
     arr_E = np.zeros((len(snapshots), 2*M))
@@ -89,43 +87,41 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     data_gaps = np.column_stack((largest_gaps, EV[largest_gap_indices], EV[largest_gap_indices+1]))
     np.savetxt(str(dir_H / f"gap+dos/gaps_candidates_KPM.txt"), data_gaps, header=f" gap/{hamiltonian_unit}    VBM/{hamiltonian_unit}     CBM/{hamiltonian_unit}")
         
+    guess_E_v = configWF_i["gap+dos"].get("guess_E_v", None)
+    guess_E_c = configWF_i["gap+dos"].get("guess_E_c", None)
+
+    if (guess_E_v == None) or (guess_E_c == None):
+        gap_index = configWF_i["gap+dos"].get("gap_index", 0)
+        
+        guess_E_v = float(EV[largest_gap_indices[gap_index]])
+        guess_E_c = float(EV[largest_gap_indices[gap_index]+1])
+
+        configWF_i["gap+dos"]["guess_E_v"] = guess_E_v
+        configWF_i["gap+dos"]["guess_E_c"] = guess_E_c
+
+        with open(str(dir_project_i / 'branch_config.yaml'), 'w') as f:
+            yaml.dump(configWF_i, f)
+
+        print("Warning: No guess for VBM and CBM provided. Automatically set to ", guess_E_v, "and", guess_E_c, flush=True)
 
     # calcate exact gaps from educated guesses for VBM and CBM
-    if (guess_E_v == None) or (guess_E_c == None):
-        raise Exception(f"Please insert values for guesses for VBM and CBM (see gaps_candidates_KPM.txt).")
+    dir_gap = dir_H / "gap+dos/gap/"
+    dir_gap.mkdir(parents=True, exist_ok=True)
 
-    else:
-
-        dir_gap = dir_H / "gap+dos/gap/"
-        dir_gap.mkdir(parents=True, exist_ok=True)
-
-        for t in snapshots:
-            print(f"Calculating gap for snapshot {t} ...", flush=True)
-            result = subprocess.run([
-                #"srun", 
-                "julia", 
-                #f"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_pq/", 
-                f"{dir_code}/optoelec/gap+dos/calc_gap.jl", 
-                str(dir_H / "hamiltonian/"), 
-                str(t), 
-                str(guess_E_v), 
-                str(guess_E_c), 
-                str(dir_gap), 
-                hamiltonian_style,
-            ], check=True)        
-
-        #snapshot_args = [str(s) for s in snapshots]
-
-        #cmd = [
-        #    str(dir_code / "optoelec/gap+dos/run_calc_gap.sh"),
-        #    str(dir_code),
-        #    str(dir_H),
-        #    str(guess_E_v),
-        #    str(guess_E_c),
-        #    hamiltonian_style
-        #] + snapshot_args
-            
-        #result = subprocess.run(cmd, check=True)
+    for t in snapshots:
+        print(f"Calculating gap for snapshot {t} ...", flush=True)
+        result = subprocess.run([
+            #"srun", 
+            "julia", 
+            *julia_flags_optoelec,
+            f"{dir_code}/optoelec/gap+dos/calc_gap.jl", 
+            str(dir_H / "hamiltonian/"), 
+            str(t), 
+            str(guess_E_v), 
+            str(guess_E_c), 
+            str(dir_gap), 
+            hamiltonian_style,
+        ], check=True)        
 
     print("Finish task: gap+dos_post_KPM", flush=True)
 
