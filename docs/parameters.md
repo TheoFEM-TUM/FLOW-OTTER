@@ -112,11 +112,12 @@ These are all parameters with detailed descriptions that can be used in the conf
 `julia_flags_optoelec` (list of str): list of flags for `julia` commands for optoelectronics-related tasks; e.g., `julia --project=...` (*[]*)  
 
 `dir_conducitivity` (str): directory to MD+Kubo code  
-`dir_config` (str): directory to YAML configuration file for MD+Kubo method
-`dir_output` (str): output directory of MD+Kubo method
+`dir_config` (str): directory to YAML configuration file for MD+Kubo method (*`dir_project/3_conductivity`*)  
+`config_file` (str): name of the configuration YAML file to read initial configuration from (*`conductivity_config.yaml`*)  
+`dir_output` (str): output directory of MD+Kubo method (*`dir_project/3_conductivity`*)    
 
 `N_avg` (int): number of different configurations for the calculation of an average conductivity (*1*)  
-`dN_avg` (int): consecutive difference of the initial snapshots between the different configurations (*100* if `N_avg` > 1)  
+`dN_avg` (int): consecutive difference of the initial snapshots between the different configurations in conductivity averaging (*100* if `N_avg` > 1)  
 
 
 ## lammps:
@@ -185,8 +186,4 @@ This section contains parameters for the MD+Kubo method. It is, so far, an exper
 `t_start` (int): snapshot index of H snapshots from H file to become the initial snapshot of MD+Kubo method (*0*)  
 `T` (float): temperature within the MD+Kubo method  
 
-`output_dir` (str): output dir 
-
-`TB_path` (str): path to H file  
-`celldim_path` (str): path to celldimension file  
 
