@@ -14,7 +14,7 @@ You can check your Python version with
 python --version
 ```
 
-## Create virtual Python environment(s)
+## Setup virtual Python environment(s)
 
 `Flow-Otter` must be used within virtual Python environments that contain the required Python packages.
 
@@ -41,6 +41,11 @@ In such cases, you may create several virtual environments and (re)start the cor
 Tasks started from an incompatible environment will fail, but can be resubmitted safely once the correct environment is activated.
 Creating small bash scripts to load environment-specific dependencies can be helpful. 
 In future versions, these scripts will be supported as preamble scripts, eliminating the need for manual resubmission (see the Preambles section below).
+
+## Setup Julia depedencies
+
+
+TBD
 
 
 ## PerQueue configuration
