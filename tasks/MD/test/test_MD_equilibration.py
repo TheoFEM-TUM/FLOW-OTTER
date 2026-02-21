@@ -195,10 +195,14 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                 error = True
         if (abs(T_eq_avg_nvt - T_set) > 2 * T_eq_std_nvt):
             print("abs(T_eq_avg_nvt - T_set) > 2 * T_eq_std_nvt: ", abs(T_eq_avg_nvt - T_set), f" {units[0]}", " > ", 2 * T_eq_std_nvt, f" {units[0]}", flush=True)
+            print("T_eq_avg_nvt: ", T_eq_avg_nvt, f" {units[0]}", flush=True)
+            print("T_set: ", T_set, f" {units[0]}", flush=True)
             error = True
         if npt_equilibrate:
             if (abs(T_eq_avg_npt - T_set) > 2 * T_eq_std_npt):
                 print("abs(T_eq_avg_npt - T_set) > 2 * T_eq_std_npt: ", abs(T_eq_avg_npt - T_set), f" {units[0]}", " > ", 2 * T_eq_std_npt, f" {units[0]}", flush=True)
+                print("T_eq_avg_npt: ", T_eq_avg_npt, f" {units[0]}", flush=True)
+                print("T_set: ", T_set, f" {units[0]}", flush=True)
                 error = True
 
         # plot temperature data
@@ -483,6 +487,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         if npt_equilibrate:
             if (abs(p_avg_npt - p_set) > p_std_npt):
                 print("abs(p_avg_npt - p_set) > p_std_npt: ", abs(p_avg_npt - p_set), f" {units[4]}", " > ", p_std_npt, f" {units[4]}")
+                print("p_avg_npt: ", p_avg_npt, f" {units[4]}", flush=True)
+                print("p_set: ", p_set, f" {units[4]}", flush=True)
                 error = True
         #if not np.allclose(moving_average(p, w)[-2*w:], p_set, atol=abs(p_set + p_std_npt)/p_set):
         #    print("Pressure is fluctuating too much around the set point.")

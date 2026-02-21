@@ -36,15 +36,15 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         configWF_i = configWF.copy()
         dir_project_i = dir_project
 
-    # read in branch configuration 
-    dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
-    first_snapshot = configWF_i.get("first_snapshot", 0)
-    N_snapshots = configWF_i["N_snapshots"]
-    last_snapshot = configWF_i.get("last_snapshot", first_snapshot + N_snapshots - 1)
-
     run_test_H = configWF_i.get("run_test_H", True)
-
+    
     if run_test_H:
+    
+        # read in branch configuration 
+        dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
+        first_snapshot = configWF_i.get("first_snapshot", 0)
+        N_snapshots = configWF_i["N_snapshots"]
+        last_snapshot = configWF_i.get("last_snapshot", first_snapshot + N_snapshots - 1)
 
         hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
 

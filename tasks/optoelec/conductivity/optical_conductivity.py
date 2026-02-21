@@ -61,9 +61,11 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     if "temperature" in configWF:
         input_params["T"] = configWF_i["temperature"]
 
-    result0 = subprocess.run([str(dir_code / "H/empTB/get_celldimensions.sh"), str(dir_MD)], check=True)
-    path_celldim = dir_MD / "celldimensions.txt"
-    shutil.copy2(path_celldim, dir_H)    
+    if not (dir_H / "celldimensions.txt").exists():
+        path_celldim = dir_MD / "celldimensions.txt"
+        if not path_celldim.exists():
+            result0 = subprocess.run([str(dir_code / "H/empTB/get_celldimensions.sh"), str(dir_MD)], check=True)
+        shutil.copy2(path_celldim, dir_H)    
 
     input_params["TB_path"] = str(dir_H / "hamiltonian/")
     input_params["celldim_path"] = str(dir_H / "celldimensions.txt")
@@ -101,7 +103,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         *julia_flags_optoelec,
         "-t", f"{threads_optoelec}", 
         str(dir_conductivity / "cluster_run.jl"), 
-        str(dir_output)+"/", str(config_file)], check=True)
+        str(dir_output), str(config_file)], check=True)
 
     print("Finish task: optical_conductivity", flush=True)
     
