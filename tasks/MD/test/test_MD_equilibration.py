@@ -307,13 +307,13 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
         # calculate statistical volume values
         with open(str(dir_MD / "test_equilibrate/thermo_avg_std.txt"), "a") as f:
+            f.write("VOLUME: \n\n")
             if npt_equilibrate:
                 V_eq_avg_npt = np.mean(V[(n1 + n2 + n3 < step) & (step <= n1 + n2 + n3 + n4)][-2*w:])
                 V_eq_std_npt = np.std(V[(n1 + n2 + n3 < step) & (step <= n1 + n2 + n3 + n4)][-2*w:])
                 V_avg_npt = np.mean(V[(n1 + n2 + n3 < step) & (step <= n1 + n2 + n3 + n4)])
                 V_std_npt = np.std(V[(n1 + n2 + n3 < step) & (step <= n1 + n2 + n3 + n4)])
 
-                f.write("VOLUME: \n\n")
                 f.write(f"  Equilibrated average volume (NPT): {V_eq_avg_npt} +/- {V_eq_std_npt} {units[3]}\n")
                 f.write(f"  Overall average volume (NPT): {V_avg_npt} +/- {V_std_npt} {units[3]}\n\n")
 

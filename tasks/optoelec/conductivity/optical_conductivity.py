@@ -61,14 +61,16 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     if "temperature" in configWF:
         input_params["T"] = configWF_i["temperature"]
 
-    if not (dir_H / "celldimensions.txt").exists():
-        path_celldim = dir_MD / "celldimensions.txt"
-        if not path_celldim.exists():
+    path_H_celldim = dir_H / "celldimensions.txt"
+
+    if not path_H_celldim.exists():
+        path_MD_celldim = dir_MD / "celldimensions.txt"
+        if not path_MD_celldim.exists():
             result0 = subprocess.run([str(dir_code / "H/empTB/get_celldimensions.sh"), str(dir_MD)], check=True)
-        shutil.copy2(path_celldim, dir_H)    
+        shutil.copy2(path_MD_celldim, dir_H)    
 
     input_params["TB_path"] = str(dir_H / "hamiltonian/")
-    input_params["celldim_path"] = str(dir_H / "celldimensions.txt")
+    input_params["celldim_path"] = str(path_H_celldim)
 
     if dN_avg > 0:
         pq_index = kwargs['pq_index'][0]
