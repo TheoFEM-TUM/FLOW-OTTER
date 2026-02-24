@@ -167,7 +167,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         print("Start LAMMPS MD...", flush=True)
         result2 = subprocess.run([
             "srun",
-            #"-n", f"{ranks_MD}",
+            "-n", f"{ranks_MD}",
             *srun_flags_MD,
             "lmp",
             "-k", "on", "g", "1", "-sf", "kk", "-pk", "kokkos", "newton", "on", "neigh", "half",

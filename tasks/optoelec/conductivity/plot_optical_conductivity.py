@@ -1,6 +1,7 @@
 import subprocess
 from typing import Tuple
 from pathlib import Path
+import yaml
 
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
@@ -36,18 +37,18 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
             unit_to_vary = configWF_i.get("unit_to_vary", "")
 
-            outputs.append(dir_output)
+            outputs.append(str(dir_output))
             labels.append(f"{param_to_vary} = {array_to_vary[i]} {unit_to_vary}")
 
 
         result = subprocess.run([
             str(dir_conductivity / "plotting_scripts/cluster_plot.sh"), 
-            outputs,
-            "--labels",
-            *labels,
+            *outputs,
             "--outfolder",
-            str(dir_plots)
-            ], check=True)
+            str(dir_plots),
+            "--labels",
+            *labels
+            ], check=True, cwd=str(dir_conductivity / "plotting_scripts/"))
 
     else:
         print("No comparison of different conductivity output needed since only one calculation was performed.", flush=True)
