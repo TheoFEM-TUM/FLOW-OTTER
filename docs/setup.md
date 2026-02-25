@@ -42,16 +42,25 @@ Tasks started from an incompatible environment will fail, but can be resubmitted
 Creating small bash scripts to load environment-specific dependencies can be helpful. 
 In future versions, these scripts will be supported as preamble scripts, eliminating the need for manual resubmission (see the Preambles section below).
 
-## Setup Julia depedencies
-
-
-TBD
-
 
 ## PerQueue configuration
 PerQueue requires cluster-specific configuration. 
 You can set this in `~/.myqueue/config.py`. 
 In the [myqueue documentation](https://myqueue.readthedocs.io/configuration.html), you can find further details.
+
+
+## Setup Julia dependencies
+
+To set up the Julia dependencies, you can either use the `Manifest.toml` and/or `Project.toml`,  or you can install them in your global Julia environment with
+```
+juia requirements/install_julia_requirements.jl
+```
+
+If you want to use Vampires, Hamster, or the MD+Kubo method, you can add these packages with the corresponding Julia file in `requirements/add_packages/` with
+```
+julia requirements/add_packages/add_*.jl
+```
+__after__ their installations, which are explained below.
 
 
 ## External software
