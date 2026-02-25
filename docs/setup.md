@@ -60,7 +60,7 @@ If you want to use Vampires, Hamster, or the MD+Kubo method, you can add these p
 ```
 julia requirements/add_packages/add_*.jl
 ```
-<u>after</u> their installations, which are explained below.
+__after__ their installations, which are explained below.
 
 
 ## External software
