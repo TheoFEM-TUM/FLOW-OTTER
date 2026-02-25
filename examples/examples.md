@@ -2,7 +2,9 @@
 
 The following examples show some possible applications of `Flow-Otter`. 
 The corresponding config YAML files are in this directory.
-Each example is visualized using a scheme that shows the created branches and workflow tasks (except buffer tasks).
+Each example is visualized using a scheme that shows the created branches and workflow tasks (except buffer tasks).  
+
+Please adjust the parameters marked with `# INSERT HERE` and `# ADAPT THIS TO YOUR SYSTEM` accordingly.   
 
 ## Temperature and pressure sweep with VASP ML-MD
 
