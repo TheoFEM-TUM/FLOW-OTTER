@@ -156,7 +156,8 @@ Details can also be found in [LAMMPS documentation](https://docs.lammps.org/Manu
 `prodrun_numsteps` (int): number of MD steps in the production run  
 
 `compute_msd` (bool): if True, compute mean squared displacements (msd) of all atoms and each atom species (*True*)  
-`compute_rdf` (bool): if True, compute radial distribution functions (rdf) of all atoms and between each atom species (*True*)  
+`compute_rdf` (bool): if True, compute radial distribution functions (rdf) of all atoms and between atoms of the same species (*True*)  
+`compute_inter_rdf` (bool): if True, compute also radial distribution functions (rdf) between different atom species (*False*)  
 `rdf_bins` (int): number of bins which are used to histogram the atom distances for the radial distribution function (rdf) (*100*)  
 
 `units_array` (array of string): individual units shown in the MD plots; set as `["temperature unit", "energy unit", "lattice constant unit", "volume unit", "pressure unit", "time unit (thermo)", "atom distance unit", "velocity unit", "force unit", "frequency unit", "time unit (MSD)"]`  
