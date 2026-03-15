@@ -11,7 +11,7 @@ Please adjust the parameters marked with `# INSERT HERE` and `# ADAPT THIS TO YO
 flow executable: `flow_MD.py`  
 config YAML file: `otter_T_P_sweep.yaml`  
 
-<img width="700" alt="flowchart 001" src="https://github.com/user-attachments/assets/898280d8-edc4-46bf-8300-efb2ba76cc6c" />
+
 
 
 ## Size transferability test with MACE ML-MD and Hamster Hamiltonians
