@@ -33,7 +33,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 `param_group_for_vary2`, `param_group_for_vary3`, and `param_group_for_vary4` (str): specify the parameter group if the chosen parameters for additional `param_to_vary*` are part of a subgroup (compare param_group_for_vary)    
 `array_to_vary2`, `array_to_vary3`, and `array_to_vary4` (array of param type): array of values (of matching type) for additional `param_to_vary*` (compare array_to_vary); each branch gets one of the values (len(array) == `num_simulations`) 
 
-`just_update_branch_config_file` (bool): if true, first task "check_simulation_type" crashes after updating the branch config YAML files; prevents the `Flow-Otter` from restarting totally when the user just wants to change parameters in the branch configuration file without tendious manual changes in each file; instead, just update the main config YAML file (*false*)  
+`just_update_branch_config_file` (bool): if true, first task "check_simulation_type" crashes after updating the branch config YAML files; prevents the `Flow-Otter` from restarting totally when the user just wants to change parameters in the branch configuration file without tedious manual changes in each file; instead, just update the main config YAML file (*false*)  
 `human_in_loop` (bool): if true, `Flow-Otter` fails after each test to allow the user to verify the results of this step (*false*)  
 `run_test_MD` (bool): if true, VDOS and histograms of positions, velocities, and forces are calculated to test MD reliability (*true*)  
 `run_test_H` (bool): if true, distribution of H elements and test DOS are calculated for a random snapshot (*true*)  
@@ -85,7 +85,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 - "Hr" &rarr; Hamiltonian lives in real space
 - "TB" &rarr; Hamiltonian is an empirical Tight Binding H 
 
-`write_current` (bool): if true, writes current matrices (e.g. for transport calculations) to `ham.h5` file (*false*)
+`write_current` (bool): if true, writes current matrices (e.g., for transport calculations) to `ham.h5` file (*false*)
 
 `cell_size` (int): size of supercell in comparison to unit cell (only needed for "empTB")  
 
@@ -110,6 +110,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 `ranks_optoelec` (int): number of MPI ranks for calculation of optoelectronic properties (*os.environ.get("SLURM_NTASKS")*)  
 `srun_flags_optoelec` (list of str): list of flags for `srun` commands for optoelectronics-related tasks (*[]*)  
 `julia_flags_optoelec` (list of str): list of flags for `julia` commands for optoelectronics-related tasks; e.g., `julia --project=...` (*[]*)  
+`optoelec_method` (str): name of method which is used for "gap+dos" or "cohp" calculation; only necessary if `run_test_H = false` because then size of Hamiltonian is not determined beforehand ("KPM", "exact_diag")  
 
 `dir_conducitivity` (str): directory to MD+Kubo code  
 `dir_config` (str): directory to YAML configuration file for MD+Kubo method (*`dir_project/3_conductivity`*)  
@@ -156,7 +157,8 @@ Details can also be found in [LAMMPS documentation](https://docs.lammps.org/Manu
 `prodrun_numsteps` (int): number of MD steps in the production run  
 
 `compute_msd` (bool): if True, compute mean squared displacements (msd) of all atoms and each atom species (*True*)  
-`compute_rdf` (bool): if True, compute radial distribution functions (rdf) of all atoms and between each atom species (*True*)  
+`compute_rdf` (bool): if True, compute radial distribution functions (rdf) of all atoms and between atoms of the same species (*True*)  
+`compute_inter_rdf` (bool): if True, compute also radial distribution functions (rdf) between different atom species (*False*)  
 `rdf_bins` (int): number of bins which are used to histogram the atom distances for the radial distribution function (rdf) (*100*)  
 
 `units_array` (array of string): individual units shown in the MD plots; set as `["temperature unit", "energy unit", "lattice constant unit", "volume unit", "pressure unit", "time unit (thermo)", "atom distance unit", "velocity unit", "force unit", "frequency unit", "time unit (MSD)"]`  
@@ -165,7 +167,7 @@ Details can also be found in [LAMMPS documentation](https://docs.lammps.org/Manu
 ## gap+dos:
 
 `num_snapshot_dos` (int): number of snapshots used to calculate an average DOS (*last_snapshot - first_snapshot + 1*)  
-`snapshot_sampling` (string): determines how num_snapshot_dos snapshots are chosen out of the the N_snapshots snapshots for which H exist (*"all"*, "uniform", "random")
+`snapshot_sampling` (string): determines how `num_snapshot_dos` snapshots are chosen out of the the N_snapshots snapshots for which H exist (*"all"*, "uniform", "random")
 - "all" &rarr; all snapshots are used
 - "uniform" &rarr; num_snapshot_dos are uniformly distributed over the given interval of H snapshots; set as `[first_snapshot, last_snapshot]`  
 - "random" &rarr; the snapshots are randomly distributed over the given interval of H snapshots; set as `[first_snapshot, last_snapshot]` 
@@ -178,6 +180,13 @@ Details can also be found in [LAMMPS documentation](https://docs.lammps.org/Manu
 
 `gap_index` (int): choose one of the five band gap candidates; either calculated with exact diagonalization for the band gap plots or from the KPM DOS for the guess for VBM and CBM (*0*, 1, 2, 3, 4)
 
+
+## cohp:
+`num_snapshot_cohp` (int): number of snapshots used to calculate an average COHP (*last_snapshot - first_snapshot + 1*)  
+`snapshot_sampling` (string): determines how `num_snapshot_cohp` snapshots are chosen out of the the N_snapshots snapshots for which H exist (*"all"*, "uniform", "random")
+
+`N` (int): number of stochastic vectors in the stochastic trace approximation; only needed if matrix is too large for exact diagonalization and therefore, the kernel polynomial method is used (*48*)  
+`M` (int): number of moments in kernel polynomial method; only needed if matrix is too large for exact diagonalization and therefore, kernel polynomial method is used (*200*) 
 
 ## conductivity:
 

@@ -11,11 +11,20 @@ Please adjust the parameters marked with `# INSERT HERE` and `# ADAPT THIS TO YO
 flow executable: `flow_MD.py`  
 config YAML file: `otter_T_P_sweep.yaml`  
 
+<img src="flowchart_MD.png" width="700">
+
+
 
 ## Size transferability test with MACE ML-MD and Hamster Hamiltonians
 
 flow executable: `flow.py`  
 config YAML file: `otter_size_transfer.yaml`  
+
+<img src="flowchart_full.png" width="700">
+
+The **Hamster ML-H** and **band gap & DOS** boxes contain several tasks which are left out for readablity. 
+A **Hamster** box includes a `prepare_hamster` and `hamster` task, while the **band gap & DOS** boxes incorparate the tasks `bandgap+dos_KPM`, `bandgap+dos_post_KPM`, and `gap_KPM` or `bandgap+dos_exact` and `bandgap+dos_post_exact` depending on the Hamiltonian size.  
+
 
 
 
