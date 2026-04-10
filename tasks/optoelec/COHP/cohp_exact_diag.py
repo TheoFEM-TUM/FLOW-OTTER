@@ -6,12 +6,13 @@ import subprocess
 import h5py
 import re
 import random
+import matplotlib.pyplot as plt
 
 
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
-    print("Start task: gap+dos_exact_diag", flush=True)
+    print("Start task: cohp_exact_diag", flush=True)
 
     # Read in global configurations
     with open(path_configWF, "r") as f:
@@ -40,20 +41,21 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     # read in branch configuration 
     dir_code = Path(configWF_i.get("dir_code", "./")) / "codes/"
     dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
-    
+
     julia_flags_optoelec = configWF_i.get("julia_flags_optoelec", [])
     resources_optoelec = configWF["resources_optoelec"]
     cores_optoelec = int(resources_optoelec.split(":")[0])
 
     hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
+    hamiltonian_unit = configWF_i.get("hamiltonian_unit", "eV")
 
     first_snapshot = configWF_i.get("first_snapshot", 0)
     N_snapshots = configWF_i["N_snapshots"]
     last_snapshot = configWF_i.get("last_snapshot", first_snapshot + N_snapshots - 1)
 
-    num_snapshot_dos = configWF_i["gap+dos"].get("num_snapshot", last_snapshot - first_snapshot + 1)
-    snapshot_sampling_dos = configWF_i["gap+dos"].get("snapshot_sampling", "all")
-
+    num_snapshot_cohp = configWF_i["cohp"].get("num_snapshot", last_snapshot - first_snapshot + 1)
+    snapshot_sampling_cohp = configWF_i["cohp"].get("snapshot_sampling", "all")
+    
 
     # determine available snapshots based on hamiltonian style
     if hamiltonian_style == "Hr" or hamiltonian_style == "Hk":
@@ -82,42 +84,80 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         raise Exception(f"hamiltonian_style {hamiltonian_style} not recognized.")
 
     # choose snapshots for exact diagonalization calculation
-    if snapshot_sampling_dos == "uniform":
-        indices = np.linspace(0, len(snapshots) - 1, num_snapshot_dos, dtype=int)
+    if snapshot_sampling_cohp == "uniform":
+        indices = np.linspace(0, len(snapshots) - 1, num_snapshot_cohp, dtype=int)
         chosen_snapshots = snapshots[indices]
-    elif snapshot_sampling_dos == "random":
-        chosen_snapshots = np.sort(np.random.choice(snapshots, size=num_snapshot_dos, replace=False))
-    elif snapshot_sampling_dos == "all":
+    elif snapshot_sampling_cohp == "random":
+        chosen_snapshots = np.sort(np.random.choice(snapshots, size=num_snapshot_cohp, replace=False))
+    elif snapshot_sampling_cohp == "all":
         chosen_snapshots = snapshots
     else:
-        raise Exception(f"snapshot_sampling {snapshot_sampling_dos} not recognized.")
+        raise Exception(f"snapshot_sampling {snapshot_sampling_cohp} not recognized.")
 
     print(f"Available snapshots: {snapshots}", flush=True)
     print(f"Chosen snapshots for exact diagonalization: {chosen_snapshots}", flush=True)
 
-    dir_EV = dir_H / "gap+dos/EV/"
-    dir_EV.mkdir(parents=True, exist_ok=True)
+    dir_cohp = dir_H / "COHP/"
+    dir_cohp.mkdir(parents=True, exist_ok=True)
 
     print(f"Using {cores_optoelec} cores for optoelectronic calculations.", flush=True)
 
     # perform exact diagonalization for chosen snapshots
     for t in chosen_snapshots:
-        print(f"Diagonalizing Hamiltonian for snapshot {t} ...", flush=True)
+        print(f"Calculate COHP for snapshot {t} ...", flush=True)
         result = subprocess.run([
             "srun",
             '--ntasks=1',
             f'--cpus-per-task={cores_optoelec}',
             "julia",
             *julia_flags_optoelec, 
-            str(dir_code / "optoelec/gap+dos/diagonalize_H.jl"), 
+            str(dir_code / "optoelec/COHP/exact_diag_COHP.jl"), 
             str(dir_H / "hamiltonian/"), 
-            str(dir_EV), 
+            str(dir_cohp), 
             str(t), 
             hamiltonian_style
         ], check=True)        
 
-    optoelec_type = "gap+dos_exact_diag"
+    basis_labels = np.loadtxt(dir_H / "hamiltonian/basis_labels.txt", dtype=str)
 
-    print("Finish task: gap+dos_exact_diag", flush=True)
+    for i in basis_labels:
+        for j in basis_labels:
+            if i != j:
+                dir_cohp_ij = dir_cohp / f"{i}_{j}/"
+                cohp_files = list(dir_cohp_ij.glob("COHP_*.txt"))
+
+                if cohp_files:
+                    avg_E = np.zeros(len(np.loadtxt(cohp_files[0], skiprows=1)[:, 0]))
+                    avg_cohp = np.zeros_like(avg_E)
+                    std_cohp = np.zeros_like(avg_E)
+                    for file in cohp_files:
+                        data = np.loadtxt(file, skiprows=1)
+                        avg_E += data[:, 0]
+                        avg_cohp += data[:, 1]
+                        std_cohp += data[:, 1] ** 2
+
+                    avg_E /= len(cohp_files)
+                    avg_cohp /= len(cohp_files)
+                    std_cohp = np.sqrt(std_cohp / len(cohp_files) - avg_cohp ** 2)
+
+                    ICOHP = np.trapz(avg_cohp, avg_E)
+                    print(f"Integrated COHP for {i}-{j} pair: {ICOHP}/{hamiltonian_unit}", flush=True)
+
+                    fig, ax = plt.subplots()
+                    plt.title(f"Crystal orbital Hamilton population ({i}-{j})")
+                    ax.axhline(y=0, color='black', linewidth=0.8)
+                    ax.plot(avg_E, avg_cohp)
+                    ax.fill_between(avg_E, (avg_cohp - std_cohp), (avg_cohp + std_cohp), alpha=0.2)
+                    ax.set_xlabel(f"Energy/{hamiltonian_unit}")
+                    ax.set_ylabel(f"COHP")
+                    plt.savefig(str(dir_cohp / f"avg_COHP_{i}_{j}.pdf"))
+                    plt.close(fig)
+
+                    np.savetxt(str(dir_cohp / f"avg_COHP_{i}_{j}.txt"), np.column_stack((avg_E, avg_cohp, std_cohp)), header="Energy   COHP   std_COHP")
+        
+
+    optoelec_type = "cohp_exact_diag"
+
+    print("Finish task: cohp_exact_diag", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, "optoelec_type": optoelec_type, "snapshots": snapshots}

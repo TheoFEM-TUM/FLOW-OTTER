@@ -1,0 +1,128 @@
+using SparseArrays, LinearAlgebra, KrylovKit
+using DelimitedFiles
+using Hamster
+#MPIPreferences.use_system_binary()
+#using MPI
+
+### read empirical TB hamiltonian parameters from file
+function read_empTB_params(t::Int, H_path::String)
+    file_path = joinpath(H_path, "TB_" * string(t) * ".txt")
+    
+    row = Int[]
+    col = Int[]
+    H_elem = Complex{Float64}[]
+    traj = Vector{Vector{Float64}}(undef, 0)
+    
+    open(file_path, "r") do io
+        for line in eachline(io)
+            data = parse.(Float64, split(line))
+            push!(row, Int(data[1]))
+            push!(col, Int(data[2]))
+            push!(H_elem, Complex{Float64}(data[3], data[4]))
+            push!(traj, data[5:end])
+        end
+    end
+
+    traj = permutedims(hcat(traj...), [2,1])
+
+    return row, col, H_elem, traj
+end
+
+
+### extract sparse hamiltonian for snapshot t for empirical TB model
+function get_sparse_H_empTB(H_path::String, t::Int)
+   
+    row, col, H_elem, _ = read_empTB_params(t, H_path)
+
+    hamiltonian = sparse(row, col, H_elem)
+    dropzeros!(hamiltonian)
+
+    return hamiltonian
+end
+
+
+### extract dense hamiltonian for snapshot t for empirical TB model
+function get_dense_H_empTB(H_path::String, t::Int)
+   
+    row, col, H_elem, _ = read_empTB_params(t, H_path)
+
+    max_index = maximum([maximum(row), maximum(col)])
+
+    hamiltonian = zeros(ComplexF64, max_index, max_index)
+
+    for i in 1:length(row)
+        hamiltonian[row[i], col[i]] = H_elem[i]
+    end
+
+    return hamiltonian
+end
+
+
+### extract sparse hamiltonian for snapshot t for different hamiltonian styles
+function get_sparse_H(H_path::String, t::Int, hamiltonian_style::String)
+
+    if hamiltonian_style == "TB"
+        hamiltonian = get_sparse_H_empTB(H_path, t)
+    elseif hamiltonian_style == "Hk" || hamiltonian_style == "Hr"
+        file_path = joinpath(H_path, "ham.h5")
+        H, cell = read_ham(t, filename=file_path, space=string(last(hamiltonian_style)))
+
+        if hamiltonian_style == "Hk"
+            ix = findfirst(i -> isapprox(cell[:, i], [0.0, 0.0, 0.0]; atol=1e-10), 1:size(cell, 2))
+            hamiltonian = sparse(H[ix])
+        else
+            hamiltonian = deepcopy(H[1])
+            for i in 2:length(H)
+                hamiltonian += sparse(H[i])
+            end
+        end
+
+    else
+        error("Unknown hamiltonian_style: $hamiltonian_style")
+    end
+
+    is_hermitian(hamiltonian)
+
+    return hamiltonian
+end
+
+### extract dense hamiltonian for snapshot t for different hamiltonian styles
+function get_dense_H(H_path::String, t::Int, hamiltonian_style::String)
+
+    if hamiltonian_style == "TB"
+        hamiltonian = get_dense_H_empTB(H_path, t)
+    elseif hamiltonian_style == "Hk" || hamiltonian_style == "Hr"
+        file_path = joinpath(H_path, "ham.h5")
+        H, cell = read_ham(t, filename=file_path, space=string(last(hamiltonian_style)))
+
+        if hamiltonian_style == "Hk"
+            ix = findfirst(i -> isapprox(cell[:, i], [0.0, 0.0, 0.0]; atol=1e-10), 1:size(cell, 2))
+            hamiltonian = Matrix(sparse(H[ix]))
+        else
+            hamiltonian = Matrix(deepcopy(H[1]))
+            for i in 2:length(H)
+                hamiltonian += Matrix(sparse(H[i]))
+            end
+        end
+
+    else
+        error("Unknown hamiltonian_style: $hamiltonian_style")
+    end
+
+    is_hermitian(hamiltonian)
+
+    return hamiltonian
+end
+
+### check if Hamiltonian is hermitian
+function is_hermitian(H)
+
+    if !ishermitian(H)
+        if norm(H - H') > 10^(-7)
+            @show norm(H - H')
+            error("Hamiltonian is not hermitian!")
+        end
+    end
+
+    return true
+end

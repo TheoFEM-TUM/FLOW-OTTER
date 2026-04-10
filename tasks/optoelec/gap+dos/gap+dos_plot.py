@@ -56,11 +56,11 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
                 E, dos, std_dos = np.loadtxt(str(dir_H / "gap+dos/avg_dos_KPM.txt"), unpack=True, skiprows=1)
 
-                label = f"{param_to_vary} {array_to_vary[i]} (KPM)"
+                label = f"{param_to_vary} {array_to_vary[i]}{unit_to_vary} (KPM)"
             else:
                 E, dos, std_dos = np.loadtxt(str(dir_H / "gap+dos/avg_dos_exact_diag.txt"), unpack=True, skiprows=1)
 
-                label = f"{param_to_vary} {array_to_vary[i]} (exact diag)"
+                label = f"{param_to_vary} {array_to_vary[i]}{unit_to_vary} (exact diag)"
                 
 
             #I = integrate.simpson(dos, x=E)

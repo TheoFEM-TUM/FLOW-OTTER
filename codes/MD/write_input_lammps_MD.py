@@ -284,6 +284,8 @@ with open(lammps_input_file, "w") as f:
     # radial distribution function (RDF) calculation
     compute_rdf = input_params.get("compute_rdf", True)
     if compute_rdf:
+        compute_inter_rdf = input_params.get("compute_inter_rdf", False)
+        
         r_steps = total_steps % prodrun_stepsize
 
         dir_rdf = dir_MD / "rdf/"
@@ -301,7 +303,19 @@ with open(lammps_input_file, "w") as f:
                 f"fix rdf_{el}{el}_out all ave/time {prodrun_stepsize} {int(prod_numsteps/prodrun_stepsize)} {total_steps - r_steps} "
                 f"c_rdf_{el}{el}[*] file {dir_rdf}/rdf_{el}-{el}.txt mode vector title3 '# bin r   g(r)    coordination number'"
             )
+
+        if compute_inter_rdf:
+            for i, el_i in enumerate(elements_i, start=1):
+                for j, el_j in enumerate(elements_i, start=1):
+                    if j > i and el_i != el_j:
+                        w(f"compute rdf_{el_i}{el_j} all rdf {rdf_bins} {i} {j}")
+                        w(
+                            f"fix rdf_{el_i}{el_j}_out all ave/time {prodrun_stepsize} {int(prod_numsteps/prodrun_stepsize)} {total_steps - r_steps} "
+                            f"c_rdf_{el_i}{el_j}[*] file {dir_rdf}/rdf_{el_i}-{el_j}.txt mode vector title3 '# bin r   g(r)    coordination number'"
+                        )
         w("")
+
+
 
     # NVT production run
     w(f"fix 1 all nvt temp {T} {T} {T_damp}")
@@ -323,6 +337,12 @@ with open(lammps_input_file, "w") as f:
         for i, el in enumerate(elements_i, start=1):
             w(f"unfix rdf_{el}{el}_out")
             w(f"uncompute rdf_{el}{el}")
+        if compute_inter_rdf:
+            for i, el_i in enumerate(elements_i, start=1):
+                for j, el_j in enumerate(elements_i, start=1):
+                    if j > i and el_i != el_j:
+                        w(f"unfix rdf_{el_i}{el_j}_out")
+                        w(f"uncompute rdf_{el_i}{el_j}")
     w("")
 
     # Final restart file

@@ -41,11 +41,12 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     # check Hamiltonian type
     H_type = configWF_i.get("H_type", "skip_H")
+    MD_type = configWF_i.get("MD_type", "skip_MD")
     print(f"H type: {H_type}", flush=True)
 
 
     # check if MD snapshots are sufficient for H calculations
-    if H_type != "skip_H":
+    if (H_type != "skip_H") and (MD_type != "skip_MD"):
 
         first_snapshot = configWF_i.get("first_snapshot", 0)
         N_snapshots = configWF_i["N_snapshots"]

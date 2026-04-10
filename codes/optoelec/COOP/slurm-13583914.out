@@ -1,0 +1,35 @@
+
+  [01;33mThis stage is deprecated. Please consider moving to a new stage (2026
+or newer)[0m
+
+test
+[ Info: Computing COHP for orbital pair (1, 2) ...
+ERROR: LoadError: MethodError: no method matching eigen!(::Symmetric{ComplexF64, Matrix{ComplexF64}}; permute::Bool, scale::Bool, sortby::typeof(LinearAlgebra.eigsortby))
+The function `eigen!` exists, but no method is defined for this combination of argument types.
+
+Closest candidates are:
+  eigen!(::AbstractMatrix, !Matched::Cholesky; sortby) got unsupported keyword arguments "permute", "scale"
+   @ LinearAlgebra /p/software/fs/juwels/stages/2025/software/Julia/1.11.2-GCCcore-13.3.0/share/julia/stdlib/v1.11/LinearAlgebra/src/symmetriceigen.jl:180
+  eigen!(!Matched::SymTridiagonal{<:Union{Float32, Float64}, <:StridedVector{T} where T}) got unsupported keyword arguments "permute", "scale", "sortby"
+   @ LinearAlgebra /p/software/fs/juwels/stages/2025/software/Julia/1.11.2-GCCcore-13.3.0/share/julia/stdlib/v1.11/LinearAlgebra/src/tridiag.jl:257
+  eigen!(!Matched::SymTridiagonal{<:Union{Float32, Float64}, <:StridedVector{T} where T}, !Matched::UnitRange) got unsupported keyword arguments "permute", "scale", "sortby"
+   @ LinearAlgebra /p/software/fs/juwels/stages/2025/software/Julia/1.11.2-GCCcore-13.3.0/share/julia/stdlib/v1.11/LinearAlgebra/src/tridiag.jl:260
+  ...
+
+Stacktrace:
+ [1] _eigen(A::Symmetric{ComplexF64, Matrix{ComplexF64}}; permute::Bool, scale::Bool, sortby::Function)
+   @ LinearAlgebra /p/software/fs/juwels/stages/2025/software/Julia/1.11.2-GCCcore-13.3.0/share/julia/stdlib/v1.11/LinearAlgebra/src/eigen.jl:252
+ [2] _eigen
+   @ /p/software/fs/juwels/stages/2025/software/Julia/1.11.2-GCCcore-13.3.0/share/julia/stdlib/v1.11/LinearAlgebra/src/eigen.jl:247 [inlined]
+ [3] #eigen#94
+   @ /p/software/fs/juwels/stages/2025/software/Julia/1.11.2-GCCcore-13.3.0/share/julia/stdlib/v1.11/LinearAlgebra/src/eigen.jl:239 [inlined]
+ [4] eigen
+   @ /p/software/fs/juwels/stages/2025/software/Julia/1.11.2-GCCcore-13.3.0/share/julia/stdlib/v1.11/LinearAlgebra/src/eigen.jl:238 [inlined]
+ [5] compute_cohp_pair(H::Matrix{ComplexF64}, i_orb::Int64, j_orb::Int64; n_E::Int64, sigma::Float64, broadening::Symbol)
+   @ Main /p/scratch/hamilmater/vonhoff1/workflow_pq/MD_TB_PQ_wf/codes/optoelec/COOP/coop.jl:44
+ [6] compute_cohp_pair(H::Matrix{ComplexF64}, i_orb::Int64, j_orb::Int64)
+   @ Main /p/scratch/hamilmater/vonhoff1/workflow_pq/MD_TB_PQ_wf/codes/optoelec/COOP/coop.jl:32
+ [7] top-level scope
+   @ /p/scratch/hamilmater/vonhoff1/workflow_pq/MD_TB_PQ_wf/codes/optoelec/COOP/coop.jl:100
+in expression starting at /p/scratch/hamilmater/vonhoff1/workflow_pq/MD_TB_PQ_wf/codes/optoelec/COOP/coop.jl:100
+srun: error: jwc00n024: task 0: Exited with exit code 1

@@ -24,7 +24,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         array_to_vary = configWF["array_to_vary"]
     
 
-        dir_project_i = dir_project / f"/{param_to_vary}_{array_to_vary[i]}/"
+        dir_project_i = dir_project / f"{param_to_vary}_{array_to_vary[i]}/"
         path_configWF_i = dir_project_i / 'branch_config.yaml'
 
         with open(path_configWF_i, 'r') as f:
@@ -64,9 +64,12 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     shutil.copy2(path_celldim, dir_H)    
     print("Calculated cell dimensions.", flush=True)
 
+    print(dir_MD)
+    print(dir_H)
     # extract snapshots from trajectory and save in individual files "snapshots/traj*.xyz"
     result1 = subprocess.run([str(dir_code / "H/empTB/extractMDsnapshots.o"), str(dir_MD), str(dir_H), str(cell_size), str(first_snapshot), str(last_snapshot), str(N_snapshots)], check=True)
     print("Extracted MD snapshots.", flush=True)
+    print([str(dir_code / "H/empTB/extractMDsnapshots.o"), str(dir_MD), str(dir_H), str(cell_size), str(first_snapshot), str(last_snapshot), str(N_snapshots)])
 
     # calculate nearst neighbour list 
     result2 = subprocess.run([

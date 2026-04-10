@@ -6,7 +6,7 @@ from pathlib import Path
 import scipy.integrate as integrate
 import subprocess
 from scipy.ndimage import gaussian_filter1d
-
+from itertools import combinations_with_replacement
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
@@ -56,6 +56,10 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             # determine correct branch config file
             param_to_vary = configWF["param_to_vary"]
             array_to_vary = configWF["array_to_vary"]
+            unit_to_vary = configWF.get("unit_to_vary", "")
+            
+            if unit_to_vary != "":
+                unit_to_vary = "/" + unit_to_vary
 
             # read in element names for each atom type
             elements = configWF["lammps"]["elements"]
@@ -87,7 +91,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                     freq, vdos = np.loadtxt(str(dir_MD / f"test_MD/vdos/vdos_{e}.txt"), unpack=True, skiprows=1)
 
                     # plot VDOS
-                    label = f"{param_to_vary} {array_to_vary[i]}"
+                    label = f"{param_to_vary} {array_to_vary[i]}{unit_to_vary}"
                     gaussian_smearing = configWF_i.get("gaussian_smearing_vdos", 0.01)
                     plt.plot(freq, gaussian_filter1d(vdos, gaussian_smearing), label=label)
 
@@ -248,6 +252,48 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                     plt.savefig(outfile)
                     plt.close(fig4)
                     print(f"✅ Saved RDF comparison plot → {outfile}", flush=True)
+
+                if configWF_i.get("compute_inter_rdf", False):
+                    
+                    for el_i, el_j in combinations_with_replacement(elements, 2):
+                        
+                        if el_i != el_j:
+                            # plot RDF comparison
+                            fig4, (ax4) = plt.subplots()
+                            plt.title(f"RDF ({el_i}-{el_j}) comparison between different MD trajectories")
+    
+                            # plot RDF for each branch
+                            for i in range(len(array_to_vary)):
+                            
+                                # read in branch configuration
+                                dir_project_i = dir_project / f"{param_to_vary}_{array_to_vary[i]}/"
+    
+                                with open(str(dir_project_i / 'branch_config.yaml'), 'r') as f:
+                                    configWF_i = yaml.safe_load(f)
+    
+                                dir_MD = Path(configWF_i.get("dir_MD", str(dir_project_i / "1-MD/")))
+    
+                                # read in RDF
+                                rdf_file = dir_MD / f"rdf/rdf_{el_i}-{el_j}.txt"
+                                if not rdf_file.exists():
+                                    rdf_file = dir_MD / f"rdf/rdf_{el_j}-{el_i}.txt"
+    
+                                _, r, rdf, _ = np.loadtxt(str(rdf_file), unpack=True, skiprows=4)
+    
+                                # plot RDF
+                                label = f"{param_to_vary} {array_to_vary[i]}"
+                                plt.plot(r, rdf, label=label)
+    
+                            # finalize plot
+                            plt.xlabel(f"r/{units[0]}")
+                            plt.ylabel("g(r)")
+                            plt.legend()
+    
+                            outfile = dir_plot_rdf / f"rdf_{el_i}-{el_j}_comparison.pdf"
+                            plt.tight_layout()
+                            plt.savefig(outfile)
+                            plt.close(fig4)
+                            print(f"✅ Saved RDF comparison plot → {outfile}", flush=True)
 
 
         else:

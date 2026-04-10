@@ -1,0 +1,21 @@
+
+  [01;33mThis stage is deprecated. Please consider moving to a new stage (2026
+or newer)[0m
+
+ERROR: LoadError: ArgumentError: Package MPI not found in current path.
+- Run `import Pkg; Pkg.add("MPI")` to install the MPI package.
+Stacktrace:
+ [1] macro expansion
+   @ ./loading.jl:2296 [inlined]
+ [2] macro expansion
+   @ ./lock.jl:273 [inlined]
+ [3] __require(into::Module, mod::Symbol)
+   @ Base ./loading.jl:2271
+ [4] #invoke_in_world#3
+   @ ./essentials.jl:1089 [inlined]
+ [5] invoke_in_world
+   @ ./essentials.jl:1086 [inlined]
+ [6] require(into::Module, mod::Symbol)
+   @ Base ./loading.jl:2260
+in expression starting at /p/scratch/hamilmater/vonhoff1/workflow_pq/MD_TB_PQ_wf/codes/optoelec/COOP/coop.jl:2
+srun: error: jwc00n025: task 0: Exited with exit code 1

@@ -32,6 +32,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     else:
         configWF_i = configWF.copy()
+        dir_project_i = dir_project
 
 
     dir_code = Path(configWF_i.get("dir_code", "./")) / "codes/"
@@ -54,7 +55,10 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     if path_config.exists():
         with open(path_config, "r") as f:
             input_params = yaml.load(f)  
-        input_params = deep_merge(input_params, configWF_i["conductivity"])
+        
+        if configWF_i["conductivity"] is not None:
+            input_params = deep_merge(input_params, configWF_i["conductivity"])
+            
     else:
         input_params = configWF_i["conductivity"]
 

@@ -53,13 +53,17 @@ int main(int argc, char* argv[]){                         // extracts posistions
 		//outfile.at(8) = (frame%100)/10 + 48;
 		//outfile.at(9) = frame%10 + 48;
 
-
-
 		fout.open(outfile1.c_str());
+  		if (!fout.is_open()) {
+            cerr << "ERROR: Cannot open output file: " << outfile1 << "\n";
+            return 1;
+        }
+
 		for (int i=0; i<num_atoms; ++i){     // 49152 = 12*16^3    12 atomes per unit cell and 16^3 unit cells
 			fin >> temp >> temp >> temp >> data[0] >> data[1] >> data[2];
+			//cout << data[0] << " " << data[1] << " " << data[2] << '\n';
 			fout << data[0] << " " << data[1] << " " << data[2] << '\n';
-			}
+		}
 		getline(fin,temp);
 		fout.close();
 

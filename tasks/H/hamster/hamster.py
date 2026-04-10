@@ -79,7 +79,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
     write_current = configWF_i.get("write_current", False)
 
-    if haskey(configWF_i, "conductivity"):
+    if "conductivity" in configWF_i:
         write_current = True
         print("Hamster will write out current for conductivity calculation. 'write_current' is set to true because 'conductivity' is in the config file.", flush=True)
 

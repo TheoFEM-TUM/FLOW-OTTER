@@ -111,7 +111,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     for t in snapshots:
         print(f"Calculating gap for snapshot {t} ...", flush=True)
         result = subprocess.run([
-            #"srun", 
+            "srun", 
+            "-n", "1",
             "julia", 
             *julia_flags_optoelec,
             f"{dir_code}/optoelec/gap+dos/calc_gap.jl", 

@@ -39,10 +39,17 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
 
     julia_flags_H = configWF_i.get("julia_flags_H", [])
+    resources_H = configWF["resources_H"]
+    cores_H = int(resources_H.split(":")[0])
+
+    print(f"Using {cores_H} cores for Hamiltonian calculations.", flush=True)
 
     # perform exact diagonalization of Hamiltonian
     print("Start exact diagonalization of test Hamiltonian...", flush=True)
     result = subprocess.run([
+        "srun",
+        '--ntasks=1',
+        f'--cpus-per-task={cores_H}',
         "julia", 
         *julia_flags_H,
         str(dir_code / "optoelec/gap+dos/diagonalize_H.jl"), 

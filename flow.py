@@ -33,6 +33,7 @@ hamster = H / "hamster/"
 empTB = H / "empTB/"
 test_H = H / "test/"
 gap_dos = optoelec / "gap+dos/"
+cohp = optoelec / "COHP/"
 conductivity = optoelec / "conductivity/"
 
 # resources for tasks
@@ -107,15 +108,15 @@ sg0_check_simulation = SwitchGroup({"sweep": {t_buffer_s: [], swg1_MD: [t_buffer
 t2_checkH = Task( H / "check_H_type.py", None, resources_instant, name="check_H_type")
 t2_skipH = Task( H / "skip_H.py", None, resources_instant, name="skip_H")
 
-# empirical Tight Binding tasks
+## empirical Tight Binding tasks
 t2_prep_empTB = Task( empTB / "prep_fit_empTB.py", None, resources_short, name="prep_fit_empTB")
 t2_empTB = Task( empTB / "fit_empTB.py", None, resources_H, name="fit_empTB")
 
-# Hamiltonian learning tasks with Hamster package
+## Hamiltonian learning tasks with Hamster package
 t2_prep_hamster = Task( hamster / "prep_hamster.py", None, resources_short, name="prep_hamster")
 t2_hamster = Task( hamster / "hamster.py", None, resources_H, name="hamster")
 
-# which H type: empirical TB, hamster or skip?
+# which H type: empirical TB, hamster, or skip?
 sg2_H = SwitchGroup({"empTB": {t2_prep_empTB: [], t2_empTB: [t2_prep_empTB]}, "hamster": {t2_prep_hamster: [], t2_hamster: [t2_prep_hamster]}, "skip_H": t2_skipH})
 
 # test Hamiltonian tasks
@@ -128,7 +129,7 @@ t2_testH_post_dia = Task( test_H / "test_H_post_exact_diag.py", None, resources_
 #t2_testH_b = Task( test_H / "test_H_gaps.py", None, resources_short, name="test_H_gaps")
 t2_testH_skip = Task( test_H / "skip_test_H.py", None, resources_instant, name="skip_test_H")
 
-# which test H type: Kernel polynomial method, exact diagonalization or skip?
+# which test H type: Kernel polynomial method, exact diagonalization, or skip?
 sg2_test = SwitchGroup({"KPM": {t2_testH_KPM: [], t2_testH_post_KPM: [t2_testH_KPM]}, "exact_diag": {t2_testH_dia: [] , t2_testH_post_dia: [t2_testH_dia]}, "skip_test_H": t2_testH_skip})
 
 
@@ -140,7 +141,7 @@ t3_checkOpto_plot = Task( optoelec / "check_optoelec_plot.py", None, resources_i
 t3_skipOpto = Task( optoelec / "skip_optoelec.py", None, resources_instant, name="skip_optoelec")
 t3_skipOpto_plot = Task( optoelec / "skip_optoelec.py", None, resources_instant, name="skip_optoelec")
 
-# band gap + density of states tasks
+## band gap + density of states tasks
 t3_dia = Task( gap_dos / "gap+dos_exact_diag.py", None, resources_optoelec, name="gap+dos_exact_diag")
 t3_KPM = Task( gap_dos / "gap+dos_KPM.py", None, resources_optoelec, name="gap+dos_KPM")
 t3_post_dia = Task( gap_dos / "gap+dos_post_exact_diag.py", None, resources_optoelec, name="gap+dos_post_exact_diag")
@@ -148,18 +149,26 @@ t3_post_KPM = Task( gap_dos / "gap+dos_post_KPM.py", None, resources_optoelec, n
 t3_gap_KPM = Task( gap_dos / "gap_KPM.py", None, resources_instant, name="gap_KPM")
 t3_plot_gap = Task( gap_dos / "gap+dos_plot.py", None, resources_instant, name="gap+dos_plot")
 
-# optical conductivity tasks
+
+## crystal orbital hamiltonian population tasks (COHP)
+t3_cohp_dia = Task( cohp / "cohp_exact_diag.py", None, resources_optoelec, name="cohp_exact_diag")
+t3_cohp_KPM = Task( cohp / "cohp_KPM.py", None, resources_optoelec, name="cohp_KPM")
+t3_plot_cohp = Task( cohp / "cohp_plot.py", None, resources_instant, name="cohp_plot")
+
+
+## optical conductivity tasks
 t3_optC = Task( conductivity / "optical_conductivity.py", None, resources_optoelec, name="optical_conductivity")
 t3_plot_optC = Task( conductivity / "plot_optical_conductivity.py", None, resources_instant, name="plot_optical_conductivity")
+
 
 N_avg = configWF.get("N_avg", 1)  # number of averages for optical conductivity
 swg3_optC = StaticWidthGroup(t3_optC, width=N_avg)
 
-# which optoelectronic property: conductivity, band gap + density of states or skip? 
-sg3_opto = SwitchGroup({"conductivity": {t_buffer: [], swg3_optC: [t_buffer]}, "gap+dos_exact_diag": {t3_dia: [], t3_post_dia: [t3_dia]}, "gap+dos_KPM": {t3_KPM: [], t3_post_KPM: [t3_KPM], t3_gap_KPM: [t3_post_KPM]}, "skip_optoelec": t3_skipOpto})
+# which optoelectronic property: conductivity, band gap + density of states, COHP, or skip? 
+sg3_opto = SwitchGroup({"conductivity": {t_buffer: [], swg3_optC: [t_buffer]}, "gap+dos_exact_diag": {t3_dia: [], t3_post_dia: [t3_dia]}, "gap+dos_KPM": {t3_KPM: [], t3_post_KPM: [t3_KPM], t3_gap_KPM: [t3_post_KPM]}, "cohp_exact_diag": {t3_cohp_dia: []}, "cohp_KPM": {t3_cohp_KPM: []}, "skip_optoelec": t3_skipOpto})
 
 # plot optoelectronic property?
-sg3_plotOpto = SwitchGroup({"conductivity": t3_plot_optC, "gap+dos": t3_plot_gap, "skip_optoelec": t3_skipOpto_plot})
+sg3_plotOpto = SwitchGroup({"conductivity": t3_plot_optC, "gap+dos": t3_plot_gap, "cohp": t3_plot_cohp, "skip_optoelec": t3_skipOpto_plot})
 
 
 # sweep over Hamiltonian and optoelectronic tasks

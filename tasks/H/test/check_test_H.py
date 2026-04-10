@@ -67,6 +67,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                 g = f[random_key]
 
                 match = re.search(r"H[kr]__(\d+)", random_key)
+                #match = re.search(r"H[kr]_(\d+)", random_key)
                 t = int(match.group(1))
 
                 for i in g.keys():
@@ -104,11 +105,11 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             onsites  = np.array(onsites, dtype=float)
             hoppings = np.array(hoppings, dtype=float)
 
-        elif hamiltonian_style == "H":
+        elif hamiltonian_style == "TB":
 
 
             # select random snapshot
-            H_files = list((dir_H / "hamiltonian").glob(f"H_*.txt"))
+            H_files = list((dir_H / "hamiltonian").glob(f"TB_*.txt"))
             random_file = random.choice(H_files)
             print(f"Random snapshot selected: {random_file}", flush=True)
 
@@ -120,7 +121,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             col = data_ham[:, 0]
             row = data_ham[:, 1]
             ham = data_ham[:, 2] + 1j * data_ham[:, 3]
-            real_ham = ham[:, 0]
+            real_ham = np.real(ham)
             abs_ham = np.abs(ham)
 
             # seperate onsite and hopping elements
@@ -137,8 +138,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         max_elem = 15.0
         if np.any(abs_ham > max_elem):
             ix = (np.where(abs_ham > max_elem))
-            elem = (ham[abs_ham > max_elem])
-            raise Exception(f"Hamiltonian {t} contains elements larger than {max_elem}. See elements {elem} at indeces {ix}")
+            elem = (abs_ham[abs_ham > max_elem])
+            raise Exception(f"Hamiltonian {t} contains elements larger than {max_elem}. See elements {elem} at indices {ix}")
         else:
             print(f"Hamiltonian {t} is within the acceptable range (max {max_elem}).", flush=True)
 

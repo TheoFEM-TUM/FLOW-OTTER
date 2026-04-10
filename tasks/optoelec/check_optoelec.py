@@ -51,8 +51,30 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             print("Dimension of H matrix < 10^4, calculate DoS with exact diagonalization.", flush=True)
             optoelec_type = "gap+dos_exact_diag"
         else:
-            print(f"Skip optoelec calculation because test_H_type {test_H_type} is not defined!", flush=True)
-            optoelec_type = "skip_optoelec"
+            optoelec_method = configWF_i.get("optoelec_method")
+            if optoelec_method in ["KPM", "exact_diag"]:
+                optoelec_type = f"gap+dos_{optoelec_method}"
+            else:
+                print(f"Skip optoelec calculation because test_H_type {test_H_type} and optoelec_method are not defined!", flush=True)
+                optoelec_type = "skip_optoelec"
+
+    elif optoelec_type == "cohp":
+        dir_cohp = dir_H / "COHP/"
+        dir_cohp.mkdir(parents=True, exist_ok=True)
+        if test_H_type == "KPM":
+            print("Dimension of H matrix > 10^4, calculate COHP with Kernel Polynomial method (KPM).", flush=True)
+            optoelec_type = "cohp_KPM"
+        elif test_H_type == "exact_diag":
+            print("Dimension of H matrix < 10^4, calculate COHP with exact diagonalization.", flush=True)
+            optoelec_type = "cohp_exact_diag"
+        else:
+            optoelec_method = configWF_i.get("optoelec_method")
+            if optoelec_method in ["KPM", "exact_diag"]:
+                optoelec_type = f"cohp_{optoelec_method}"
+            else:
+                print(f"Skip optoelec calculation because test_H_type {test_H_type} and optoelec_method are not defined!", flush=True)
+                optoelec_type = "skip_optoelec"
+
 
 
     print(f"optoelec type: {optoelec_type}", flush=True)

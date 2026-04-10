@@ -1,0 +1,19 @@
+
+  [01;33mThis stage is deprecated. Please consider moving to a new stage (2026
+or newer)[0m
+
+[ Info: Computing COHP for orbital pair (1, 12) ...
+[ Info: COHP data written to /p/scratch/hamilmater/vonhoff1/workflow_pq/data/CsPbBr3/MACE/cubic/444/iso/3-prod/temperature_425/2-H/hamiltonian/cohp_1_12.txt
+qt.qpa.xcb: could not connect to display localhost:12.0
+qt.qpa.plugin: From 6.5.0, xcb-cursor0 or libxcb-cursor0 is needed to load the Qt xcb platform plugin.
+qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "" even though it was found.
+This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
+
+Available platform plugins are: minimalegl, eglfs, xcb, minimal, vkkhrdisplay, linuxfb, vnc, offscreen.
+
+connect: Connection refused
+GKS: the graphics window could not be opened because no connection to the GKS Qt driver could be established. Please check all Qt warnings to determine whether (or why) 'gksqt' could not be started.
+
+GKS: Open failed in routine OPEN_WS
+GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS
+[ Info: COHP plot saved to /p/scratch/hamilmater/vonhoff1/workflow_pq/data/CsPbBr3/MACE/cubic/444/iso/3-prod/temperature_425/2-H/hamiltonian/cohp_1_12.pdf
