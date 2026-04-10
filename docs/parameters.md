@@ -33,7 +33,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 `param_group_for_vary2`, `param_group_for_vary3`, and `param_group_for_vary4` (str): specify the parameter group if the chosen parameters for additional `param_to_vary*` are part of a subgroup (compare param_group_for_vary)    
 `array_to_vary2`, `array_to_vary3`, and `array_to_vary4` (array of param type): array of values (of matching type) for additional `param_to_vary*` (compare array_to_vary); each branch gets one of the values (len(array) == `num_simulations`) 
 
-`just_update_branch_config_file` (bool): if true, first task "check_simulation_type" crashes after updating the branch config YAML files; prevents the `Flow-Otter` from restarting totally when the user just wants to change parameters in the branch configuration file without tendious manual changes in each file; instead, just update the main config YAML file (*false*)  
+`just_update_branch_config_file` (bool): if true, first task "check_simulation_type" crashes after updating the branch config YAML files; prevents the `Flow-Otter` from restarting totally when the user just wants to change parameters in the branch configuration file without tedious manual changes in each file; instead, just update the main config YAML file (*false*)  
 `human_in_loop` (bool): if true, `Flow-Otter` fails after each test to allow the user to verify the results of this step (*false*)  
 `run_test_MD` (bool): if true, VDOS and histograms of positions, velocities, and forces are calculated to test MD reliability (*true*)  
 `run_test_H` (bool): if true, distribution of H elements and test DOS are calculated for a random snapshot (*true*)  
@@ -85,7 +85,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 - "Hr" &rarr; Hamiltonian lives in real space
 - "TB" &rarr; Hamiltonian is an empirical Tight Binding H 
 
-`write_current` (bool): if true, writes current matrices (e.g. for transport calculations) to `ham.h5` file (*false*)
+`write_current` (bool): if true, writes current matrices (e.g., for transport calculations) to `ham.h5` file (*false*)
 
 `cell_size` (int): size of supercell in comparison to unit cell (only needed for "empTB")  
 
@@ -110,7 +110,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 `ranks_optoelec` (int): number of MPI ranks for calculation of optoelectronic properties (*os.environ.get("SLURM_NTASKS")*)  
 `srun_flags_optoelec` (list of str): list of flags for `srun` commands for optoelectronics-related tasks (*[]*)  
 `julia_flags_optoelec` (list of str): list of flags for `julia` commands for optoelectronics-related tasks; e.g., `julia --project=...` (*[]*)  
-`optoelec_method` (str): name of method which is used for "gap+dos" or "cohp" calculation; only necessary if `run_test_H` = false because then size of Hamiltonian is not determined beforehand ("KPM", "exact_diag")  
+`optoelec_method` (str): name of method which is used for "gap+dos" or "cohp" calculation; only necessary if `run_test_H = false` because then size of Hamiltonian is not determined beforehand ("KPM", "exact_diag")  
 
 `dir_conducitivity` (str): directory to MD+Kubo code  
 `dir_config` (str): directory to YAML configuration file for MD+Kubo method (*`dir_project/3_conductivity`*)  
