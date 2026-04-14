@@ -3,8 +3,6 @@ using MPI
 using DelimitedFiles
 include("../helper/read_H.jl")
 include("../helper/orbitals.jl")
-#include("../helper/KPM.jl")
-
 
 function broadening_weight(dE::Float64, sigma::Float64, kind::Symbol)::Float64
     if kind === :gaussian
@@ -16,22 +14,19 @@ function broadening_weight(dE::Float64, sigma::Float64, kind::Symbol)::Float64
     end
 end
 
-
 function compute_cohp(H::Matrix{ComplexF64}, basis_labels::Vector{String}; n_E::Int = 1000, sigma::Float64 = 0.05, broadening::Symbol = :gaussian)
 
-    EVs, vecs = eigen(Hermitian(Matrix(H)))  
+    EVs, vecs = eigen(Hermitian(H))  
     println("- Hamiltonian diagonalized")
 
     n_orb = length(EVs)
-    #println("- Number of orbitals: ", n_orb)
     E_grid = range(minimum(EVs) * 1.05, maximum(EVs) * 1.05, length=n_E)
 
     COHPs = Dict{Tuple{String,String}, Vector{Float64}}()
 
 
     for k in 1:n_orb
-        ε_k  = EVs[k]
-        dE = E_grid .- ε_k
+        dE = E_grid .- EVs[k]
         weight = broadening_weight.(dE, sigma, broadening)
 
         for i in 1:n_orb
@@ -93,6 +88,7 @@ basis_labels = get_basis_labels(H_path)
 println("- basis labels: ", basis_labels)
 
 MPI.Init()
+
 H = get_dense_H(H_path, t, hamiltonian_style)
 println("- Hamiltonian read")
 

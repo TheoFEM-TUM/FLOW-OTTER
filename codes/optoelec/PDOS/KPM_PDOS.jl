@@ -3,7 +3,6 @@ using DelimitedFiles
 using Base.Threads: nthreads
 using Random, Statistics, Distributions
 using OhMyThreads, MPIPreferences
-#MPIPreferences.use_system_binary()
 using MPI
 include("../helper/read_H.jl")
 include("../helper/KPM.jl")
@@ -63,32 +62,24 @@ function get_projectors(basis_labels, unique_labels)
     return Ps
 end
 
-### calculate coeff_COHP_m = v * P_i * H * P_j * T_m(H) * v
-function kernel_polynomial_method_cohp(H::SparseMatrixCSC{ComplexF64}, v::Vector{ComplexF64}, M::Int, basis_labels::Vector{String}, unique_labels::Vector{String})
+### calculate coeff_PDOS_m = v * P_i * T_m(H) * v
+function kernel_polynomial_method_pdos(H::SparseMatrixCSC{ComplexF64}, v::Vector{ComplexF64}, M::Int, basis_labels::Vector{String}, unique_labels::Vector{String})
 
     n_labels = length(unique_labels)
 
     Ps = get_projectors(basis_labels, unique_labels)
 
-    coeff_COHP = Array{Float64}(undef, M, n_labels, n_labels)
-
-    pi_H_pj = Array{ComplexF64}(undef, length(v), n_labels, n_labels)        
-
-    for i in 1:n_labels
-        for j in 1:n_labels
-            pi_H_pj[:, i, j] = projector(H * projector(v, Ps[:, i]), Ps[:, j])
-        end
-    end
+    coeff_PDOS = Array{Float64}(undef, M, n_labels)
 
     v1 = copy(v) 
     v2 = H * v
     v3 = zeros(ComplexF64, length(v))
 
+    pv = [projector(v, Ps[:, i]) for i in 1:n_labels]
+
     for i in 1:n_labels
-        for j in 1:n_labels
-            coeff_COHP[1, i, j] = real(pi_H_pj[:, i, j] ⋅ v1)
-            coeff_COHP[2, i, j] = real(pi_H_pj[:, i, j] ⋅ v2)
-        end
+        coeff_PDOS[1, i] = real(pv[i] ⋅ v1)
+        coeff_PDOS[2, i] = real(pv[i] ⋅ v2)
     end
 
     for m in 3:M
@@ -96,9 +87,7 @@ function kernel_polynomial_method_cohp(H::SparseMatrixCSC{ComplexF64}, v::Vector
         v3 .= 2 .* H * v2 .- v1
 
         for i in 1:n_labels
-            for j in 1:n_labels
-                coeff_COHP[m, i, j] = real(pi_H_pj[:, i, j] ⋅ v3)
-            end
+            coeff_PDOS[m, i] = real(pv[i] ⋅ v3)
         end
 
         v1 .= v2
@@ -106,11 +95,11 @@ function kernel_polynomial_method_cohp(H::SparseMatrixCSC{ComplexF64}, v::Vector
 
     end
 
-    return coeff_COHP
+    return coeff_PDOS
 end
 
-### compute COHPs from coefficients coeff_COHP_m
-function compute_cohp(M, mean_E, ΔE, coeff_COHP, unique_labels)
+### compute PDOS from coefficients coeff_PDOS_m
+function compute_pdos(M, mean_E, ΔE, coeff_PDOS, unique_labels)
 
     n_labels = length(unique_labels)
 
@@ -118,37 +107,21 @@ function compute_cohp(M, mean_E, ΔE, coeff_COHP, unique_labels)
 
     E_grid, delta_m_E = get_delta_m_E(M, mean_E, ΔE, g_m)
 
-    COHPs = Dict{Tuple{String,String}, Vector{Float64}}()
+    PDOSs = Dict{String, Vector{Float64}}()
 
     for i in 1:n_labels
-        for j in 1:n_labels
-            elem_i = unique_labels[i]
-            elem_j = unique_labels[j]
-
-            if elem_i != elem_j
-                pair_key = (elem_i, elem_j)
-
-                if !haskey(COHPs, pair_key)
-                    if !haskey(COHPs, (elem_j, elem_i))
-                        COHPs[pair_key] = zeros(Float64, 2 * M)
-                    else
-                        pair_key = (elem_j, elem_i)
-                    end
-                end
-
-                for m in 1:M
-                    COHPs[pair_key] += coeff_COHP[m, i, j] * delta_m_E[:, m]
-                end
-            end
-
+        label = unique_labels[i]
+        PDOSs[label] = zeros(Float64, 2 * M)
+        for m in 1:M
+            PDOSs[label] .+= coeff_PDOS[m, i] * delta_m_E[:, m]
         end
     end
 
-    return E_grid, COHPs
+    return E_grid, PDOSs
 end
 
-### main function to run KPM-COHP calculation
-function KPM_COHP(H_path::String, output_dir::String, t::Int, M::Int, N::Int)
+### main function to run KPM-PDOS calculation
+function KPM_PDOS(H_path::String, output_dir::String, t::Int, M::Int, N::Int)
 
     MPI.Init()
     basis_labels = get_basis_labels(H_path)
@@ -182,44 +155,41 @@ function KPM_COHP(H_path::String, output_dir::String, t::Int, M::Int, N::Int)
         end
     end
 
-    arr_coeff_COHPs = zeros(Float64, M, n_labels, n_labels, num_vecs)
-    coeff_COHPs = zeros(Float64, M, n_labels, n_labels)
+    arr_coeff_PDOSs = zeros(Float64, M, n_labels, num_vecs)
+    coeff_PDOSs = zeros(Float64, M, n_labels)
 
-    ### get COHP coefficients
+    ### get PDOS coefficients
     tforeach(1:num_vecs; chunksize=1) do i
 
         vec = draw_vec(i, dim, rank, num_vecs)
-        arr_coeff_COHPs[:, :, :, i] = kernel_polynomial_method_cohp(H, vec, M, basis_labels, unique_labels)
+        arr_coeff_PDOSs[:, :, i] = kernel_polynomial_method_pdos(H, vec, M, basis_labels, unique_labels)
 
     end
 
     for m in 1:M
         for i in 1:n_labels
-            for j in 1:n_labels
-                coeff_COHPs[m, i, j] = reduce(+, arr_coeff_COHPs[m, i, j, :]) ./ num_vecs
-            end
+            coeff_PDOSs[m, i] = reduce(+, arr_coeff_PDOSs[m, i, :]) ./ num_vecs
         end
     end
-    
-    MPI.Barrier(comm)
-    coeff_COHPs = MPI.Reduce(coeff_COHPs / rank_size, +, comm) 
 
-    ### compute COHPs from coefficients coeff_COHP_m
+    MPI.Barrier(comm)
+    coeff_PDOSs = MPI.Reduce(coeff_PDOSs / rank_size, +, comm)
+
+    ### compute PDOS from coefficients
     if rank == 0
 
-        E_grid, COHPs = compute_cohp(M, mean_E, ΔE, coeff_COHPs, unique_labels)
+        E_grid, PDOSs = compute_pdos(M, mean_E, ΔE, coeff_PDOSs, unique_labels)
 
-        for (pair, cohp) in COHPs
-            elem_i, elem_j = pair
-            output_dir_ij = joinpath(output_dir, "$(elem_i)_$(elem_j)/")
-            data_file = joinpath(output_dir_ij, "COHP_$t.txt")
-            mkpath(output_dir_ij)
+        for (label, pdos) in PDOSs
+            output_dir_i = joinpath(output_dir, "$(label)/")
+            data_file = joinpath(output_dir_i, "PDOS_$t.txt")
+            mkpath(output_dir_i)
             open(data_file, "w") do io
-                println(io, "# Energy   COHP")
-                writedlm(io, hcat(E_grid, cohp))
+                println(io, "# Energy   PDOS")
+                writedlm(io, hcat(E_grid, pdos))
             end
         end
-        
+
     end
 
     MPI.Finalize()
@@ -239,6 +209,6 @@ N                 = parse(Int, ARGS[5])
 hamiltonian_style = ARGS[6]
 
 
-KPM_COHP(H_path, output_dir, t, M, N)
+KPM_PDOS(H_path, output_dir, t, M, N)
 
-println("KPM COHP calculation for snapshot $t completed.")
+println("KPM PDOS calculation for snapshot $t completed.")
