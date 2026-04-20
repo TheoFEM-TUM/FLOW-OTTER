@@ -127,7 +127,7 @@ Details can also be found in [LAMMPS documentation](https://docs.lammps.org/Manu
 `units` (str): LAMMPS unit style  
 `dimension` (int): system dimensionality  
 `boundary` (str): boundary conditions  
-`kspace_style` (str): long-range solver definition  
+`kspace_style` (str): long-range solver definition (*"none"*)  
 `atom_style` (str): atom style  
 
 `ini_MD_file` (str): initial structure file (data or restart)  
