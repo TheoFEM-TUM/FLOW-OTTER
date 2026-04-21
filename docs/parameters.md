@@ -66,7 +66,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 `volume_scale` (float or array of floats): scale simulation cell lengths with isotropic factor (float) or with anisotropic factors (array of floats)  
 
 `plot_MD_time` (bool): if True, MD plots show time instead of step on x-axes (*True*)  
-`window_size` (int): number of steps over which is averaged to get one point in the moving average (*20*)  
+`window_size` (int): number of steps over which is averaged to get one point in the moving average of the equilibration plots (*20*)  
 
 `vdos_omega_max` (float): maximal frequency shown in the VDOS plots in reciprocal units of the time used in the MD (*None*)  
 `gaussian_smearing_vdos` (float): standard deviation for Gaussian kernel for Gaussian smearing of the VDOS in comparison plots (*0.01*)
