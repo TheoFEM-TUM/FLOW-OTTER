@@ -17,9 +17,6 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     simulation_type = configWF.get("simulation_type", "sweep")
     cg_criteria = False
 
-    resources_MD = configWF["resources_MD"]
-    MD_MPI_NPROCS = int(resources_MD.split(":")[0])
-
     dir_project = Path(configWF.get("dir_project", "./"))
 
     i = 0 

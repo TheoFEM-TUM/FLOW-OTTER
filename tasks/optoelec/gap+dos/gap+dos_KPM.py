@@ -65,9 +65,9 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
         snapshots = np.sort(np.array(t_vals))
 
-    elif hamiltonian_style == "H":
+    elif hamiltonian_style == "TB":
 
-        H_files = list((dir_H / "hamiltonian").glob("H_*.txt"))
+        H_files = list((dir_H / "hamiltonian").glob("TB_*.txt"))
 
         snapshots = np.sort(np.array([
             int(Path(f).stem.split("_")[1])

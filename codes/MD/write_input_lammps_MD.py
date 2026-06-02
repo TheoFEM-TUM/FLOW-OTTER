@@ -169,7 +169,7 @@ with open(lammps_input_file, "w") as f:
 
             # NPT pressure parameter
             P = input_params.get("P", 0.0)
-            P_damp = input_params.get("P_damp", 100.0)
+            P_damp = input_params.get("P_damp", 100 * input_params["dt"])
             P_start = input_params.get("P_start", P)
 
             # Expansion phase

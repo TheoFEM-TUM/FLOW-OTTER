@@ -31,7 +31,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         configWF_i = configWF.copy()
 
 
-    dir_TB = Path(configWF_i.get("dir_TB", str(dir_project_i / "2-TB/")))
+    dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
     dir_conductivity = Path(configWF_i["dir_conductivity"])
     dir_config = dir_project_i / configWF_i.get("dir_config", "3-conductivity/")
     config_file = Path(configWF_i.get("config_file", "conductivity_config.yaml"))

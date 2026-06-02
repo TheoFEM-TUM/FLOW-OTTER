@@ -49,7 +49,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     dir_MD = Path(configWF_i.get("dir_MD", str(dir_project_i / "1-MD/")))
     equilibrate = configWF_i.get("equilibrate", False)
-    npt_equilibrate = configWF_i["lammps"].get("npt_equilibrate", True)
+    npt_equilibrate = configWF_i.get("npt_equilibrate", True)
 
     if equilibrate:
 
