@@ -66,7 +66,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 `volume_scale` (float or array of floats): scale simulation cell lengths with isotropic factor (float) or with anisotropic factors (array of floats)  
 
 `plot_MD_time` (bool): if True, MD plots show time instead of step on x-axes (*True*)  
-`window_size` (int): number of steps over which is averaged to get one point in the moving average (*20*)  
+`window_size` (int): number of steps over which is averaged to get one point in the moving average of the equilibration plots (*20*)  
 
 `vdos_omega_max` (float): maximal frequency shown in the VDOS plots in reciprocal units of the time used in the MD (*None*)  
 `gaussian_smearing_vdos` (float): standard deviation for Gaussian kernel for Gaussian smearing of the VDOS in comparison plots (*0.01*)
@@ -127,7 +127,7 @@ Details can also be found in [LAMMPS documentation](https://docs.lammps.org/Manu
 `units` (str): LAMMPS unit style  
 `dimension` (int): system dimensionality  
 `boundary` (str): boundary conditions  
-`kspace_style` (str): long-range solver definition  
+`kspace_style` (str): long-range solver definition (*"none"*)  
 `atom_style` (str): atom style  
 
 `ini_MD_file` (str): initial structure file (data or restart)  
@@ -187,6 +187,15 @@ Details can also be found in [LAMMPS documentation](https://docs.lammps.org/Manu
 
 `N` (int): number of stochastic vectors in the stochastic trace approximation; only needed if matrix is too large for exact diagonalization and therefore, the kernel polynomial method is used (*48*)  
 `M` (int): number of moments in kernel polynomial method; only needed if matrix is too large for exact diagonalization and therefore, kernel polynomial method is used (*200*) 
+
+
+## pdos:
+`num_snapshot_pdos` (int): number of snapshots used to calculate an average PDOS (*last_snapshot - first_snapshot + 1*)  
+`snapshot_sampling` (string): determines how `num_snapshot_pdos` snapshots are chosen out of the the N_snapshots snapshots for which H exist (*"all"*, "uniform", "random")
+
+`N` (int): number of stochastic vectors in the stochastic trace approximation; only needed if matrix is too large for exact diagonalization and therefore, the kernel polynomial method is used (*48*)  
+`M` (int): number of moments in kernel polynomial method; only needed if matrix is too large for exact diagonalization and therefore, kernel polynomial method is used (*200*) 
+
 
 ## conductivity:
 

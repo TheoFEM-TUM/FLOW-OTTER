@@ -2,11 +2,12 @@
 
 
 ### workflow configuration
-dir_project: "path_to_your_output_directory/"               # INSERT HERE 
-dir_code: "path_to_repo/"                                   # INSERT HERE
+dir_project: "your_output_directory/"               # INSERT HERE 
+dir_code: "repo_directory/"                                   # INSERT HERE
 resources: "48:1:devel:5m"
 
 simulation_type: "sweep"
+num_simulations: 6
 
 param_to_vary: "T_P"
 array_to_vary: ["425.0_500.0", "425.0_-500.0", "525.0_500.0", "525.0_-500.0", "625.0_500.0", "625.0_-500.0"]

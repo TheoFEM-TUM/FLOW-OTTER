@@ -2,8 +2,8 @@
 
 
 ### workflow configuration
-dir_project: "path_to_your_output_directory/"               # INSERT HERE 
-dir_code: "path_to_repo/"                                   # INSERT HERE
+dir_project: "your_output_directory/"               # INSERT HERE 
+dir_code: "repo_directory/"                                   # INSERT HERE
 human_in_loop: true
 
 simulation_type: "cascade"
