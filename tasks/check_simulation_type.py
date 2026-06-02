@@ -45,6 +45,17 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             param_to_vary4 = configWF["param_to_vary4"]
             array_to_vary4 = configWF["array_to_vary4"]
 
+        if "param_to_vary5" in configWF:
+            param_group5 = configWF.get("param_group_for_vary5", None)
+            param_to_vary5 = configWF["param_to_vary5"]
+            array_to_vary5 = configWF["array_to_vary5"]
+
+        if "param_to_vary6" in configWF:
+            param_group6 = configWF.get("param_group_for_vary6", None)
+            param_to_vary6 = configWF["param_to_vary6"]
+            array_to_vary6 = configWF["array_to_vary6"]
+
+
         # Loop over different branches
         for i in range(num_simulations):
 
@@ -88,6 +99,22 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                     if configWF.get(param_group4) is None:
                         configWF[param_group4] = {}
                     configWF[param_group4][param_to_vary4] = array_to_vary4[i]
+
+            if "param_to_vary5" in configWF:
+                if param_group5 is None:
+                    configWF[param_to_vary5] = array_to_vary5[i]
+                else:
+                    if configWF.get(param_group5) is None:
+                        configWF[param_group5] = {}
+                    configWF[param_group5][param_to_vary5] = array_to_vary5[i]
+
+            if "param_to_vary6" in configWF:
+                if param_group6 is None:
+                    configWF[param_to_vary6] = array_to_vary6[i]
+                else:
+                    if configWF.get(param_group6) is None:
+                        configWF[param_group6] = {}
+                    configWF[param_group6][param_to_vary6] = array_to_vary6[i]
 
 
             if path_pre_configWF_i.exists():

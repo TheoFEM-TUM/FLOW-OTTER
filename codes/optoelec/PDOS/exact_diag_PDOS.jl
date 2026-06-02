@@ -57,8 +57,8 @@ dir_outpath       = ARGS[2]
 t                 = parse(Int, ARGS[3])
 hamiltonian_style = ARGS[4]
 
-#basis_labels = get_basis_labels(H_path)
-basis_labels = get_basis_labels1(H_path)
+basis_labels = get_basis_labels(H_path)
+#basis_labels = get_basis_labels1(H_path)
 
 println("- basis labels: ", basis_labels)
 

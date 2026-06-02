@@ -51,7 +51,7 @@ lmp.command(f"log  " + str(dir_MD / "log.lammps"))
 lmp.cmd.units(f"{input_params['units']}")
 lmp.command(f"dimension {input_params['dimension']}")
 lmp.command(f"boundary {input_params['boundary']}")
-lmp.command(f"kspace_style {input_params['kspace_style']}")
+lmp.command(f"kspace_style {input_params.get('kspace_style', 'none')}")
 lmp.cmd.atom_style(f"{input_params['atom_style']}")
 
 # specify initial structure

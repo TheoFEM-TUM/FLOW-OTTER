@@ -89,6 +89,9 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     input_params["Options"]["ham_file"] = str( dir_ham / "ham.h5")
     input_params["Options"]["write_current"] = write_current
 
+    if write_current == True:
+        input_params["Options"]["current_file"] = str( dir_ham / "ham.h5")
+
     if hamiltonian_style == "Hr" or write_current:
         input_params["Options"]["write_hr"] = True
         input_params["Options"]["write_hk"] = False

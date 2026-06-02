@@ -135,18 +135,25 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                     avg_E = np.zeros(len(np.loadtxt(cohp_files[0], skiprows=1)[:, 0]))
                     avg_cohp = np.zeros_like(avg_E)
                     std_cohp = np.zeros_like(avg_E)
+                    avg_ICOHP = 0
+                    std_ICOHP = 0
                     for file in cohp_files:
                         data = np.loadtxt(file, skiprows=1)
                         avg_E += data[:, 0]
                         avg_cohp += data[:, 1]
                         std_cohp += data[:, 1] ** 2
+                        avg_ICOHP += np.trapz(data[:, 1], data[:, 0])
+                        std_ICOHP += np.trapz(data[:, 1], data[:, 0]) ** 2
 
                     avg_E /= len(cohp_files)
                     avg_cohp /= len(cohp_files)
                     std_cohp = np.sqrt(std_cohp / len(cohp_files) - avg_cohp ** 2)
+                    avg_ICOHP /= len(cohp_files)
+                    std_ICOHP = np.sqrt(std_ICOHP / len(cohp_files) - avg_ICOHP ** 2)
 
                     ICOHP = np.trapz(avg_cohp, avg_E)
-                    print(f"Integrated COHP for {i}-{j} pair: {ICOHP}/{hamiltonian_unit}", flush=True)
+                    #print(f"Integrated COHP for {i}-{j} pair: {ICOHP}/{hamiltonian_unit}", flush=True)
+                    print(f"Integrated COHP for {i}-{j} pair: {avg_ICOHP}/{hamiltonian_unit} ± {std_ICOHP}", flush=True)
 
                     fig, ax = plt.subplots()
                     plt.title(f"Crystal orbital Hamilton population ({i}-{j})")
