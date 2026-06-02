@@ -8,6 +8,8 @@ import os
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: lammps_MD", flush=True)
+
     yaml = YAML()
     
     # Read in global configurations
@@ -48,6 +50,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         # update new branch config file fitting to previous branch calculation for (temperature) cascade mode
         if simulation_type == "cascade":
 
+            print("Cascade mode active.", flush=True)
+
             if i != 0:
 
                 # find paths for previous branch
@@ -69,7 +73,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                 configWF_i["equilibrate"] = True 
                 configWF_i["lammps"]["T_start"] = T_old
                 configWF_i["lammps"]["restart"] = True
-                configWF_i["lammps"]["ini_MD_file"] = f"restart_{T_old}"
+                configWF_i["lammps"]["ini_MD_file"] = f"restart"
                         
                 with open(str(path_configWF_i), 'w') as f:
                     yaml.dump(configWF_i, f)    
@@ -92,21 +96,28 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     MD_type = configWF_i.get("MD_type")
     input_type = configWF_i.get("input_type_lammps", "write_input")
 
-    print("SLURM_NTASKS =", os.environ.get("SLURM_NTASKS"))
+    print("SLURM_NTASKS =", os.environ.get("SLURM_NTASKS"), flush=True)
     ranks_MD = configWF_i.get("ranks_MD", os.environ.get("SLURM_NTASKS"))
+
+    srun_flags_MD = configWF_i.get("srun_flags_MD", [])
+
+    print("LAMMPS MD with MD_type =", MD_type, "and input_type =", input_type, flush=True)
 
     if MD_type == "lammps":
 
         if input_type == "write_input":
 
             result1 = subprocess.run([
-                "python3",
+                "python",
                 f"{dir_code}/MD/write_input_lammps_MD.py", 
                 str(path_configWF_i), str(dir_MD)], check=True)
+            print("Written LAMMPS input file.", flush=True)
 
+            print("Start LAMMPS MD...", flush=True)
             result2 = subprocess.run([
                 "srun",
                 "-n", f"{ranks_MD}",
+                *srun_flags_MD,
                 "lmp",
                 "-in",
                 f"{dir_MD}/lmp.inp",
@@ -114,13 +125,15 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
         elif input_type == "existing_input":
 
-            print("Using already existing LAMMPS input file.")
+            print("Using already existing LAMMPS input file.", flush=True)
 
             path_input_lammps = configWF_i["path_input_lammps"]
 
+            print("Start LAMMPS MD...", flush=True)
             result2 = subprocess.run([
                 "srun",
                 "-n", f"{ranks_MD}",
+                *srun_flags_MD,
                 "lmp_mpi",
                 "-in",
                 f"{path_input_lammps}",
@@ -128,10 +141,12 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
         elif input_type == "python_input":
 
+            print("Start LAMMPS MD...", flush=True)
             result = subprocess.run([
                 "srun", 
                 "-n", f"{ranks_MD}", 
-                "python3",
+                *srun_flags_MD,
+                "python",
                 f"{dir_code}/MD/run_lammps_MD.py", 
                 str(path_configWF_i), str(dir_MD)], check=True)
     
@@ -139,20 +154,20 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     elif "lammps+MACE" in MD_type:
 
         result1 = subprocess.run([
-            "python3",
+            "python",
             f"{dir_code}/MD/write_input_lammps_MD.py", 
             str(path_configWF_i), str(dir_MD)], check=True)
+        print("Written LAMMPS input file.", flush=True)
 
-        print(os.environ.get("CUDA_VISIBLE_DEVICES"))
+        print("CUDA_VISIBLE_DEVICES =", os.environ.get("CUDA_VISIBLE_DEVICES"), flush=True)
 
+        print("Start LAMMPS MD...", flush=True)
         result2 = subprocess.run([
             "srun",
-            #"--exclusive",
-            #"--gpus-per-task=1",
-            #"--gres=gpu:4",
-            #"-n", f"{ranks_MD}",
+            "-n", f"{ranks_MD}",
+            *srun_flags_MD,
             "lmp",
-            "-k", "on", "g", "4", "-sf", "kk", "-pk", "kokkos", "newton", "on", "neigh", "half",
+            "-k", "on", "g", "1", "-sf", "kk", "-pk", "kokkos", "newton", "on", "neigh", "half",
             "-in",
             f"{dir_MD}/lmp.inp",
         ], check=True)
@@ -160,18 +175,22 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     elif MD_type == "lammps+VASP":
 
         result1 = subprocess.run([
-            "python3",
+            "python",
             f"{dir_code}/MD/write_input_lammps_MD.py", 
             str(path_configWF_i), str(dir_MD)], check=True)
+        print("Written LAMMPS input file.", flush=True)
 
+        print("Start LAMMPS MD...", flush=True)
         result2 = subprocess.run([
             "srun",
             "-n", f"{ranks_MD}",
+            *srun_flags_MD,
             "lmp_mpi",
             "-in",
             f"{dir_MD}/lmp.inp",
         ], check=True)
 
+    print("Finish task: lammps_MD", flush=True)
 
     return True, {CYCLICALGROUP_KEY: cg_criteria, "path_configWF": path_configWF, "num_simulations": num_simulations}
 

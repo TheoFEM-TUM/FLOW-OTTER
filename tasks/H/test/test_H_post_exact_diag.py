@@ -6,6 +6,8 @@ from pathlib import Path
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, t: int = 0, **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: test_H_post_exact_diag", flush=True)
+
     # Read in global configurations
     with open(path_configWF, "r") as f:
         configWF = yaml.safe_load(f)
@@ -68,7 +70,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     largest_gaps = gaps[largest_gap_indices]
 
     for idx, gap in zip(largest_gap_indices, largest_gaps):
-        print(f"Gap: {gap}, between E {EV[idx]} and {EV[idx+1]}")
+        print(f"Gap: {gap}, between E {EV[idx]} and {EV[idx+1]}", flush=True)
 
     # save band gap candidates to file
     data_gaps = np.column_stack((largest_gaps, EV[largest_gap_indices], EV[largest_gap_indices+1]))
@@ -77,8 +79,9 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     # human_in_loop flag allows for human check before continuing
     if configWF_i.get("human_in_loop", False):
-        print("human_in_loop is set to True. Stopping workflow after each test.")
+        print("human_in_loop is set to True. Stopping workflow after each test.", flush=True)
         raise Exception("H test done. Please check the plots in " + str(dir_H / "test_output/") + " and continue the workflow manually.")
 
+    print("Finish task: test_H_post_exact_diag", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, "test_H_type": "exact_diag"}

@@ -5,6 +5,7 @@ from pathlib import Path
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: fit_empTB", flush=True)
 
     # Read in global configurations
     with open(path_configWF, 'r') as f:
@@ -47,21 +48,23 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     threads_H = configWF_i.get("threads_H", 1)
     ranks_H = configWF_i.get("ranks_H", N_snapshots)
+    srun_flags_H = configWF_i.get("srun_flags_H", [])
+    julia_flags_H = configWF_i.get("julia_flags_H", [])
 
      
     # calculate empirical Tight Binding hamiltonians
     result = subprocess.run([        
         "srun", 
-        #"--mpi=pmi2",
         "-n", str(ranks_H),
-        #"--cpus-per-task", "1",
+        *srun_flags_H,
         "julia", 
-        #"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_julia/", 
+        *julia_flags_H,
         "-t", str(threads_H), 
         #str(dir_code / "H/empTB/compute_H.jl"), 
         str(dir_code / "H/empTB/compute_superH.jl"), 
         str(dir_H), str(dir_input_H), str(cell_size), str(first_snapshot), str(last_snapshot), str(N_snapshots), hamiltonian_style], check=True)
     
+    print("Finish task: fit_empTB", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}
 

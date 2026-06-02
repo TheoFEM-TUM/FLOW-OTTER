@@ -9,8 +9,9 @@ import random
 
 
 
-
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
+
+    print("Start task: gap+dos_exact_diag", flush=True)
 
     # Read in global configurations
     with open(path_configWF, "r") as f:
@@ -40,6 +41,10 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     dir_code = Path(configWF_i.get("dir_code", "./")) / "codes/"
     dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
     
+    julia_flags_optoelec = configWF_i.get("julia_flags_optoelec", [])
+    resources_optoelec = configWF["resources_optoelec"]
+    cores_optoelec = int(resources_optoelec.split(":")[0])
+
     hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
 
     first_snapshot = configWF_i.get("first_snapshot", 0)
@@ -64,9 +69,9 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
         snapshots = np.sort(np.array(t_vals))
 
-    elif hamiltonian_style == "H":
+    elif hamiltonian_style == "TB":
 
-        H_files = list((dir_H / "hamiltonian").glob("H_*.txt"))
+        H_files = list((dir_H / "hamiltonian").glob("TB_*.txt"))
 
         snapshots = np.sort(np.array([
             int(Path(f).stem.split("_")[1])
@@ -93,12 +98,17 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     dir_EV = dir_H / "gap+dos/EV/"
     dir_EV.mkdir(parents=True, exist_ok=True)
 
+    print(f"Using {cores_optoelec} cores for optoelectronic calculations.", flush=True)
+
     # perform exact diagonalization for chosen snapshots
     for t in chosen_snapshots:
-        print(f"Diagonalizing Hamiltonian for snapshot {t}", flush=True)
+        print(f"Diagonalizing Hamiltonian for snapshot {t} ...", flush=True)
         result = subprocess.run([
-            "julia", 
-            #"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_hamster/", 
+            "srun",
+            '--ntasks=1',
+            f'--cpus-per-task={cores_optoelec}',
+            "julia",
+            *julia_flags_optoelec, 
             str(dir_code / "optoelec/gap+dos/diagonalize_H.jl"), 
             str(dir_H / "hamiltonian/"), 
             str(dir_EV), 
@@ -107,5 +117,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         ], check=True)        
 
     optoelec_type = "gap+dos_exact_diag"
+
+    print("Finish task: gap+dos_exact_diag", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, "optoelec_type": optoelec_type, "snapshots": snapshots}

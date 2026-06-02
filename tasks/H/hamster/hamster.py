@@ -6,6 +6,8 @@ import shutil
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
     
+    print("Start task: hamster", flush=True)
+
     yaml = YAML()
 
     # Read in global configurations
@@ -42,6 +44,10 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     dir_MD = Path(configWF_i.get("dir_MD", str(dir_project_i / "1-MD/")))
 
+    srun_flags_H = configWF_i.get("srun_flags_H", [])
+    julia_flags_H = configWF_i.get("julia_flags_H", [])
+
+
     dir_H.mkdir(parents=True, exist_ok=True)
     dir_ham.mkdir(parents=True, exist_ok=True)
 
@@ -58,7 +64,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         # convert hconf to yaml file to modify configuration for present simulation 
         result3 = subprocess.run([
             "julia", 
-            #"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_hamster/", 
+            *julia_flags_H,
             str(dir_code / "H/hamster/hconf_to_yaml.jl"),
             str(path_hconf), str(dir_H / "hconf.yaml")], check=True)
             
@@ -71,15 +77,26 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         input_params = configWF_i["hamster"]
 
     hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
+    write_current = configWF_i.get("write_current", False)
+
+    if "conductivity" in configWF_i:
+        write_current = True
+        print("Hamster will write out current for conductivity calculation. 'write_current' is set to true because 'conductivity' is in the config file.", flush=True)
 
     # modify Hamster configuration params for present simulation 
     input_params["Options"]["init_params"] = str( dir_H / "params.dat")
     input_params["Options"]["skip_diag"] = True
     input_params["Options"]["ham_file"] = str( dir_ham / "ham.h5")
+    input_params["Options"]["write_current"] = write_current
 
-    if hamiltonian_style == "Hr":
+    if write_current == True:
+        input_params["Options"]["current_file"] = str( dir_ham / "ham.h5")
+
+    if hamiltonian_style == "Hr" or write_current:
         input_params["Options"]["write_hr"] = True
         input_params["Options"]["write_hk"] = False
+        if write_current:
+            print("Hamster will write out Hamiltonian in real space and current. 'write_current' == true needs 'hamiltonian_style' == 'Hr'", flush=True)
     elif hamiltonian_style == "Hk":
         input_params["Options"]["write_hr"] = False
         input_params["Options"]["write_hk"] = True
@@ -108,24 +125,27 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     # convert yaml to hconf file
     result4 = subprocess.run([
         "julia", 
-        #"--project", 
+        *julia_flags_H,
         str(dir_code / "H/hamster/yaml_to_hconf.jl"),
         str(dir_H / "hconf.yaml"), str(path_hconf_new)], check=True)
 
     ranks_H = configWF_i.get("ranks_H", N_snapshots)
+    threads_H = configWF_i.get("threads_H", 1)
 
     path_ham = dir_ham / "ham.h5"
     if path_ham.exists():
         path_ham.unlink()
 
     # calculate Hamster hamiltonians
-    print("Start Hamster!")
+    print("Start Hamster...", flush=True)
     result = subprocess.run([
-        #"srun", 
-        #"--mpi=pmi2",
-        #"-n", str(ranks_H),
+        "srun", 
+        *srun_flags_H,
+        "-n", str(ranks_H),
         "hamster",
+        "-t", str(threads_H),
         ], cwd = str(dir_H), check=True)
 
+    print("Finish task: hamster", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}

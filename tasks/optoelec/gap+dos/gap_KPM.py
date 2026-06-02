@@ -5,6 +5,8 @@ from pathlib import Path
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, snapshots: np.ndarray = np.arange(0, 47, 1), **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: gap_KPM", flush=True)
+
     # Read in global configurations
     with open(path_configWF, "r") as f:
         configWF = yaml.safe_load(f)
@@ -33,18 +35,38 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
     hamiltonian_unit = configWF_i.get("hamiltonian_unit", "eV")
 
+    guess_E_v = configWF_i["gap+dos"].get("guess_E_v", None)
+    guess_E_c = configWF_i["gap+dos"].get("guess_E_c", None)
+
     # average gaps over snapshots
-    gaps = np.zeros((len(snapshots), 3))
+    data_gap_VBM_CBM = np.zeros((len(snapshots), 3))
 
     for t in range(len(snapshots)):
-        gaps[t, :] = np.loadtxt(str(dir_H / f"gap+dos/gap/gap_{snapshots[t]}_KPM.txt"), unpack=True, skiprows=1)
+        data_gap_VBM_CBM[t, :] = np.loadtxt(str(dir_H / f"gap+dos/gap/gap_{snapshots[t]}_KPM.txt"), unpack=True, skiprows=1)
 
-    avg_gap = np.mean(gaps, axis=0)
-    std_gap = np.std(gaps, axis=0)
+    gaps = data_gap_VBM_CBM[:, 0]
+    VBMs = data_gap_VBM_CBM[:, 1]
+    CBMs = data_gap_VBM_CBM[:, 2]
+
+    avg_gap = np.mean(gaps)
+    std_gap = np.std(gaps)
+
+    avg_VBM = np.mean(VBMs)
+    std_VBM = np.std(VBMs)
+
+    avg_CBM = np.mean(CBMs)
+    std_CBM = np.std(CBMs)
 
     # save average and std of gaps to file
-    data_gap = np.column_stack((avg_gap, std_gap))
-    np.savetxt(str(dir_H / "gap+dos/gap_KPM.txt"), data_gap, header=f" average of gap/VBM/CBM/{hamiltonian_unit}   std of gap/VBM/CBM/{hamiltonian_unit}")
+    data_gap = np.column_stack((avg_gap, std_gap, avg_VBM, std_VBM, avg_CBM, std_CBM))
+    np.savetxt(str(dir_H / "gap+dos/gap_avg_std_KPM.txt"), data_gap, header=f" average of gap/{hamiltonian_unit}      std of gap/{hamiltonian_unit}      average of VBM/{hamiltonian_unit}      std of VBM/{hamiltonian_unit}      average of CBM/{hamiltonian_unit}      std of CBM/{hamiltonian_unit}")
 
+    if abs(guess_E_v - avg_VBM)/abs(avg_VBM) < 0.01:
+        print(f"WARNING: guess_E_v {guess_E_v} is close (1% deviation) to average VBM {avg_VBM}. guess_E_v could be within valence band. Consider updating guess_E_v to be further away from avg_VBM to ensure it is within the gap.", flush=True)
+
+    if abs(guess_E_c - avg_CBM)/abs(avg_CBM) < 0.01:
+        print(f"WARNING: guess_E_c {guess_E_c} is close (1% deviation) to average CBM {avg_CBM}. guess_E_c could be within conduction band. Consider updating guess_E_c to be further away from avg_CBM to ensure it is within the gap.", flush=True)
+
+    print("Finish task: gap_KPM", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}

@@ -633,7 +633,7 @@ function write_Hr(cell, H, C, snapshot, comm, rank, rank_size; filename="ham.h5"
         if x == rank
             h5open(filename, "cw") do file
                 println("Writing Hamiltonian to $filename for snapshot $snapshot ...")
-                g = create_group(file, "Hr_$snapshot")
+                g = create_group(file, "Hr__$snapshot")
                 g["vecs"] = cell
                 for (i, c) in enumerate(eachrow(cell))
                     key = Tuple(round.(Int, c))
@@ -677,7 +677,7 @@ function write_Hk(Hk, C, snapshot, comm, rank, rank_size; filename="ham.h5")
         if x == rank
             h5open(filename, "cw") do file
                 println("Writing Hamiltonian to $filename ...")
-                g = create_group(file, "Hk_$snapshot")
+                g = create_group(file, "Hk__$snapshot")
                 g["vecs"] = [0, 0, 0]
                 grp = create_group(g, "0")
                 grp["rowval"]  = Hk.rowval

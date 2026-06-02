@@ -2,23 +2,42 @@ import yaml
 import sys
 from pathlib import Path
 
+def add_occurrence_numbers(arr):
+    counts = {}
+    result = []
+    
+    for item in arr:
+        if item in counts:
+            counts[item] = counts.get(item, 0) + 1
+            result.append(f"{item}{counts[item]}")
+        else:
+            counts[item] = 1
+            result.append(item)
+    
+    return result
+
+
+# set input paths
 path_configWF = sys.argv[1]
 dir_MD = Path(sys.argv[2])
 
+# load configuration file
 with open(path_configWF, "r") as f:
     configWF = yaml.safe_load(f) or {}
 
+# set directory for initial MD structure
 dir_ini_MD = Path(configWF.get("dir_ini_MD", str(dir_MD)))
 
+# set input parameters
 input_params = configWF["lammps"]
 if "temperature" in configWF:
     T = configWF["temperature"]  
 else:
     T = input_params["T"]
 
-
+# set force field path
 path_FF_MD = Path(configWF.get("path_FF_MD", str(dir_MD)))
-print(path_FF_MD)
+print("path_FF_MD:", path_FF_MD)
 
 # LAMMPS input file
 lammps_input_file = dir_MD / "lmp.inp"
@@ -40,8 +59,11 @@ with open(lammps_input_file, "w") as f:
     w(f"boundary {input_params['boundary']}")
     w(f"kspace_style {input_params['kspace_style']}")
     w(f"atom_style {input_params['atom_style']}")
+    if configWF["MD_type"] == "lammps+MACE":
+        w("package kokkos neigh half")
     w("")
 
+    # specify initial structure
     path_ini = dir_ini_MD / input_params["ini_MD_file"]
 
     if input_params["restart"]:
@@ -51,15 +73,17 @@ with open(lammps_input_file, "w") as f:
         w("atom_modify map yes")
         w(f"read_data {path_ini}")
         equilibrate = True
+        print("WARNING: equilibrate is set to true because read_data is used!")
 
     # Replication
     if "size" in configWF:
         s = configWF["size"]
         if s > 1:
             w(f"replicate {s} {s} {s} bond/periodic")
-    elif "replicate" in input_params:
-        r = input_params["replicate"]
-        w(f"replicate {r[0]} {r[1]} {r[2]} bond/periodic")
+    else:
+        if "replicate" in input_params:
+            r = input_params["replicate"]
+            w(f"replicate {r[0]} {r[1]} {r[2]} bond/periodic")
 
     # change cell volume
     if "lattice_constants" in input_params:
@@ -125,12 +149,14 @@ with open(lammps_input_file, "w") as f:
     w(
         f"fix thermolog all print {thermo_output_step_size} "
         f"'$t $T $E $X $Y $Z $V $P' "
-        f"file {dir_MD / 'thermo_output.txt'} screen no"
+        f"file {dir_MD / 'thermo_output.txt'} screen no title '# Step Temp E_total Lx Ly Lz Volume Density Pressure'"
     )
 
     T_damp = input_params["T_damp"]
     prodrun_stepsize = input_params["prodrun_stepsize"]
 
+    total_steps = 0
+    
     # Equilibration
     if equilibrate:
 
@@ -143,6 +169,7 @@ with open(lammps_input_file, "w") as f:
         w(f"dump_modify 0 element {elements_str}")
         w("")
 
+        # Initial minimization and velocity assignment
         T_start = input_params.get("T_start", T)
 
         if not input_params["restart"]:
@@ -150,16 +177,21 @@ with open(lammps_input_file, "w") as f:
             #w("minimize 1.0e-4 1.0e-6 100 1000")
             w(" ")
 
+
         # Heating phase
         if T_start != T:
+            eqsteps_nvt_heating = input_params['eqsteps_nvt_heating']
+            total_steps += eqsteps_nvt_heating
             w(f"fix 1 all nvt temp {T_start} {T} {T_damp}")
-            w(f"run {input_params['eqsteps_nvt_heating']}")
+            w(f"run {eqsteps_nvt_heating}")
             w("unfix 1")
             w("")
 
         # NVT equilibration run
+        eqsteps_nvt = input_params['eqsteps_nvt']
+        total_steps += eqsteps_nvt
         w(f"fix 1 all nvt temp {T} {T} {T_damp}")
-        w(f"run {input_params['eqsteps_nvt']}")
+        w(f"run {eqsteps_nvt}")
         w("unfix 1")
         w("")
 
@@ -174,25 +206,32 @@ with open(lammps_input_file, "w") as f:
 
             # Expansion phase
             if P_start != P:
+                eqsteps_npt_expansion = input_params['eqsteps_npt_expansion']
+                total_steps += eqsteps_npt_expansion
                 w(f"fix 1 all npt temp {T} {T} {T_damp} {barostat} {P_start} {P} {P_damp}")
-                w(f"run {input_params['eqsteps_npt_expansion']}")
+                w(f"run {eqsteps_npt_expansion}")
                 w("unfix 1")
                 w("")
 
             # NPT equilibration run
+            eqsteps_npt = input_params['eqsteps_npt']
+            total_steps += eqsteps_npt
             w(f"fix 1 all npt temp {T} {T} {T_damp} {barostat} {P} {P} {P_damp}")
-            w(f"run {input_params['eqsteps_npt']}")
+            w(f"run {eqsteps_npt}")
             w("unfix 1")
             w("")
 
-        w(f"write_restart {dir_MD / f'restart_eq_{T}'}")
+        # write restart file after equilibration
+        w(f"write_restart {dir_MD / f'restart_eq'}")
+        w(f"write_data {dir_MD / f'restart_eq.data'}")
         w("undump 0")
         w("")
 
     # Pre-production
     w(f"write_data {dir_MD / 'pre_run.data'}")
+    w("")
 
-    # Dump settings
+    # Dump settings for trajectory, velocity, forces
     w(
         f"dump 1 all custom {prodrun_stepsize} "
         f"{dir_MD / 'position.lammpstrj'} id type element x y z"
@@ -215,11 +254,99 @@ with open(lammps_input_file, "w") as f:
     w(f"dump_modify 3 element {elements_str}")
     w("")
 
+    elements_i = add_occurrence_numbers(elements)
+
+    # mean squared distribution (MSD) calculation
+    compute_msd = input_params.get("compute_msd", True)
+    if compute_msd:
+        dir_msd = dir_MD / "msd/"
+        dir_msd.mkdir(parents=True, exist_ok=True)
+
+        w("compute msd_all all msd")
+        w(
+            f"fix msd_all_out all ave/time {prodrun_stepsize} 1 {prodrun_stepsize} "
+            f"c_msd_all[1] c_msd_all[2] c_msd_all[3] c_msd_all[4] "
+            f"file {dir_msd}/msd_all.txt title2 '# TimeStep MSD_x   MSD_y   MSD_z   MSD_total'"
+        )
+        for i, el in enumerate(elements_i, start=1):
+            w(f"group grp_{el} type {i}")
+            w(f"compute msd_{el} grp_{el} msd")
+            w(
+                f"fix msd_{el}_out all ave/time {prodrun_stepsize} 1 {prodrun_stepsize} "
+                f"c_msd_{el}[1] c_msd_{el}[2] c_msd_{el}[3] c_msd_{el}[4] "
+                f"file {dir_msd}/msd_{el}.txt title2 '# TimeStep MSD_x   MSD_y   MSD_z   MSD_total'"
+            )
+        w("")
+
+    prod_numsteps = input_params['prodrun_numsteps']
+    total_steps += prod_numsteps
+
+    # radial distribution function (RDF) calculation
+    compute_rdf = input_params.get("compute_rdf", True)
+    if compute_rdf:
+        compute_inter_rdf = input_params.get("compute_inter_rdf", False)
+        
+        r_steps = total_steps % prodrun_stepsize
+
+        dir_rdf = dir_MD / "rdf/"
+        dir_rdf.mkdir(parents=True, exist_ok=True)
+
+        rdf_bins = input_params.get("rdf_bins", 100)
+        w(f"compute rdf_all all rdf {rdf_bins}")
+        w(
+            f"fix rdf_all_out all ave/time {prodrun_stepsize} {int(prod_numsteps/prodrun_stepsize)} {total_steps - r_steps} "
+            f"c_rdf_all[*] file {dir_rdf}/rdf_all.txt mode vector title3 '# bin     r   g(r)    coordination number'"
+        )
+        for i, el in enumerate(elements_i, start=1):
+            w(f"compute rdf_{el}{el} all rdf {rdf_bins} {i} {i}")
+            w(
+                f"fix rdf_{el}{el}_out all ave/time {prodrun_stepsize} {int(prod_numsteps/prodrun_stepsize)} {total_steps - r_steps} "
+                f"c_rdf_{el}{el}[*] file {dir_rdf}/rdf_{el}-{el}.txt mode vector title3 '# bin r   g(r)    coordination number'"
+            )
+
+        if compute_inter_rdf:
+            for i, el_i in enumerate(elements_i, start=1):
+                for j, el_j in enumerate(elements_i, start=1):
+                    if j > i and el_i != el_j:
+                        w(f"compute rdf_{el_i}{el_j} all rdf {rdf_bins} {i} {j}")
+                        w(
+                            f"fix rdf_{el_i}{el_j}_out all ave/time {prodrun_stepsize} {int(prod_numsteps/prodrun_stepsize)} {total_steps - r_steps} "
+                            f"c_rdf_{el_i}{el_j}[*] file {dir_rdf}/rdf_{el_i}-{el_j}.txt mode vector title3 '# bin r   g(r)    coordination number'"
+                        )
+        w("")
+
+
+
     # NVT production run
     w(f"fix 1 all nvt temp {T} {T} {T_damp}")
-    w(f"run {input_params['prodrun_numsteps']}")
+    w(f"run {prod_numsteps}")
     w("unfix 1")
+    w("")
 
-    w(f"write_restart {dir_MD / f'restart_{T}'}")
+    # Clean up fixes
+    w("unfix thermolog")
+    if compute_msd:
+        w("unfix msd_all_out")
+        w("uncompute msd_all")
+        for el in elements_i:
+            w(f"unfix msd_{el}_out")
+            w(f"uncompute msd_{el}")
+    if compute_rdf:
+        w("unfix rdf_all_out")
+        w("uncompute rdf_all")
+        for i, el in enumerate(elements_i, start=1):
+            w(f"unfix rdf_{el}{el}_out")
+            w(f"uncompute rdf_{el}{el}")
+        if compute_inter_rdf:
+            for i, el_i in enumerate(elements_i, start=1):
+                for j, el_j in enumerate(elements_i, start=1):
+                    if j > i and el_i != el_j:
+                        w(f"unfix rdf_{el_i}{el_j}_out")
+                        w(f"uncompute rdf_{el_i}{el_j}")
+    w("")
+
+    # Final restart file
+    w(f"write_restart {dir_MD / f'restart'}")
+    w(f"write_data {dir_MD / f'restart.data'}")
 
 print(f"LAMMPS input file written to: {lammps_input_file}")

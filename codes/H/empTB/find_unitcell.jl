@@ -69,7 +69,7 @@ function find_unit_cell(positions, N_unitcells, n_unitcell, L, l)
                         push!(unit_cell[ix_Pb], ix)
                     end
                 else
-                    if all(d .> 0.0) && all(d .< 0.9 .* l)
+                    if all(d .> 0.0) && all(d .< 0.95 .* l)
                         #println(a, d)
                         push!(unit_cell[ix_Pb], ix)
                     end 

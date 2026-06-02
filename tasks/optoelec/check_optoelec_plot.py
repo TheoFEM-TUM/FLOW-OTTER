@@ -6,6 +6,8 @@ from perqueue.constants import SWITCHGROUP_KEY
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: check_optoelec", flush=True)
+
     # get project directory
     if isinstance(path_configWF, dict):
         path_configWF0 = next(iter(path_configWF.values()))
@@ -26,6 +28,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         optoelec_type = "gap+dos"
 
 
-    print(f"optoelec type: {optoelec_type}")
+    print(f"optoelec type: {optoelec_type}", flush=True)
+
+    print("Finish task: check_optoelec", flush=True)
 
     return True, {"path_configWF": path_configWF0, "num_simulations": num_simulations0, SWITCHGROUP_KEY: optoelec_type}

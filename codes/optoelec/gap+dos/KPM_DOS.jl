@@ -126,12 +126,12 @@ function KPM_DOS(M::Int, N::Int, H_path::String, output_path::String, t::Int, ha
 
     ### read and rescale hamiltonian
     H = get_sparse_H(H_path, t, hamiltonian_style)
-    println("Hamiltonian read")
+    println("- Hamiltonian read")
     E_max, E_min = get_spectral_bounds(H)
-    println("Spectral bounds calculated")
+    println("- Spectral bounds calculated")
     mean_E, ΔE = transform_band_center_and_width(E_max, E_min)
     rescale_hamiltonian!(H, mean_E, ΔE)
-    println("Hamiltonian rescaled")
+    println("-Hamiltonian rescaled")
 
     dim = size(H, 1)
 
@@ -140,7 +140,7 @@ function KPM_DOS(M::Int, N::Int, H_path::String, output_path::String, t::Int, ha
     comm = MPI.COMM_WORLD
     rank = MPI.Comm_rank(comm)
     rank_size = MPI.Comm_size(comm)
-    println("rank $rank / $rank_size")
+    println("- rank $rank / $rank_size")
 
     BLAS.set_num_threads(1)
 
@@ -149,7 +149,7 @@ function KPM_DOS(M::Int, N::Int, H_path::String, output_path::String, t::Int, ha
     if rank == (rank_size - 1)
         mod_vecs = N % rank_size
         if mod_vecs != 0
-            println("Number of random vectors not optimal: remainder $mod_vecs")
+            println("- Number of random vectors not optimal: remainder $mod_vecs")
         end
     end
     

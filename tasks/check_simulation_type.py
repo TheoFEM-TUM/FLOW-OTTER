@@ -8,10 +8,7 @@ import subprocess
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
-    #print(sys.version)
-    #print(sys.version_info) 
-    #out = subprocess.check_output(["julia", "--version"], text=True)
-    #print(out)
+    print("Start task: check_simulation_type", flush=True)
 
     yaml = YAML()
 
@@ -33,6 +30,32 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         param_to_vary = configWF["param_to_vary"]
         array_to_vary = configWF["array_to_vary"]
 
+        if "param_to_vary2" in configWF:
+            param_group2 = configWF.get("param_group_for_vary2", None)
+            param_to_vary2 = configWF["param_to_vary2"]
+            array_to_vary2 = configWF["array_to_vary2"]
+
+        if "param_to_vary3" in configWF:
+            param_group3 = configWF.get("param_group_for_vary3", None)
+            param_to_vary3 = configWF["param_to_vary3"]
+            array_to_vary3 = configWF["array_to_vary3"]
+
+        if "param_to_vary4" in configWF:
+            param_group4 = configWF.get("param_group_for_vary4", None)
+            param_to_vary4 = configWF["param_to_vary4"]
+            array_to_vary4 = configWF["array_to_vary4"]
+
+        if "param_to_vary5" in configWF:
+            param_group5 = configWF.get("param_group_for_vary5", None)
+            param_to_vary5 = configWF["param_to_vary5"]
+            array_to_vary5 = configWF["array_to_vary5"]
+
+        if "param_to_vary6" in configWF:
+            param_group6 = configWF.get("param_group_for_vary6", None)
+            param_to_vary6 = configWF["param_to_vary6"]
+            array_to_vary6 = configWF["array_to_vary6"]
+
+
         # Loop over different branches
         for i in range(num_simulations):
 
@@ -49,7 +72,50 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             if param_group is None:
                 configWF[param_to_vary] = array_to_vary[i]
             else:
+                if configWF.get(param_group) is None:
+                    configWF[param_group] = {}
                 configWF[param_group][param_to_vary] = array_to_vary[i]
+
+            if "param_to_vary2" in configWF:
+                if param_group2 is None:
+                    configWF[param_to_vary2] = array_to_vary2[i]
+                else:
+                    if configWF.get(param_group2) is None:
+                        configWF[param_group2] = {}
+                    configWF[param_group2][param_to_vary2] = array_to_vary2[i]
+
+            if "param_to_vary3" in configWF:
+                if param_group3 is None:
+                    configWF[param_to_vary3] = array_to_vary3[i]
+                else:
+                    if configWF.get(param_group3) is None:
+                        configWF[param_group3] = {}
+                    configWF[param_group3][param_to_vary3] = array_to_vary3[i]
+      
+            if "param_to_vary4" in configWF:
+                if param_group4 is None:
+                    configWF[param_to_vary4] = array_to_vary4[i]
+                else:
+                    if configWF.get(param_group4) is None:
+                        configWF[param_group4] = {}
+                    configWF[param_group4][param_to_vary4] = array_to_vary4[i]
+
+            if "param_to_vary5" in configWF:
+                if param_group5 is None:
+                    configWF[param_to_vary5] = array_to_vary5[i]
+                else:
+                    if configWF.get(param_group5) is None:
+                        configWF[param_group5] = {}
+                    configWF[param_group5][param_to_vary5] = array_to_vary5[i]
+
+            if "param_to_vary6" in configWF:
+                if param_group6 is None:
+                    configWF[param_to_vary6] = array_to_vary6[i]
+                else:
+                    if configWF.get(param_group6) is None:
+                        configWF[param_group6] = {}
+                    configWF[param_group6][param_to_vary6] = array_to_vary6[i]
+
 
             if path_pre_configWF_i.exists():
                 with open(str(path_pre_configWF_i), 'r') as f:
@@ -61,6 +127,11 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
             with open(path_configWF_i, 'w') as f:
                 yaml.dump(configWF_i, f)    
+
+    print("Finish task: check_simulation_type", flush=True)
+
+    if configWF.get("just_update_branch_config_file", False):
+        raise Exception("just_update_branch_config_file is set to True, stopping workflow after updating branch config files.")
 
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, SWITCHGROUP_KEY: simulation_type}

@@ -8,10 +8,7 @@ import subprocess
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
-    #print(sys.version)
-    #print(sys.version_info) 
-    #out = subprocess.check_output(["julia", "--version"], text=True)
-    #print(out)
+    print("Start task: check_MD_type", flush=True)
 
     # get project directory
     if isinstance(path_configWF, dict):
@@ -51,11 +48,11 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     # check MD type
     MD_type = configWF_i.get("MD_type", "skip_MD")
+    print(f"MD type: {MD_type}", flush=True)
 
     if "lammps" in MD_type:
         MD_type = "lammps"
 
-    print(f"MD type: {MD_type}")
-
+    print("Finish task: check_MD_type", flush=True)
 
     return True, {"path_configWF": path_configWF0, "num_simulations": num_simulations0, SWITCHGROUP_KEY: MD_type}

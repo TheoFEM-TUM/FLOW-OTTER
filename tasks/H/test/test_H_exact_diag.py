@@ -6,6 +6,8 @@ import subprocess
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1,  t: int = 0, **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: test_H_exact_diag", flush=True)
+
     # Read in global configurations
     with open(path_configWF, "r") as f:
         configWF = yaml.safe_load(f)
@@ -36,14 +38,26 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
     hamiltonian_style = configWF_i.get("hamiltonian_style", "Hk")
 
+    julia_flags_H = configWF_i.get("julia_flags_H", [])
+    resources_H = configWF["resources_H"]
+    cores_H = int(resources_H.split(":")[0])
+
+    print(f"Using {cores_H} cores for Hamiltonian calculations.", flush=True)
+
     # perform exact diagonalization of Hamiltonian
+    print("Start exact diagonalization of test Hamiltonian...", flush=True)
     result = subprocess.run([
+        "srun",
+        '--ntasks=1',
+        f'--cpus-per-task={cores_H}',
         "julia", 
-        #"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_hamster/", 
+        *julia_flags_H,
         str(dir_code / "optoelec/gap+dos/diagonalize_H.jl"), 
         str(dir_H / "hamiltonian/"), str(dir_H / "test_output/"), str(t), hamiltonian_style
     ], check=True)        
 
     test_H_type = "exact_diag"
+
+    print("Finish task: test_H_exact_diag", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, "t": t}

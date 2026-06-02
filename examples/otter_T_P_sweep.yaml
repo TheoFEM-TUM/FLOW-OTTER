@@ -1,0 +1,65 @@
+# Temperature and pressure sweep with VASP ML-MD
+
+
+### workflow configuration
+dir_project: "your_output_directory/"               # INSERT HERE 
+dir_code: "repo_directory/"                                   # INSERT HERE
+resources: "48:1:devel:5m"
+
+simulation_type: "sweep"
+num_simulations: 6
+
+param_to_vary: "T_P"
+array_to_vary: ["425.0_500.0", "425.0_-500.0", "525.0_500.0", "525.0_-500.0", "625.0_500.0", "625.0_-500.0"]
+
+param_to_vary2: "temperature"
+array_to_vary2: [425.0, 425.0, 525.0, 525.0, 625.0, 625.0]
+
+param_group_for_vary3: "lammps"
+param_to_vary3: "P"
+array_to_vary3: [500.0, -500.0, 500.0, -500.0, 500.0, -500.0]
+
+
+
+### MD configuration
+path_FF_MD: "path_to_your_ML-MD_VASP_model"                 # INSERT HERE
+dir_ini_MD: "directory_of_your_initial_MD_configurations/"  # INSERT HERE
+MD_type: "lammps+VASP"
+equilibrate: True
+npt_equilibrate: True
+
+resources_MD: "48:1:batch:1h"                               # ADAPT THIS TO YOUR SYSTEM  
+ranks_MD: 48                                                # ADAPT THIS TO YOUR SYSTEM   
+
+vdos_omega_max: 10.0
+
+
+lammps:
+  units: "metal"         
+  dimension: 3
+  boundary: "p p p"
+  atom_style: "atomic"
+
+  restart: false                                  
+  ini_MD_file: "initial_configuration.data"                  # INSERT HERE
+
+  T_start: 25.0
+  T_damp: 0.6                         
+  P_damp: 6.0                          
+  
+  dt: 0.006                                 
+
+  elements: ["Pb", "Cs", "Br"]               
+
+  thermo_output_step_size: 10
+
+  eqsteps_nvt_heating: 1500
+  eqsteps_nvt: 10000                    
+
+  eqsteps_npt_expansion: 1500
+  eqsteps_npt: 20000
+
+  prodrun_numsteps: 10000                
+  prodrun_stepsize: 2
+
+

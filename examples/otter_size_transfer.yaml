@@ -1,0 +1,82 @@
+# Size transferability test with MACE ML-MD and Hamster Hamiltonians
+
+
+### workflow configuration
+dir_project: "your_output_directory/"               # INSERT HERE 
+dir_code: "repo_directory/"                                   # INSERT HERE
+human_in_loop: true
+
+simulation_type: "cascade"
+
+num_simulations: 3
+
+param_to_vary: "supercell_size"
+array_to_vary: ["4x4x4", "8x8x8", "16x16x16"]
+
+param_to_vary2: "size"
+array_to_vary2: [1, 2, 2]                                   # not [1, 2, 4] because cascade mode multiplies the supercell size by 2 in each step, so the size only doubles from 1 to 2 in the last step
+
+
+
+### MD configuration
+path_FF_MD: "path_to_your_MACE_MD_model"                    # INSERT HERE
+MD_type: "lammps+MACE"
+equilibrate: True
+npt_equilibrate: False
+
+resources_MD: "48:1:4G:develbooster:1h"                     # ADAPT THIS TO YOUR SYSTEM  
+ranks_MD: 4                                                 # ADAPT THIS TO YOUR SYSTEM  
+
+vdos_omega_max: 10.0
+
+lammps:
+  units: "metal"         
+  dimension: 3
+  boundary: "p p p"
+  atom_style: "atomic"
+
+  restart: true                           
+  ini_MD_file: "restart"                                    # INSERT HERE
+
+  T: 425.0
+  T_damp: 0.6                          
+  
+  dt: 0.006                                  
+  prodrun_numsteps: 1000               
+  prodrun_stepsize: 10
+
+  elements: ["Pb", "Cs", "Br"]               
+
+  thermo_output_step_size: 1
+  eqsteps_nvt: 1000                     
+  
+  P: 0.0                                    
+  P_damp: 6.0                          
+
+
+
+### H configuration
+
+H_type: "hamster"
+first_snapshot: 0
+last_snapshot: 100
+N_snapshots: 20
+dir_input_H: "path_to_your_hamster_model/"                  # INSERT HERE
+hamiltonian_style: "Hk"
+
+resources_H: "48:1:batch:6h"                                # ADAPT THIS TO YOUR SYSTEM
+ranks_H: 48                                                 # ADAPT THIS TO YOUR SYSTEM
+
+run_test_H: True
+
+
+
+### optoelec configuration
+
+resources_optoelec: "48:1:batch:6h"                         # ADAPT THIS TO YOUR SYSTEM               
+ranks_optoelec: 48                                          # ADAPT THIS TO YOUR SYSTEM          
+
+gap+dos:
+  num_snapshot: 20
+  snapshot_sampling: "random"
+  N: 48

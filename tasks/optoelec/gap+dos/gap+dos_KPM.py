@@ -10,6 +10,8 @@ import random
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
+    print("Start task: gap+dos_KPM", flush=True)
+
     # Read in global configurations
     with open(path_configWF, "r") as f:
         configWF = yaml.safe_load(f)
@@ -47,8 +49,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     num_snapshot_dos = configWF_i["gap+dos"].get("num_snapshot", last_snapshot - first_snapshot + 1)
     snapshot_sampling_dos = configWF_i["gap+dos"].get("snapshot_sampling", "all")
 
-    M = configWF_i["gap+dos"].get("M", 1000)
-    N = configWF_i["gap+dos"].get("N", 192)
+    M = configWF_i["gap+dos"].get("M", 200)
+    N = configWF_i["gap+dos"].get("N", 48)
 
 
     # determine available snapshots based on hamiltonian style
@@ -89,20 +91,28 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     else:
         raise Exception(f"snapshot_sampling {snapshot_sampling_dos} not recognized.")
 
+    print(f"Available snapshots: {snapshots}", flush=True)
+    print(f"Chosen snapshots for exact diagonalization: {chosen_snapshots}", flush=True)
+
     ranks_optoelec = configWF_i.get("ranks_optoelec", 1)
     threads_optoelec = configWF_i.get("threads_optoelec", 1)
+
+    srun_flags_optoelec = configWF_i.get("srun_flags_optoelec", [])
+    julia_flags_optoelec = configWF_i.get("julia_flags_optoelec", [])
 
     dir_dos = dir_H / "gap+dos/DOS/"
     dir_dos.mkdir(parents=True, exist_ok=True)
 
     # calculate DoS of Hamiltonian with Kernel Polynomial Method 
     for t in chosen_snapshots:
+        print(f"Diagonalizing Hamiltonian for snapshot {t} ...", flush=True)
         result = subprocess.run([
             "srun", 
             "-n", str(ranks_optoelec),
+            *srun_flags_optoelec,
             "julia", 
-            #f"--project=/p/scratch/hamilmater/vonhoff1/workflow_pq/.venv_hamster/", 
-            #"-t", f"{threads_optoelec}", 
+            *julia_flags_optoelec,
+            "-t", f"{threads_optoelec}",            
             str(dir_code / "optoelec/gap+dos/KPM_DOS.jl"), 
             str(M), 
             str(N), 
@@ -113,5 +123,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         ], check=True)        
 
     optoelec_type = "gap+dos_KPM"
+
+    print("Finish task: gap+dos_KPM", flush=True)
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, "optoelec_type": optoelec_type, "snapshots": snapshots}
