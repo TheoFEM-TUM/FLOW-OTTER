@@ -197,6 +197,12 @@ Details can also be found in [LAMMPS documentation](https://docs.lammps.org/Manu
 `M` (int): number of moments in kernel polynomial method; only needed if matrix is too large for exact diagonalization and therefore, kernel polynomial method is used (*200*) 
 
 
+## el_ph:
+`num_snapshot` (int): number of snapshots used to calculate an average PDOS (*last_snapshot - first_snapshot + 1*)  
+`snapshot_sampling` (string): determines how `num_snapshot_pdos` snapshots are chosen out of the the N_snapshots snapshots for which H exist (*"all"*, "uniform", "random")  
+`omega_max` (Float64): maximal frequency shown in the electron-phonon spectral function plots in reciprocal units of the time used in the MD (*None*)  
+
+
 ## conductivity:
 
 This section contains parameters for the MD+Kubo method. It is, so far, an experimental/not-supported feature!
