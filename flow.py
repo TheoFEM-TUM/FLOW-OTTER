@@ -36,6 +36,7 @@ gap_dos = optoelec / "gap+dos/"
 pdos = optoelec / "PDOS/"
 cohp = optoelec / "COHP/"
 conductivity = optoelec / "conductivity/"
+el_ph = optoelec / "el-ph/"
 
 # resources for tasks
 resources_MD = configWF["resources_MD"]
@@ -151,13 +152,13 @@ t3_gap_KPM = Task( gap_dos / "gap_KPM.py", None, resources_instant, name="gap_KP
 t3_plot_gap = Task( gap_dos / "gap+dos_plot.py", None, resources_instant, name="gap+dos_plot")
 
 
-## crystal orbital hamiltonian population tasks (COHP)
+## projected density of states (PDOS) tasks
 t3_pdos_dia = Task( pdos / "pdos_exact_diag.py", None, resources_optoelec, name="pdos_exact_diag")
 t3_pdos_KPM = Task( pdos / "pdos_KPM.py", None, resources_optoelec, name="pdos_KPM")
 t3_plot_pdos = Task( pdos / "pdos_plot.py", None, resources_instant, name="pdos_plot")
 
 
-## crystal orbital hamiltonian population tasks (COHP)
+## crystal orbital hamiltonian population (COHP) tasks
 t3_cohp_dia = Task( cohp / "cohp_exact_diag.py", None, resources_optoelec, name="cohp_exact_diag")
 t3_cohp_KPM = Task( cohp / "cohp_KPM.py", None, resources_optoelec, name="cohp_KPM")
 t3_plot_cohp = Task( cohp / "cohp_plot.py", None, resources_instant, name="cohp_plot")
@@ -168,16 +169,16 @@ t3_optC = Task( conductivity / "optical_conductivity.py", None, resources_optoel
 t3_plot_optC = Task( conductivity / "plot_optical_conductivity.py", None, resources_instant, name="plot_optical_conductivity")
 
 
-## optical conductivity tasks
-t3_el_ph = Task( conductivity / "el_ph_spectral_func.py", None, resources_optoelec, name="el_ph_spectral_func")
-t3_plot_el_ph = Task( conductivity / "plot_el_ph_spectral_func.py", None, resources_instant, name="plot_el_ph_spectral_func")
+## electron-phonon spectral functions
+t3_el_ph = Task( el_ph / "el_ph_spectral_func.py", None, resources_optoelec, name="el_ph_spectral_func")
+t3_plot_el_ph = Task( el_ph / "plot_el_ph_spectral_func.py", None, resources_instant, name="plot_el_ph_spectral_func")
 
 
 N_avg = configWF.get("N_avg", 1)  # number of averages for optical conductivity
 swg3_optC = StaticWidthGroup(t3_optC, width=N_avg)
 
 # which optoelectronic property: conductivity, band gap + density of states, COHP, or skip? 
-sg3_opto = SwitchGroup({"conductivity": {t_buffer: [], swg3_optC: [t_buffer]}, "gap+dos_exact_diag": {t3_dia: [], t3_post_dia: [t3_dia]}, "gap+dos_KPM": {t3_KPM: [], t3_post_KPM: [t3_KPM], t3_gap_KPM: [t3_post_KPM]}, "cohp_exact_diag": {t3_cohp_dia: []}, "cohp_KPM": {t3_cohp_KPM: []}, "pdos_exact_diag": {t3_pdos_dia: []}, "pdos_KPM": {t3_pdos_KPM: []}, "el_ph_sparse": {t3_el_ph: []}, "el_ph_dense": {t3_el_ph: []}, "skip_optoelec": t3_skipOpto})
+sg3_opto = SwitchGroup({"conductivity": {t_buffer: [], swg3_optC: [t_buffer]}, "gap+dos_exact_diag": {t3_dia: [], t3_post_dia: [t3_dia]}, "gap+dos_KPM": {t3_KPM: [], t3_post_KPM: [t3_KPM], t3_gap_KPM: [t3_post_KPM]}, "cohp_exact_diag": t3_cohp_dia, "cohp_KPM": t3_cohp_KPM, "pdos_exact_diag": t3_pdos_dia, "pdos_KPM": t3_pdos_KPM, "el_ph": t3_el_ph, "skip_optoelec": t3_skipOpto})
 
 # plot optoelectronic property?
 sg3_plotOpto = SwitchGroup({"conductivity": t3_plot_optC, "gap+dos": t3_plot_gap, "cohp": t3_plot_cohp, "pdos": t3_plot_pdos, "el_ph": t3_plot_el_ph, "skip_optoelec": t3_skipOpto_plot})

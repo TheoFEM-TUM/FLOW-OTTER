@@ -5,7 +5,7 @@ include("../helper/read_H.jl")
 include("../helper/orbitals.jl")
 
 
-function calculate_el_ph_spectral_func(H_path::String, snapshots::Vector{Int}, dt::Float64, hamiltonian_style::String, basis_labels::Vector{String}, optoelectronic_type::String)
+function calculate_el_ph_spectral_func(H_path::String, snapshots::Vector{Int}, dt::Float64, hamiltonian_style::String, basis_labels::Vector{String})
 
     N = length(snapshots)
 
@@ -32,7 +32,7 @@ function calculate_el_ph_spectral_func(H_path::String, snapshots::Vector{Int}, d
 
     println("Computing spectral functions for $(length(unique_labels)^2) label pairs...")
     for label_i in unique_labels
-        for label_j in unique_labels
+        for label_j in unique_labels 
             indices_i = label_to_indices[label_i]
             indices_j = label_to_indices[label_j]
 
@@ -56,13 +56,19 @@ function calculate_el_ph_spectral_func(H_path::String, snapshots::Vector{Int}, d
             end
 
             # average over active (k,l) pairs; fftshift so ω runs from −Nyquist to +Nyquist
-            spectral_funcs[(label_i, label_j)] = fftshift(spec_sum ./ length(active_pairs))
+            if haskey(spectral_funcs, (label_j, label_i))
+                spectral_funcs[(label_j, label_i)] += fftshift(spec_sum ./ length(active_pairs))
+                spectral_funcs[(label_j, label_i)] /= 2  # symmetrize
+            else
+                spectral_funcs[(label_i, label_j)] = fftshift(spec_sum ./ length(active_pairs))
+            end
         end
     end
 
     # Frequency axis in 1/time_unit (cyclic frequency), shifted to [−1/(2dt), +1/(2dt))
-    w = fftshift(fftfreq(N, dt))
-
+    #w = 2pi .* fftshift(fftfreq(N, 1/dt))
+    w = fftshift(fftfreq(N, 1/dt))
+    
     return w, spectral_funcs
 end
 
@@ -75,18 +81,23 @@ H_path            = ARGS[1]
 dir_outpath       = ARGS[2]
 snapshots_str     = ARGS[3]
 hamiltonian_style = ARGS[4]
-optoelec_type     = ARGS[5]
-dt                = parse(Float64, ARGS[6])   # time step in the MD unit (fs, ps, …)
+dt                = parse(Float64, ARGS[5])   # time step in the MD unit (fs, ps, …)
+
+@show dt
 
 # Parse snapshot indices from the numpy array string "[i1 i2 i3 ...]"
 snapshots = parse.(Int, split(strip(snapshots_str, [' ', '[', ']']), r"\s+"))
 
-basis_labels = get_basis_labels(H_path)
+if hamiltonian_style == "TB"
+    basis_labels = get_basis_labels_TB(H_path)
+else
+    basis_labels = get_basis_labels(H_path)
+end
 println("- basis labels: ", basis_labels)
 
 MPI.Init()
 
-w, spectral_funcs = calculate_el_ph_spectral_func(H_path, snapshots, dt, hamiltonian_style, basis_labels, optoelec_type)
+w, spectral_funcs = calculate_el_ph_spectral_func(H_path, snapshots, dt, hamiltonian_style, basis_labels)
 
 for (pair, el_ph_spectral_func) in spectral_funcs
     i, j = pair

@@ -30,60 +30,36 @@ function get_basis_labels(H_path::String)
 end
 
 
-function get_elements1(H_path::String, element_types::Vector{String})
-    # orbitals per atom
-    orbitals = Dict(
-        "Pb" => 8,
-        "Br" => 6,
-        "Cs" => 2,
-        "H"  => 0,
-        "C"  => 0,
-        "N"  => 0
-    )
-
-    poscar_path = normpath(joinpath(H_path, "..", "..", "1-MD", "POSCAR"))
-    poscar = read_poscar(poscar_path)
-
-    elements = String[]
-
-    for (atom, count) in zip(poscar.atom_names, poscar.atom_numbers)
-        n_orb = get(orbitals, atom, 0)  # default 0 if missing
-
-        for _ in 1:(count * n_orb)
-            push!(elements, atom)
-        end
-    end
-
-    return elements
-end
-
-
-function get_basis_labels1(H_path::String)
+function get_basis_labels_TB(H_path::String)
     # define orbital composition per atom
     orbital_map = Dict(
-        "Pb" => ["s","s","p","p","p","p","p","p"],  # 2s + 6p
-        "Br" => ["p","p","p","p","p","p"],          # 6p
-        "Cs" => ["s","s"],                          # 2s
-        "H"  => String[],
-        "C"  => String[],
-        "N"  => String[]
+        "Pb" => ["s","p","p","p"],      # s + 3p
+        "Br" => ["p","p","p"],          # 3p
+        "I" => ["p","p","p"],           # 3p
     )
 
     poscar_path = normpath(joinpath(H_path, "..", "..", "1-MD", "POSCAR"))
     poscar = read_poscar(poscar_path)
+    counts = Dict(zip(poscar.atom_names, poscar.atom_numbers))
 
     orbitals = String[]
 
-    for (atom, count) in zip(poscar.atom_names, poscar.atom_numbers)
-        atom_orbs = get(orbital_map, atom, String[])
-
-        for _ in 1:count
-            for orb in atom_orbs
-                push!(orbitals, "$(atom)-$(orb)")
-            end
-        end
+    n_Pb = counts["Pb"]
+    if haskey(counts, "Br")
+       atom_sequence = repeat(["Pb", "Br", "Br", "Br"], n_Pb)
+    elseif haskey(counts, "I")
+       atom_sequence = repeat(["Pb", "I", "I", "I"], n_Pb)
+    else
+       error("Unsupported atom types in POSCAR. Expected Pb with either Br or I.")
     end
 
+    orbitals = String[]
+    for atom in atom_sequence
+        append!(orbitals, "$(atom)-$(orb)" for orb in orbital_map[atom])
+    end
+
+    orbitals = repeat(orbitals, 2)  # Duplicate for spin
+    
     # Unique set for writing
     unique_labels = unique(orbitals)
 

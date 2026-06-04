@@ -7,7 +7,7 @@ import h5py
 import re
 import random
 import matplotlib.pyplot as plt
-from scipy.constants import hbar as hbar_SI, k as kb_SI, e as e_SI
+from scipy.constants import k as kb_SI, e as e_SI
 
 
 
@@ -58,37 +58,33 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     snapshot_sampling_el_ph = configWF_i["el_ph"].get("snapshot_sampling", "all")
     
     dt = configWF_i["lammps"]["dt"]
+    step_size = configWF_i["lammps"]["prodrun_stepsize"]
+    potim = dt * step_size
+
     temperature = configWF_i["temperature"]
+    omega_max = configWF_i["el_ph"].get("omega_max", None)
 
     units_type = configWF_i["lammps"].get("units")
     if units_type == "real":
-        unit_dt = ["fs"]
+        unit_dt = "fs"
     elif units_type == "metal":
-        unit_dt = ["ps"]
+        unit_dt = "ps"
     elif units_type == "si":
-        unit_dt = ["s"]
-    elif units_type == "cgs":
-        unit_dt = ["s"]
+        unit_dt = "s"
     elif units_type == "electron":
-        unit_dt = ["fs"]
+        unit_dt = "fs"
     elif units_type == "micro":
-        unit_dt = ["μs"]
+        unit_dt = "μs"
     elif units_type == "nano":
-        unit_dt = ["ns"]
+        unit_dt = "ns"
     else:
         if configWF_i["lammps"].get("units_array") is not None:
             unit_dt = configWF_i["lammps"]["units_array"][-1]
         else:
             print("WARNING: Unknown unit_dt type. Using no unit_dt.", flush=True)
-            unit_dt = [""]
+            unit_dt = ""
 
-    # Physical constants in units consistent with dt:
-    #   hbar in eV × time_unit,  kb in eV/K
-    # so that  hbar * w [eV·time / time = eV]  and  kb * T [eV]  are both in eV.
-    time_to_s = {"fs": 1e-15, "ps": 1e-12, "s": 1.0, "μs": 1e-6, "ns": 1e-9, "": 1.0}
-    t_factor = time_to_s.get(unit_dt[0], 1.0)
-    hbar = hbar_SI / e_SI * t_factor   # eV × time_unit
-    kb   = kb_SI  / e_SI               # eV/K
+    kb = kb_SI / e_SI               # eV/K
 
 
     # determine available snapshots based on hamiltonian style
@@ -136,6 +132,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     print(f"Using {cores_optoelec} cores for optoelectronic calculations.", flush=True)
 
+    potim *= (snapshots[1] - snapshots[0])  # scale potim by snapshot interval, since the "time step" between snapshots is not necessarily the same as the MD time step
+
     # perform calculation of electron-phonon spectral function for each pair of basis functions
     result = subprocess.run([
         "srun",
@@ -143,40 +141,51 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         f'--cpus-per-task={cores_optoelec}',
         "julia",
         *julia_flags_optoelec, 
-        str(dir_code / "optoelec/el_ph/el_ph_spectral_func.jl"),
+        str(dir_code / "optoelec/el-ph/el_ph_spectral_func.jl"),
         str(dir_H / "hamiltonian/"),
         str(dir_el_ph),
         str(snapshots),
         hamiltonian_style,
-        str(dt),
+        str(potim),
     ], check=True)        
 
     basis_labels = np.loadtxt(dir_H / "hamiltonian/basis_labels.txt", dtype=str)
 
     for i in basis_labels:
-        for j in basis_labels:
-
+        for j in basis_labels:  
+            
             if i == j: 
+                dir_el_ph_ij = dir_el_ph / f"{i}/"
                 path_el_ph_ij = dir_el_ph / f"{i}/el_ph_spectral_func.txt"
             else:
+                dir_el_ph_ij = dir_el_ph / f"{i}_{j}/"
                 path_el_ph_ij = dir_el_ph / f"{i}_{j}/el_ph_spectral_func.txt"
+                
+            if path_el_ph_ij.exists() == False:
+                print(f"WARNING: Expected file {path_el_ph_ij} does not exist. Skipping plot for pair {i}-{j}.", flush=True)
+                continue
 
             data = np.loadtxt(path_el_ph_ij, skiprows=1)
             w = data[:, 0]
             spectral_func = data[:, 1]
 
-            spectral_func *= (hbar * w)/(kb * temperature)
+            spectral_func *= w/(kb * temperature)
 
             fig, ax = plt.subplots()
             plt.title(f"Electron-phonon spectral function ({i}-{j})")
             ax.axhline(y=0, color='black', linewidth=0.8)
             ax.plot(w, spectral_func)
-            ax.set_xlabel(f"Frequency (1/{unit_dt[0]})")
+            ax.set_xlabel(f"Frequency (1/{unit_dt})")
             ax.set_ylabel(f"Spectral function/{hamiltonian_unit}")
-            plt.savefig(str(dir_el_ph / f"el_ph_spectral_func_{i}_{j}.pdf"))
+            if omega_max is not None:
+                ax.set_xlim(0, omega_max)
+            else:
+                ax.set_xlim(0)
+            ax.set_ylim(0)
+            plt.savefig(str(dir_el_ph_ij / f"el_ph_spectral_func.pdf"))
             plt.close(fig)
 
-            np.savetxt(str(dir_el_ph / f"el_ph_spectral_func_{i}_{j}.txt"), np.column_stack((w, spectral_func)), header=f"Frequency   Electron-phonon spectral function/{hamiltonian_unit}")
+            np.savetxt(str(dir_el_ph_ij / f"scaled_el_ph_spectral_func.txt"), np.column_stack((w[w >= 0.0], spectral_func[w >= 0.0])), header=f"Frequency   Electron-phonon spectral function/{hamiltonian_unit}")
         
 
     optoelec_type = "el_ph"

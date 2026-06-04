@@ -148,10 +148,9 @@ function compute_cohp(M, mean_E, ΔE, coeff_COHP, unique_labels)
 end
 
 ### main function to run KPM-COHP calculation
-function KPM_COHP(H_path::String, output_dir::String, t::Int, M::Int, N::Int)
+function KPM_COHP(H_path::String, output_dir::String, t::Int, M::Int, N::Int, basis_labels::Vector{String})
 
     MPI.Init()
-    basis_labels = get_basis_labels(H_path)
     unique_labels = unique(basis_labels)
 
     ### read and rescale hamiltonian
@@ -238,7 +237,13 @@ M                 = parse(Int, ARGS[4])
 N                 = parse(Int, ARGS[5])
 hamiltonian_style = ARGS[6]
 
+if hamiltonian_style == "TB"
+    basis_labels = get_basis_labels_TB(H_path)
+else
+    basis_labels = get_basis_labels(H_path)
+end
 
-KPM_COHP(H_path, output_dir, t, M, N)
+
+KPM_COHP(H_path, output_dir, t, M, N, basis_labels)
 
 println("KPM COHP calculation for snapshot $t completed.")

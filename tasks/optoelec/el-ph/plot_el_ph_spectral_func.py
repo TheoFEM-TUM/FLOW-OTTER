@@ -3,7 +3,7 @@ import yaml
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
-from scipy.constants import hbar as hbar_SI, k as kb_SI, e as e_SI
+from scipy.constants import k as kb_SI, e as e_SI
 
 
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
@@ -34,6 +34,11 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         basis_labels = np.loadtxt(dir_H_0 / "hamiltonian/basis_labels.txt", dtype=str)
         print(f"basis labels: {basis_labels}", flush=True)
 
+        temperature = configWF_i["temperature"]
+        omega_max = configWF_i["el_ph"].get("omega_max", None)
+
+        kb = kb_SI / e_SI # eV/K
+
         units_type = configWF_0["lammps"].get("units", "")
         unit_dt_map = {
             "real": "fs", 
@@ -59,11 +64,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                         configWF_i = yaml.safe_load(f)
 
                     dir_H_i     = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
-                    temperature = configWF_i["temperature"]
 
-                    time_to_s = {"fs": 1e-15, "ps": 1e-12, "s": 1.0, "μs": 1e-6, "ns": 1e-9, "": 1.0}
-                    hbar = hbar_SI / e_SI * time_to_s.get(unit_dt, 1.0)  # eV × time_unit
-                    kb   = kb_SI  / e_SI                                  # eV/K
 
                     path_data = dir_H_i / f"el_ph/{i}/el_ph_spectral_func.txt" if i == j \
                            else dir_H_i / f"el_ph/{i}_{j}/el_ph_spectral_func.txt"
@@ -80,7 +81,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                         w             = data[:, 0]
                         spectral_func = data[:, 1]
 
-                        spectral_func *= (hbar * w) / (kb * temperature)
+                        spectral_func *= w / (kb * temperature)
 
                         branch_label = f"{param_to_vary} {array_to_vary[i]}{unit_to_vary}"
                         ax.plot(w, spectral_func, label=branch_label)
@@ -88,6 +89,11 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                 if has_data:
                     ax.set_xlabel(f"Frequency (1/{unit_dt})")
                     ax.set_ylabel(f"Spectral function / {hamiltonian_unit}")
+                    if omega_max is not None:
+                        ax.set_xlim(0, omega_max)
+                    else:
+                        ax.set_xlim(0)
+                    ax.set_ylim(0)
                     ax.legend()
                     outfile = dir_plot_el_ph / f"el_ph_spectral_func_{i}_{j}.pdf"
                     plt.savefig(outfile)

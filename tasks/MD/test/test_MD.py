@@ -65,6 +65,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     else:
         configWF_i = configWF.copy()
         dir_project_i = dir_project
+        cg_criteria = True
 
     # read in branch configuration 
     dir_code = Path(configWF_i.get("dir_code", "./")) / "codes/MD/"

@@ -86,6 +86,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         configWF_i = configWF.copy()
         dir_project_i = dir_project
         path_configWF_i = path_configWF
+        cg_criteria = True
 
 
     # run LAMMPS MD

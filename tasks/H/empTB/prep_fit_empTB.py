@@ -85,6 +85,12 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         str(dir_code / "H/empTB/find_unitcell.jl"), str(dir_snapshots), f"traj{first_snapshot}.xyz", str(path_celldim), str(cell_size)], check=True)
     print("Calculated unitcell neighbour list.", flush=True)
 
+    result4 = subprocess.run([
+        "vamp", "lammps", "write_poscar",
+        "--lmp_file", str(path_traj),
+        "--p", str(dir_MD)], check=True)
+    print("Extracted POSCAR from LAMMPS trajectory.", flush=True)
+
 
     print("Finish task: prep_fit_empTB", flush=True)
 

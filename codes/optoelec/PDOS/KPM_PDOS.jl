@@ -121,10 +121,9 @@ function compute_pdos(M, mean_E, ΔE, coeff_PDOS, unique_labels)
 end
 
 ### main function to run KPM-PDOS calculation
-function KPM_PDOS(H_path::String, output_dir::String, t::Int, M::Int, N::Int)
+function KPM_PDOS(H_path::String, output_dir::String, t::Int, M::Int, N::Int, basis_labels::Vector{String})
 
     MPI.Init()
-    basis_labels = get_basis_labels(H_path)
     unique_labels = unique(basis_labels)
 
     ### read and rescale hamiltonian
@@ -208,7 +207,12 @@ M                 = parse(Int, ARGS[4])
 N                 = parse(Int, ARGS[5])
 hamiltonian_style = ARGS[6]
 
+if hamiltonian_style == "TB"
+    basis_labels = get_basis_labels_TB(H_path)
+else
+    basis_labels = get_basis_labels(H_path)
+end
 
-KPM_PDOS(H_path, output_dir, t, M, N)
+KPM_PDOS(H_path, output_dir, t, M, N, basis_labels)
 
 println("KPM PDOS calculation for snapshot $t completed.")

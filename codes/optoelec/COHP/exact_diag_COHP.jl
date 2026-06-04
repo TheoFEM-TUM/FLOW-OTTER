@@ -83,8 +83,11 @@ dir_outpath       = ARGS[2]
 t                 = parse(Int, ARGS[3])
 hamiltonian_style = ARGS[4]
 
-basis_labels = get_basis_labels(H_path)
-#basis_labels = get_basis_labels1(H_path)
+if hamiltonian_style == "TB"
+    basis_labels = get_basis_labels_TB(H_path)
+else
+    basis_labels = get_basis_labels(H_path)
+end
 println("- basis labels: ", basis_labels)
 
 MPI.Init()
