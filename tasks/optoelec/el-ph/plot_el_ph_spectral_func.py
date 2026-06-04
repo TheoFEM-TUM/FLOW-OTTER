@@ -34,72 +34,73 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         basis_labels = np.loadtxt(dir_H_0 / "hamiltonian/basis_labels.txt", dtype=str)
         print(f"basis labels: {basis_labels}", flush=True)
 
-        temperature = configWF_i["temperature"]
-        omega_max = configWF_i["el_ph"].get("omega_max", None)
-
-        kb = kb_SI / e_SI # eV/K
+        kb = kb_SI / e_SI  # eV/K
 
         units_type = configWF_0["lammps"].get("units", "")
         unit_dt_map = {
-            "real": "fs", 
+            "real": "fs",
             "electron": "fs",
             "metal": "ps",
             "nano": "ns",
             "micro": "μs",
-            "si": "s", 
+            "si": "s",
             "cgs": "s",
         }
         unit_dt = unit_dt_map.get(units_type) or configWF_0["lammps"].get("units_array", [""])[-1]
 
-        for i in basis_labels:
-            for j in basis_labels:
-                has_data = False
-                fig, ax = plt.subplots()
-                ax.set_title(f"El-ph spectral function ({i}–{j})")
-                ax.axhline(y=0, color="black", linewidth=0.8)
+        for label_i in basis_labels:
+            for label_j in basis_labels:
+                base_subdir  = f"{label_i}/" if label_i == label_j else f"{label_i}_{label_j}/"
+                type_labels  = ["onsite", "hopping"] if label_i == label_j else ["hopping"]
 
-                for i in range(len(array_to_vary)):
-                    dir_project_i = dir_project / f"{param_to_vary}_{array_to_vary[i]}/"
-                    with open(str(dir_project_i / "branch_config.yaml"), "r") as f:
-                        configWF_i = yaml.safe_load(f)
+                for type_label in type_labels:
+                    has_data = False
+                    fig, ax = plt.subplots()
+                    ax.set_title(f"El-ph spectral function ({label_i}–{label_j}) [{type_label}]")
+                    ax.axhline(y=0, color="black", linewidth=0.8)
 
-                    dir_H_i     = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
+                    for b in range(len(array_to_vary)):
+                        dir_project_b = dir_project / f"{param_to_vary}_{array_to_vary[b]}/"
+                        with open(str(dir_project_b / "branch_config.yaml"), "r") as f:
+                            configWF_b = yaml.safe_load(f)
 
+                        dir_H_b     = Path(configWF_b.get("dir_H", str(dir_project_b / "2-H/")))
+                        temperature = configWF_b["temperature"]
+                        omega_max   = configWF_b["el_ph"].get("omega_max", None)
 
-                    path_data = dir_H_i / f"el_ph/{i}/el_ph_spectral_func.txt" if i == j \
-                           else dir_H_i / f"el_ph/{i}_{j}/el_ph_spectral_func.txt"
+                        path_data = dir_H_b / f"el_ph/{base_subdir}{type_label}/el_ph_spectral_func.txt"
 
-                    if path_data.is_file():
-                        print(
-                            f"Found el-ph data for ({i},{j}) in branch "
-                            f"{param_to_vary}={array_to_vary[i]} → plotting...",
-                            flush=True,
-                        )
-                        has_data = True
+                        if path_data.is_file():
+                            print(
+                                f"Found el-ph data for ({label_i},{label_j}) [{type_label}] in branch "
+                                f"{param_to_vary}={array_to_vary[b]} → plotting...",
+                                flush=True,
+                            )
+                            has_data = True
 
-                        data = np.loadtxt(str(path_data), skiprows=1)
-                        w             = data[:, 0]
-                        spectral_func = data[:, 1]
+                            data = np.loadtxt(str(path_data), skiprows=1)
+                            w             = data[:, 0]
+                            spectral_func = data[:, 1]
 
-                        spectral_func *= w / (kb * temperature)
+                            spectral_func *= w / (kb * temperature)
 
-                        branch_label = f"{param_to_vary} {array_to_vary[i]}{unit_to_vary}"
-                        ax.plot(w, spectral_func, label=branch_label)
+                            branch_label = f"{param_to_vary} {array_to_vary[b]}{unit_to_vary}"
+                            ax.plot(w, spectral_func, label=branch_label)
 
-                if has_data:
-                    ax.set_xlabel(f"Frequency (1/{unit_dt})")
-                    ax.set_ylabel(f"Spectral function / {hamiltonian_unit}")
-                    if omega_max is not None:
-                        ax.set_xlim(0, omega_max)
-                    else:
-                        ax.set_xlim(0)
-                    ax.set_ylim(0)
-                    ax.legend()
-                    outfile = dir_plot_el_ph / f"el_ph_spectral_func_{i}_{j}.pdf"
-                    plt.savefig(outfile)
-                    print(f"✅ Saved el-ph spectral function comparison plot → {outfile}", flush=True)
+                    if has_data:
+                        ax.set_xlabel(f"Frequency (1/{unit_dt})")
+                        ax.set_ylabel(f"Spectral function / {hamiltonian_unit}")
+                        if omega_max is not None:
+                            ax.set_xlim(0, omega_max)
+                        else:
+                            ax.set_xlim(0)
+                        ax.set_ylim(0)
+                        ax.legend()
+                        outfile = dir_plot_el_ph / f"el_ph_spectral_func_{label_i}_{label_j}_{type_label}.pdf"
+                        plt.savefig(outfile)
+                        print(f"✅ Saved → {outfile}", flush=True)
 
-                plt.close(fig)
+                    plt.close(fig)
 
     print("Finish task: plot_el_ph_spectral_func", flush=True)
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}

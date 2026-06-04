@@ -152,40 +152,43 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     basis_labels = np.loadtxt(dir_H / "hamiltonian/basis_labels.txt", dtype=str)
 
     for i in basis_labels:
-        for j in basis_labels:  
-            
-            if i == j: 
-                dir_el_ph_ij = dir_el_ph / f"{i}/"
-                path_el_ph_ij = dir_el_ph / f"{i}/el_ph_spectral_func.txt"
-            else:
-                dir_el_ph_ij = dir_el_ph / f"{i}_{j}/"
-                path_el_ph_ij = dir_el_ph / f"{i}_{j}/el_ph_spectral_func.txt"
-                
-            if path_el_ph_ij.exists() == False:
-                print(f"WARNING: Expected file {path_el_ph_ij} does not exist. Skipping plot for pair {i}-{j}.", flush=True)
-                continue
+        for j in basis_labels:
+            base_dir = dir_el_ph / f"{i}/" if i == j else dir_el_ph / f"{i}_{j}/"
+            type_labels = ["onsite", "hopping"] if i == j else ["hopping"]
 
-            data = np.loadtxt(path_el_ph_ij, skiprows=1)
-            w = data[:, 0]
-            spectral_func = data[:, 1]
+            for type_label in type_labels:
+                dir_el_ph_ij  = base_dir / f"{type_label}/"
+                path_el_ph_ij = dir_el_ph_ij / "el_ph_spectral_func.txt"
 
-            spectral_func *= w/(kb * temperature)
+                if not path_el_ph_ij.exists():
+                    print(f"WARNING: {path_el_ph_ij} does not exist. Skipping ({i}-{j}) [{type_label}].", flush=True)
+                    continue
 
-            fig, ax = plt.subplots()
-            plt.title(f"Electron-phonon spectral function ({i}-{j})")
-            ax.axhline(y=0, color='black', linewidth=0.8)
-            ax.plot(w, spectral_func)
-            ax.set_xlabel(f"Frequency (1/{unit_dt})")
-            ax.set_ylabel(f"Spectral function/{hamiltonian_unit}")
-            if omega_max is not None:
-                ax.set_xlim(0, omega_max)
-            else:
-                ax.set_xlim(0)
-            ax.set_ylim(0)
-            plt.savefig(str(dir_el_ph_ij / f"el_ph_spectral_func.pdf"))
-            plt.close(fig)
+                data = np.loadtxt(path_el_ph_ij, skiprows=1)
+                w             = data[:, 0]
+                spectral_func = data[:, 1]
 
-            np.savetxt(str(dir_el_ph_ij / f"scaled_el_ph_spectral_func.txt"), np.column_stack((w[w >= 0.0], spectral_func[w >= 0.0])), header=f"Frequency   Electron-phonon spectral function/{hamiltonian_unit}")
+                spectral_func *= w / (kb * temperature)
+
+                fig, ax = plt.subplots()
+                plt.title(f"Electron-phonon spectral function ({i}-{j}) [{type_label}]")
+                ax.axhline(y=0, color='black', linewidth=0.8)
+                ax.plot(w, spectral_func)
+                ax.set_xlabel(f"Frequency (1/{unit_dt})")
+                ax.set_ylabel(f"Spectral function/{hamiltonian_unit}")
+                if omega_max is not None:
+                    ax.set_xlim(0, omega_max)
+                else:
+                    ax.set_xlim(0)
+                ax.set_ylim(0)
+                plt.savefig(str(dir_el_ph_ij / "el_ph_spectral_func.pdf"))
+                plt.close(fig)
+
+                np.savetxt(
+                    str(dir_el_ph_ij / "scaled_el_ph_spectral_func.txt"),
+                    np.column_stack((w[w >= 0.0], spectral_func[w >= 0.0])),
+                    header=f"Frequency   Electron-phonon spectral function/{hamiltonian_unit}",
+                )
         
 
     optoelec_type = "el_ph"

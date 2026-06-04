@@ -28,11 +28,12 @@ function calculate_el_ph_spectral_func(H_path::String, snapshots::Vector{Int}, d
     rows_nz, cols_nz, _ = findnz(H_series[1])
     nz_set = Set(zip(rows_nz, cols_nz))
 
-    spectral_funcs = Dict{Tuple{String,String}, Vector{Float64}}()
+    # key: (label_i, label_j, type) where type is "onsite" or "hopping"
+    spectral_funcs = Dict{Tuple{String,String,String}, Vector{Float64}}()
 
     println("Computing spectral functions for $(length(unique_labels)^2) label pairs...")
     for label_i in unique_labels
-        for label_j in unique_labels 
+        for label_j in unique_labels
             indices_i = label_to_indices[label_i]
             indices_j = label_to_indices[label_j]
 
@@ -40,27 +41,29 @@ function calculate_el_ph_spectral_func(H_path::String, snapshots::Vector{Int}, d
             active_pairs = [(k, l) for k in indices_i for l in indices_j if (k, l) in nz_set]
             isempty(active_pairs) && continue
 
-            println("- Computing pair ($label_i, $label_j): $(length(active_pairs)) active matrix elements")
-            spec_sum = zeros(Float64, N)
+            # split by onsite (k==l, diagonal) vs hopping (k≠l, off-diagonal)
+            onsite_pairs  = [(k, l) for (k, l) in active_pairs if k == l]
+            hopping_pairs = [(k, l) for (k, l) in active_pairs if k != l]
 
-            for (k, l) in active_pairs
-                # time series of matrix element H_kl over all snapshots
-                h_kl = ComplexF64[H_series[t_idx][k, l] for t_idx in 1:N]
+            for (type_label, pairs) in [("onsite", onsite_pairs), ("hopping", hopping_pairs)]
+                isempty(pairs) && continue
+                println("- Computing pair ($label_i, $label_j) [$type_label]: $(length(pairs)) elements")
+                spec_sum = zeros(Float64, N)
 
-                # remove mean to get fluctuation δH_kl(t)
-                h_kl .-= mean(h_kl)
+                for (k, l) in pairs
+                    # time series of matrix element H_kl over all snapshots
+                    h_kl = ComplexF64[H_series[t_idx][k, l] for t_idx in 1:N]
 
-                # power spectral density via Wiener–Khinchin:
-                # J(f) = (dt/N) |FFT(δH)|²  →  units: [H]² × time
-                spec_sum .+= abs2.(fft(h_kl)) .* (dt / N)
-            end
+                    # remove mean to get fluctuation δH_kl(t)
+                    h_kl .-= mean(h_kl)
 
-            # average over active (k,l) pairs; fftshift so ω runs from −Nyquist to +Nyquist
-            if haskey(spectral_funcs, (label_j, label_i))
-                spectral_funcs[(label_j, label_i)] += fftshift(spec_sum ./ length(active_pairs))
-                spectral_funcs[(label_j, label_i)] /= 2  # symmetrize
-            else
-                spectral_funcs[(label_i, label_j)] = fftshift(spec_sum ./ length(active_pairs))
+                    # power spectral density via Wiener–Khinchin:
+                    # J(f) = (dt/N) |FFT(δH)|²  →  units: [H]² × time
+                    spec_sum .+= abs2.(fft(h_kl)) .* (dt / N)
+                end
+
+                # average over pairs; fftshift so ω runs from −Nyquist to +Nyquist
+                spectral_funcs[(label_i, label_j, type_label)] = fftshift(spec_sum ./ length(pairs))
             end
         end
     end
@@ -100,9 +103,11 @@ MPI.Init()
 w, spectral_funcs = calculate_el_ph_spectral_func(H_path, snapshots, dt, hamiltonian_style, basis_labels)
 
 for (pair, el_ph_spectral_func) in spectral_funcs
-    i, j = pair
+    label_i, label_j, type_label = pair
 
-    dir_outpath_ij = i == j ? joinpath(dir_outpath, "$i/") : joinpath(dir_outpath, "$(i)_$(j)/")
+    # onsite/hopping live in a subdirectory under the label pair directory
+    base = label_i == label_j ? joinpath(dir_outpath, "$label_i/") : joinpath(dir_outpath, "$(label_i)_$(label_j)/")
+    dir_outpath_ij = joinpath(base, "$type_label/")
     mkpath(dir_outpath_ij)
     data_file = joinpath(dir_outpath_ij, "el_ph_spectral_func.txt")
 
