@@ -43,7 +43,45 @@ def main(
     for dft_dir in iter_dft_dirs(dir_project):
         # run DFT calculation in this directory
         subprocess.run(
-            ["srun", "vasp_std", ">", "output.log"], cwd=dft_dir, check=True
+            [
+                "srun",
+                "vasp_std"
+            ],
+            cwd=dft_dir,
+            check=True,
         )
+
+        with open(dft_dir / "bandgap.log", "w") as f:
+            subprocess.run(
+                [
+                    "vamp",
+                    "eigenval",
+                    "read",
+                    "--par",
+                    "bandgap"
+                ],
+                cwd=dft_dir,
+                stdout=f,
+                stderr=subprocess.STDOUT,
+                check=True
+            )
+        
+        with open(dft_dir / "dos.log", "w") as f:
+            # vamp doscar read --doscar DOSCAR --o dos.h5
+            subprocess.run(
+                [
+                    "vamp",
+                    "doscar",
+                    "read",
+                    "--doscar",
+                    "DOSCAR",
+                    "--o",
+                    "dos.h5"
+                ],
+                cwd=dft_dir,
+                stdout=f,
+                stderr=subprocess.STDOUT,   # merge stderr into the same file
+                check=True
+            )
 
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}

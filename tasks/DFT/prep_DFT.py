@@ -72,7 +72,13 @@ def main(
     # use Vampires to sample snapshots from the trajectory
     n_snapshots = configWF.get("N_snapshots", 10)
     subprocess.run(
-        ["vamp", "supercell", "sample", "--N", str(n_snapshots)],
+        [
+            "vamp",
+            "supercell",
+            "sample",
+            "--N",
+            str(n_snapshots),
+        ],
         cwd=dir_project,
         check=True,
     )
