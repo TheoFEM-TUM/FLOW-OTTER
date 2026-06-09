@@ -192,8 +192,10 @@ function calculate_k_vdos(
             J_b .+= abs2.(G)
         end
 
-        # Weight by mass and PSD normalization dt/N, fftshift over frequency axis
-        J_b .*= m * (dt / N)
+        # Weight by mass, per-atom normalisation, and PSD factor dt/N.
+        # Dividing by n_b keeps the magnitude comparable to a single-atom VDOS,
+        # matching the per-pair normalisation used in k_el_ph_spectral_func.jl.
+        J_b .*= m * (dt / N) / n_b
         J_b   = mapslices(fftshift, J_b, dims=2)
         J_per_type[atype] = J_b
         J_total .+= J_b

@@ -166,7 +166,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     # --- Plot k-resolved el-ph spectral function ---
     h5_path = dir_k_el_ph / "k_el_ph_spectral_func.h5"
     if h5_path.exists():
-        dir_plot_k_el_ph = dir_k_el_ph
+        dir_plot_k_el_ph = dir_k_el_ph / "el_ph/"
         dir_plot_k_el_ph.mkdir(parents=True, exist_ok=True)
 
         with h5py.File(str(h5_path), "r") as hf:
@@ -216,7 +216,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     # --- Plot k-resolved VDOS ---
     h5_vdos = dir_k_vdos / "k_vdos.h5"
     if h5_vdos.exists():
-        dir_plot_k_vdos = dir_plots / "k_vdos/"
+        dir_plot_k_vdos = dir_k_el_ph / "vdos/"
         dir_plot_k_vdos.mkdir(parents=True, exist_ok=True)
 
         with h5py.File(str(h5_vdos), "r") as hf:
@@ -254,6 +254,89 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             ax.legend()
             plt.tight_layout()
             outfile = dir_plot_k_vdos / f"k_vdos_{key}.pdf"
+            plt.savefig(outfile)
+            plt.close(fig)
+            print(f"✅ Saved → {outfile}", flush=True)
+
+    # --- Compute and plot (el-ph / VDOS)^0.5 ---
+    if h5_path.exists() and h5_vdos.exists():
+        dir_plot_ratio = dir_k_el_ph / "ratio/"
+        dir_plot_ratio.mkdir(parents=True, exist_ok=True)
+
+        # Load total k-VDOS once; shape (N_v,) for w and (N_v, N_k) or (N_k, N_v) for J
+        with h5py.File(str(h5_vdos), "r") as hf:
+            w_v      = hf["w"][:]
+            J_vdos   = hf["total"]["J"][:]
+        # Normalise to (N_k, N_v)
+        if J_vdos.shape[0] == len(w_v):
+            J_vdos = J_vdos.T
+
+        # Re-load el-ph metadata (w and kpoints already read above if block was entered,
+        # but guard in case only ratio block runs)
+        with h5py.File(str(h5_path), "r") as hf:
+            w_e       = hf["w"][:]
+            kpoints_e = hf["kpoints"][:]
+            if kpoints_e.shape[0] == 3:
+                kpoints_e = kpoints_e.T
+            elph_keys = [k for k in hf.keys() if k not in ("w", "kpoints")]
+
+        ratio_h5 = dir_k_el_ph / "k_el_ph_vdos_ratio.h5"
+        with h5py.File(str(ratio_h5), "w") as hf_out:
+            hf_out["w"]       = w_e
+            hf_out["kpoints"] = kpoints_e.T    # store as (3, N_k) to match other files
+
+            for key in elph_keys:
+                with h5py.File(str(h5_path), "r") as hf:
+                    J_elph = hf[key]["J"][:]
+                # Normalise to (N_k, N_e)
+                if J_elph.shape[0] == len(w_e):
+                    J_elph = J_elph.T
+
+                N_k_e = J_elph.shape[0]
+                ratio = np.zeros((N_k_e, len(w_e)), dtype=float)
+                for ik in range(N_k_e):
+                    # Interpolate VDOS onto the el-ph frequency grid
+                    vdos_ik = np.interp(w_e, w_v, J_vdos[ik, :], left=0.0, right=0.0)
+                    with np.errstate(invalid="ignore", divide="ignore"):
+                        ratio[ik, :] = np.where(
+                            vdos_ik > 0,
+                            np.sqrt(np.maximum(J_elph[ik, :] / vdos_ik, 0.0)),
+                            0.0,
+                        )
+
+                grp = hf_out.create_group(key)
+                grp["ratio"] = ratio.T    # store as (N_e, N_k) consistent with J datasets
+
+        print(f"✅ Ratio saved → {ratio_h5}", flush=True)
+
+        # Plot ratio at selected k-points
+        sel_r   = _find_kpoint_indices(kpoints_e, selected_kpoints)
+        w_pos_e = w_e >= 0
+
+        for key in elph_keys:
+            with h5py.File(str(ratio_h5), "r") as hf:
+                ratio_data = hf[key]["ratio"][:]
+            # Normalise to (N_k, N_e)
+            if ratio_data.shape[0] == len(w_e):
+                ratio_data = ratio_data.T
+
+            fig, ax = plt.subplots()
+            ax.set_title(f"(el-ph / VDOS)$^{{1/2}}$  [{key}]")
+            ax.axhline(y=0, color="black", linewidth=0.8)
+
+            for ik, klabel, _ in sel_r:
+                ax.plot(w_e[w_pos_e], ratio_data[ik, w_pos_e], label=klabel)
+
+            ax.set_xlabel(f"Frequency (1/{unit_dt})")
+            ax.set_ylabel(f"(el-ph / VDOS)$^{{1/2}}$ / {hamiltonian_unit}$^{{1/2}}$")
+            if omega_max is not None:
+                ax.set_xlim(0, omega_max)
+            else:
+                ax.set_xlim(0)
+            ax.set_ylim(0)
+            ax.legend()
+            plt.tight_layout()
+            outfile = dir_plot_ratio / f"ratio_{key}.pdf"
             plt.savefig(outfile)
             plt.close(fig)
             print(f"✅ Saved → {outfile}", flush=True)
