@@ -132,7 +132,7 @@ function calculate_k_el_ph_spectral_func(
     end
 
     # Frequency axis in 1/time_unit, fftshifted to [−Nyquist, +Nyquist)
-    w = fftshift(fftfreq(N, dt))
+    w = collect(fftshift(fftfreq(N, dt)))
 
     return w, spectral_funcs
 end

@@ -53,8 +53,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         }
         unit_dt = unit_dt_map.get(units_type) or configWF_0["lammps"].get("units_array", [""])[-1]
 
-        k_el_ph_cfg = configWF_0.get("k_el_ph", {})
-        omega_max   = k_el_ph_cfg.get("omega_max", configWF_0.get("el_ph", {}).get("omega_max", None))
+        omega_max   = configWF_0["el_ph"].get("omega_max", configWF_0.get("el_ph", {}).get("omega_max", None))
         s_0         = configWF_0.get("size", 1)
         cell_size_0 = configWF_0["cell_size"] * s_0
 
@@ -62,7 +61,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             L_0 = np.array(_f.read().split(), dtype=float)
         lattice_arr = L_0 / cell_size_0   # primitive cell (Å)
 
-        user_kpts = k_el_ph_cfg.get("k_points_plot", None)
+        user_kpts = configWF_0["el_ph"].get("k_points_plot", None)
         if user_kpts is not None:
             selected_kpoints = [
                 (np.array(entry["fractional"]) * (2 * np.pi / lattice_arr),

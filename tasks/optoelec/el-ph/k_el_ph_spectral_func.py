@@ -60,8 +60,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     temperature = configWF_i["temperature"]
     kb          = kb_SI / e_SI
 
-    k_el_ph_cfg = configWF_i.get("k_el_ph", {})
-    omega_max   = k_el_ph_cfg.get("omega_max", configWF_i.get("el_ph", {}).get("omega_max", None))
+    omega_max   = configWF_i["el_ph"].get("omega_max", None)
     s           = configWF_i.get("size", 1)
     cell_size   = configWF_i["cell_size"] * s   # unit cells per direction
 
@@ -144,7 +143,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     with open(dir_MD / "celldimensions.txt") as _f:
         L_supercell = np.array(_f.read().split(), dtype=float)
     lattice_arr = L_supercell / cell_size   # primitive cell (Å)
-    user_kpts   = k_el_ph_cfg.get("k_points_plot", None)
+    user_kpts   = configWF_i["el_ph"].get("k_points_plot", None)
 
     if user_kpts is not None:
         selected_kpoints = [
