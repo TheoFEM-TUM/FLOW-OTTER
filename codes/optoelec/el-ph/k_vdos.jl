@@ -199,7 +199,7 @@ function calculate_k_vdos(
         J_total .+= J_b
     end
 
-    w = fftshift(fftfreq(N, 1 / dt))
+    w = collect(fftshift(fftfreq(N, 1 / dt)))
 
     return w, J_total, J_per_type
 end
