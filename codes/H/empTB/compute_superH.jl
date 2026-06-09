@@ -541,6 +541,61 @@ function shift_onsites!(hamiltonian, indices, mean_onsites_Pb, mean_onsites_Ha, 
 
 end
 
+# Write equilibrium orbital positions to a text file compatible with k_el_ph_spectral_func.jl.
+# Format: 2*dim_H rows, 3 columns (x y z) in Å.
+# The spin-up block (rows 1..dim_H) and spin-down block (rows dim_H+1..2*dim_H) carry
+# identical Cartesian positions — the spin degree of freedom does not shift the atom.
+function write_orbital_positions(
+    path::String,
+    snapshots::Vector{Int},
+    N_unitcells::Int,
+    n_atoms::Int,
+    n_orbitals::Int,
+    filename::String,
+)
+    # Accumulate positions over all snapshots and compute the time-averaged equilibrium
+    # positions r(n_b), analogous to the reference positions in the phonon formula.
+    N_atoms_total = N_unitcells * n_atoms
+    positions_sum = zeros(Float64, N_atoms_total, 3)
+    for snap in snapshots
+        positions_sum .+= readdlm(joinpath(path, "snapshots/traj$(snap).xyz"))
+    end
+    positions_mean = positions_sum ./ length(snapshots)
+
+    dim_H      = N_unitcells * n_orbitals
+    index_dict = get_index_dict(n_atoms, N_unitcells)
+    orbital_pos = zeros(Float64, 2 * dim_H, 3)
+
+    for i in 1:N_unitcells
+        # Pb atom (j=1): orbitals s, px, py, pz → 4 entries starting at ix_Pb
+        pb_atom = (i - 1) * n_atoms + 1
+        ix_Pb   = index_dict[pb_atom]
+        for orb in 0:3
+            orbital_pos[ix_Pb + orb,         :] = positions_mean[pb_atom, :]
+            orbital_pos[dim_H + ix_Pb + orb, :] = positions_mean[pb_atom, :]
+        end
+
+        # Ha atoms (j=2,3,4): orbitals px, py, pz → 3 entries each
+        for p in 1:3
+            ha_atom = (i - 1) * n_atoms + 1 + p
+            ix_Ha   = index_dict[ha_atom]
+            for orb in 0:2
+                orbital_pos[ix_Ha + orb,         :] = positions_mean[ha_atom, :]
+                orbital_pos[dim_H + ix_Ha + orb, :] = positions_mean[ha_atom, :]
+            end
+        end
+    end
+
+    open(filename, "w") do io
+        for row in eachrow(orbital_pos)
+            println(io, join(row, " "))
+        end
+    end
+    println("Orbital positions written to $filename " *
+            "($(2 * dim_H) orbitals, averaged over $(length(snapshots)) snapshots)")
+end
+
+
 function main(comm::MPI.Comm, rank::Int, rank_size::Int, path::String, snapshot::Int, path_SOC::String, N_unitcells::Int, n_atoms::Int, n_orbitals::Int, hamiltonian_style::String)
 
     positions, SOC, L, hop_fit, q, nn, nn_cell, unit_cell, onsite_shifts = initialize(path, snapshot, path_SOC)
@@ -755,6 +810,16 @@ rank_size = MPI.Comm_size(comm)
 println("Rank $rank of $rank_size started.")
 
 BLAS.set_num_threads(1)
+
+# Rank 0 writes equilibrium orbital positions from the first snapshot.
+# These serve as the r(n_b) reference positions for k_el_ph_spectral_func.jl.
+if rank == 0
+    write_orbital_positions(
+        path, snapshots, N_unitcells, n_atoms, n_orbitals,
+        joinpath(path, "hamiltonian/orbital_positions.txt"),
+    )
+end
+MPI.Barrier(comm)
 
 chunk_size = floor(Int, snapshot_size / rank_size)
 mod_size = snapshot_size % rank_size
