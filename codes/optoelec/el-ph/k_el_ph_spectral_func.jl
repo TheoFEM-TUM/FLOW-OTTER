@@ -124,15 +124,32 @@ function calculate_k_el_ph_spectral_func(
                 # G[ik, iω] = Σ_p P[ik, p] × F[p, iω]  (matrix multiply, BLAS-accelerated)
                 G = P * F  # N_k × N
 
-                # J(κ, ω) = (dt/N) |G(κ, ω)|²,  fftshift along the frequency axis
-                J_kω = mapslices(fftshift, (dt / N) .* abs2.(G), dims=2)
+                # J(κ, ω) = (dt / N / n_p) |G(κ, ω)|²  — per-pair normalisation so the
+                # magnitude is comparable to the q-integrated (non-k) spectral function.
+                J_kω = mapslices(fftshift, (dt / N / n_p) .* abs2.(G), dims=2)
                 spectral_funcs[(label_i, label_j, type_label)] = J_kω
             end
         end
     end
 
+    # Symmetrise: (label_i, label_j) and (label_j, label_i) represent the same
+    # physical coupling — sum them into the lexicographically smaller key.
+    for (label_i, label_j, type_label) in collect(keys(spectral_funcs))
+        label_i <= label_j && continue          # only process the (i > j) half
+        canonical = (label_j, label_i, type_label)
+        if haskey(spectral_funcs, canonical)
+            spectral_funcs[canonical] .+= spectral_funcs[(label_i, label_j, type_label)]
+        end
+        delete!(spectral_funcs, (label_i, label_j, type_label))
+    end
+
+    # Drop same-label hopping entries — they are trivially zero or unphysical.
+    for key in collect(keys(spectral_funcs))
+        key[1] == key[2] && key[3] == "hopping" && delete!(spectral_funcs, key)
+    end
+
     # Frequency axis in 1/time_unit, fftshifted to [−Nyquist, +Nyquist)
-    w = collect(fftshift(fftfreq(N, dt)))
+    w = collect(fftshift(fftfreq(N, 1/dt)))
 
     return w, spectral_funcs
 end

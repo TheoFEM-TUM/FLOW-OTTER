@@ -166,7 +166,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     # --- Plot k-resolved el-ph spectral function ---
     h5_path = dir_k_el_ph / "k_el_ph_spectral_func.h5"
     if h5_path.exists():
-        dir_plot_k_el_ph = dir_plots / "k_el_ph/"
+        dir_plot_k_el_ph = dir_k_el_ph
         dir_plot_k_el_ph.mkdir(parents=True, exist_ok=True)
 
         with h5py.File(str(h5_path), "r") as hf:
