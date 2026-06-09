@@ -155,6 +155,8 @@ L       = vec(readdlm(joinpath(H_path, "celldimensions.txt")))
 lattice = L ./ n
 n_cells = fill(n, 3)
 
+H_path = H_path * "/hamiltonian/"
+
 # Parse snapshot indices from numpy array string "[i1 i2 i3 ...]"
 snapshots = parse.(Int, split(strip(snapshots_str, [' ', '[', ']']), r"\s+"))
 
