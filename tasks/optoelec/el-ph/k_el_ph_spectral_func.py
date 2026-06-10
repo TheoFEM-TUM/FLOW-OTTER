@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import subprocess
 import re
-from scipy.constants import k as kb_SI, e as e_SI
+from scipy.constants import k as kb_SI, e as e_SI, hbar as hbar_SI
 
 
 def _find_kpoint_indices(kpoints_py: np.ndarray, targets: list) -> list:
@@ -70,6 +70,10 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         "nano": "ns", "micro": "μs", "si": "s", "cgs": "s",
     }
     unit_dt = unit_dt_map.get(units_type) or configWF_i["lammps"].get("units_array", [""])[-1]
+
+    # ℏ in eV·[time_unit]: hbar_SI [J·s] / e_SI [J/eV] / (seconds per time_unit)
+    _unit_dt_to_sec = {"fs": 1e-15, "ps": 1e-12, "ns": 1e-9, "μs": 1e-6, "s": 1.0}
+    hbar_MD = hbar_SI / e_SI / _unit_dt_to_sec.get(unit_dt, 1.0)  # eV·[unit_dt]
 
     # --- Snapshot detection (mirrors el_ph_spectral_func.py) ---
     first_snapshot = configWF_i.get("first_snapshot", 0)
@@ -295,12 +299,14 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                 N_k_e = J_elph.shape[0]
                 ratio = np.zeros((N_k_e, len(w_e)), dtype=float)
                 for ik in range(N_k_e):
-                    # Interpolate VDOS onto the el-ph frequency grid
+                    # Interpolate VDOS onto the el-ph frequency grid, then scale by k_BT
+                    # so the denominator is the temperature-independent phonon DOS.
                     vdos_ik = np.interp(w_e, w_v, J_vdos[ik, :], left=0.0, right=0.0)
+                    vdos_scaled = vdos_ik / (kb * temperature)
                     with np.errstate(invalid="ignore", divide="ignore"):
                         ratio[ik, :] = np.where(
-                            vdos_ik > 0,
-                            np.sqrt(np.maximum(J_elph[ik, :] / vdos_ik, 0.0)),
+                            vdos_scaled > 0,
+                            np.sqrt(np.maximum(J_elph[ik, :] / vdos_scaled, 0.0)) * (hbar_MD / 2),
                             0.0,
                         )
 
@@ -321,14 +327,14 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                 ratio_data = ratio_data.T
 
             fig, ax = plt.subplots()
-            ax.set_title(f"(el-ph / VDOS)$^{{1/2}}$  [{key}]")
+            ax.set_title(f"el-ph coupling [{key}]")
             ax.axhline(y=0, color="black", linewidth=0.8)
 
             for ik, klabel, _ in sel_r:
                 ax.plot(w_e[w_pos_e], ratio_data[ik, w_pos_e], label=klabel)
 
             ax.set_xlabel(f"Frequency (1/{unit_dt})")
-            ax.set_ylabel(f"(el-ph / VDOS)$^{{1/2}}$ / {hamiltonian_unit}$^{{1/2}}$")
+            ax.set_ylabel(f"el-ph coupling / {hamiltonian_unit}")
             if omega_max is not None:
                 ax.set_xlim(0, omega_max)
             else:
