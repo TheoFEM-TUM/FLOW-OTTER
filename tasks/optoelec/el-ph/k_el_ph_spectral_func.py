@@ -304,7 +304,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                     vdos_ik = np.interp(w_e, w_v, J_vdos[ik, :], left=0.0, right=0.0)
                     vdos_scaled = vdos_ik / (kb * temperature)
                     with np.errstate(invalid="ignore", divide="ignore"):
-                        ratio[ik, :] = np.where(
+                        ratio[ik, :] = (2*w_e/hbar_MD)**0.5 * hbar_MD * np.where(
                             vdos_scaled > 0,
                             np.sqrt(np.maximum(J_elph[ik, :] / vdos_scaled, 0.0)) * (hbar_MD / 2),
                             0.0,
