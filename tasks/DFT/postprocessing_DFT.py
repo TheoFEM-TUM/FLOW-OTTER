@@ -44,41 +44,68 @@ def main(
         if param is not None:
             print(f"Parameter to vary: {param}", flush=True)
 
+    params_to_vary = [param_to_vary, param_to_vary2, param_to_vary3, param_to_vary4]
+
+    # collect the simulation directories to process. For multiple simulations each
+    # branch lives in its own directory holding a branch_config.yaml; for a single
+    # simulation the DFT snapshots live directly under dir_project.
+    if num_simulations > 1:
+        simulation_dirs = [
+            d for d in dir_project.iterdir()
+            if d.is_dir() and (d / "branch_config.yaml").exists()
+        ]
+    else:
+        simulation_dirs = [dir_project]
+
     snapshot_results = []
 
-    for simulation_dir in dir_project.iterdir():
+    for simulation_dir in simulation_dirs:
 
-        # load the branch_config.yaml file to get the parameters used in the simulation
+        # load the branch_config.yaml file to get the parameters used in the
+        # simulation, falling back to the global config for a single simulation.
         branch_config_path = simulation_dir / "branch_config.yaml"
         if branch_config_path.exists():
             with open(branch_config_path, 'r') as f:
                 branch_config = yaml.load(f)
-            print(f"Processing simulation in {simulation_dir} with parameters: {branch_config}", flush=True)
-        
+        else:
+            branch_config = configWF
+        print(f"Processing simulation in {simulation_dir}", flush=True)
+
         # get dictionary of parameters used in the simulation
         param_dict = {}
-        for param in [param_to_vary, param_to_vary2, param_to_vary3, param_to_vary4]:
+        for param in params_to_vary:
             if param is not None:
                 param_dict[param] = branch_config.get(param, None)
 
+        dft_dir = simulation_dir / "2-DFT"
+        if not dft_dir.is_dir():
+            print(f"No 2-DFT directory in {simulation_dir}, skipping.", flush=True)
+            continue
+
         # for each snapshot in the simulation, parse the bandgap from the bandgap.log file
-        for snapshot_dir in iter_dft_dirs(simulation_dir / "2-DFT"):
-            # parse bandgap from the bandgap.log file
-            # create a summary csv
-            bandgap_log_path = snapshot_dir / "bandgap.log"
+        for snapshot_dir in iter_dft_dirs(dft_dir):
             print(f"Processing snapshot in {snapshot_dir}", flush=True)
-            if bandgap_log_path.exists():
-                with open(bandgap_log_path, 'r') as f:
-                    print(f"Reading bandgap log from {bandgap_log_path}", flush=True)
-                    print(f"Bandgap log content:\n{f.read()}", flush=True)
-                    line = f.readlines()[-1]
-                    bandgap = line.split(" ")[-1].strip()
-            
+
+            # parse bandgap from the bandgap.log file
+            bandgap_log_path = snapshot_dir / "bandgap.log"
+            if not bandgap_log_path.exists():
+                print(f"No bandgap.log in {snapshot_dir}, skipping snapshot.", flush=True)
+                continue
+
+            with open(bandgap_log_path, 'r') as f:
+                lines = f.readlines()
+            if not lines:
+                print(f"Empty bandgap.log in {snapshot_dir}, skipping snapshot.", flush=True)
+                continue
+
+            try:
+                bandgap = float(lines[-1].split()[-1])
+            except (IndexError, ValueError):
+                print(f"Could not parse bandgap from {bandgap_log_path}, skipping snapshot.", flush=True)
+                continue
+
             print(f"Extracted bandgap: {bandgap}", flush=True)
-            print(f"Appending results for snapshot with parameters {param_dict} and bandgap {bandgap}", flush=True)
-            print({**param_dict, "bandgap": bandgap}, flush=True)
             snapshot_results.append({**param_dict, "bandgap": bandgap})
-            print(snapshot_results, flush=True)
 
     print(snapshot_results, flush=True)
 
