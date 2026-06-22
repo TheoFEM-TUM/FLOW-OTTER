@@ -32,26 +32,47 @@ def main(
     yaml = YAML()
 
     # Read in global configurations
-    with open(path_configWF, "r") as f:
+    with open(path_configWF, 'r') as f:
         configWF = yaml.load(f)
 
     dir_project = Path(configWF.get("dir_project", "./"))
 
-    directories = os.listdir(dir_project)
+    # Handle multiple simulations (branching)
+    if num_simulations > 1:
+        i = kwargs['pq_index'][0]
+
+        # determine correct branch config file
+        param_to_vary = configWF["param_to_vary"]
+        array_to_vary = configWF["array_to_vary"]
+
+        
+        dir_project_i = dir_project / f"{param_to_vary}_{array_to_vary[i]}/"
+        path_configWF_i = dir_project_i / 'branch_config.yaml'
+
+        with open(str(path_configWF_i), 'r') as f:
+            configWF_i = yaml.load(f)
+
+    else:
+        configWF_i = configWF.copy()
+        dir_project_i = dir_project
+
+    dft_dir = dir_project_i / "2-DFT"
+
+    directories = os.listdir(dft_dir)
     dft_dirs = [d for d in directories if d.startswith("config_")]
 
-    for dft_dir in iter_dft_dirs(dir_project):
+    for snapshot_dir in iter_dft_dirs(dft_dir):
         # run DFT calculation in this directory
         subprocess.run(
             [
                 "srun",
                 "vasp_std"
             ],
-            cwd=dft_dir,
+            cwd=snapshot_dir,
             check=True,
         )
 
-        with open(dft_dir / "bandgap.log", "w") as f:
+        with open(snapshot_dir / "bandgap.log", "w") as f:
             subprocess.run(
                 [
                     "vamp",
@@ -60,14 +81,13 @@ def main(
                     "--par",
                     "bandgap"
                 ],
-                cwd=dft_dir,
+                cwd=snapshot_dir,
                 stdout=f,
                 stderr=subprocess.STDOUT,
                 check=True
             )
         
-        with open(dft_dir / "dos.log", "w") as f:
-            # vamp doscar read --doscar DOSCAR --o dos.h5
+        with open(snapshot_dir / "dos.log", "w") as f:
             subprocess.run(
                 [
                     "vamp",
@@ -78,7 +98,7 @@ def main(
                     "--o",
                     "dos.h5"
                 ],
-                cwd=dft_dir,
+                cwd=snapshot_dir,
                 stdout=f,
                 stderr=subprocess.STDOUT,   # merge stderr into the same file
                 check=True
