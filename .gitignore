@@ -1,0 +1,8 @@
+secret.txt
+/dft_analysis_data
+/analysis
+/dft_analysis_data
+/dft_analysis_data_fresh
+/.claude
+/__pycache__
+*.pyc

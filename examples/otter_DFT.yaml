@@ -1,7 +1,7 @@
 # Example workflow configuration file for a DFT-based workflow on CuTaN2.
 
 ### workflow configuration
-dir_project: "/home/hpc/b299bb/b299bb25/flow-otter-test-2/" # INSERT HERE
+dir_project: "/home/atuin/b299bb/b299bb25/flow-otter-test/" # INSERT HERE
 dir_code: "/home/hpc/b299bb/b299bb25/flow-otter/" # INSERT HERE
 
 ### resource specification
@@ -11,29 +11,29 @@ resources_DFT: "48:1:singlenode:2h" # ADAPT THIS TO YOUR SYSTEM
 
 ### MD configuration
 MD_type: "skip_MD"
-N_snapshots: 5
+N_snapshots: 150
 
 ### DFT configuration
 potcar_file: "/home/hpc/b299bb/b299bb25/POTCAR"
 
 # KPOINTS file is written from this group (automatic mesh generation)
 kpoints:
-  type: Monkhorst-Pack # "Gamma" or "Monkhorst-Pack"
-  mesh: [3, 3, 3]
+  type: Gamma # "Gamma" or "Monkhorst-Pack"; Gamma includes the zone centre (where the gap usually sits)
+  mesh: [2, 2, 2]
   shift: [0, 0, 0]
 
 # INCAR tags are written from this group (booleans -> .TRUE./.FALSE.)
 vasp:
-  KPAR: 8
-  NCORE: 8
-  ENCUT: 100
+  KPAR: 4 # 48 cores / KPAR = 12 cores per k-point group; NCORE must divide that
+  NCORE: 4
+  ENCUT: 400
   SIGMA: 0.05
   EDIFF: 1.0e-06
   GGA: PE
   PREC: Accurate
   ISMEAR: 0
   LCHARG: true
-  LWAVE: true
+  LWAVE: false # WAVECAR not needed for bandgap/DOS; avoids multi-GB I/O per snapshot
   LREAL: Auto
 
 simulation_type: "sweep"

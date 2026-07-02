@@ -11,6 +11,42 @@ def is_missing_or_empty(path: Path | str) -> bool:
     return not p.exists() or (p.is_dir() and not any(p.iterdir()))
 
 
+def lammps_trajectory_to_xdatcar(traj_path: Path, xdatcar_path: Path, elements: list):
+    """Convert a LAMMPS dump trajectory into a VASP XDATCAR.
+
+    The LAMMPS production dump (``position.lammpstrj``, columns
+    ``id type element x y z``) is read with ASE and the atoms are regrouped by
+    species in the order given by ``elements`` so the XDATCAR header matches the
+    POTCAR concatenation order (e.g. ``Ta Cu N``). vamp can then sample POSCARs
+    from it exactly as it does from an externally supplied XDATCAR.
+    """
+    from ase.io import read, write
+
+    frames = read(str(traj_path), format="lammps-dump-text", index=":")
+    if not isinstance(frames, list):
+        frames = [frames]
+
+    # ASE picks up the chemical symbols from the dump's ``element`` column
+    # (written by ``dump_modify ... element ...``). Validate they match the
+    # configured species so a missing element column fails loudly instead of
+    # silently producing H/He/Li dummies.
+    symbols = frames[0].get_chemical_symbols()
+    if set(symbols) != set(elements):
+        raise Exception(
+            f"Elements in the LAMMPS trajectory {sorted(set(symbols))} do not "
+            f"match the configured 'lammps: elements' {sorted(set(elements))}. "
+            "Ensure the dump has an 'element' column (dump_modify ... element ...)."
+        )
+
+    # One permutation, applied to every frame, grouping atoms by species in
+    # ``elements`` order so the XDATCAR header is valid (grouped species/counts).
+    order = [i for el in elements for i, s in enumerate(symbols) if s == el]
+    frames = [f[order] for f in frames]
+
+    write(str(xdatcar_path), frames, format="vasp-xdatcar")
+    print(f"Converted {len(frames)} MD frames -> {xdatcar_path}", flush=True)
+
+
 def iter_dft_dirs(dir_project: Path):
     directories = os.listdir(dir_project)
     dft_dirs = [d for d in directories if d.startswith("config_")]
@@ -114,13 +150,36 @@ def main(
 
     trajectory_file_path = configWF_i.get("trajectory_file", None)
     if trajectory_file_path is not None:
+        # Case 1: an external trajectory (VASP XDATCAR) was supplied directly.
         trajectory_file_path = Path(trajectory_file_path)
         if not trajectory_file_path.exists():
             raise Exception(f"Provided trajectory file {trajectory_file_path} does not exist.")
 
         shutil.copy(trajectory_file_path, dft_dir / "XDATCAR")
 
-    # TODO: implement lammps trajectory
+    else:
+        # Case 2: no external trajectory -> build the XDATCAR on the fly from
+        # the MD stage that ran for this branch (MD_type: lammps).
+        dir_MD = Path(configWF_i.get("dir_MD", str(dir_project_i / "1-MD/")))
+        md_traj_name = configWF_i.get("md_trajectory_file", "position.lammpstrj")
+        md_traj_path = dir_MD / md_traj_name
+
+        if not md_traj_path.exists():
+            raise Exception(
+                f"No 'trajectory_file' was provided and no MD trajectory was found "
+                f"at {md_traj_path}. Run an MD stage first (set MD_type: lammps) or "
+                "supply 'trajectory_file' in the configuration."
+            )
+
+        elements = (configWF_i.get("lammps") or {}).get("elements")
+        if not elements:
+            raise Exception(
+                "Converting a LAMMPS trajectory to XDATCAR requires the "
+                "'lammps: elements: [...]' list, which sets the species order of "
+                "the XDATCAR (and must match the POTCAR concatenation order)."
+            )
+
+        lammps_trajectory_to_xdatcar(md_traj_path, dft_dir / "XDATCAR", elements)
 
     # use Vampires to sample snapshots from the trajectory
     n_snapshots = configWF.get("N_snapshots", 10)

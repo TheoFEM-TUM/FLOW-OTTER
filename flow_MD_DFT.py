@@ -16,11 +16,6 @@ import yaml
 import sys
 import os
 
-# TODO: REMOVE THIS
-# kill all running slurm jobs
-# os.system("scancel -u $USER")
-# print("Killed all running slurm jobs for user.")
-
 
 def delete_everything_in_dir(dir_path: Path):
     for item in dir_path.iterdir():
@@ -101,7 +96,7 @@ t0_check_simulation = Task(
 t1_checkMD = Task(
     MD / "check_MD_type.py", None, resources_instant, name="check_MD_type"
 )
-t1_MD = Task(MD / "lammps_MD.py", None, resources_MD, name="lammps_MD")
+t1_MD = Task(MD / "lammps_MD.py", None, resources_MD, name="lammps_MD", preamble_path=preamble_MD)
 t1_skipMD = Task(MD / "skip_MD.py", None, resources_instant, name="skip_MD")
 
 # which MD type: lammps or skip?
@@ -156,13 +151,21 @@ sg0_check_simulation = SwitchGroup(
 
 
 ### 2. DFT tasks
+N_snapshots = configWF.get("N_snapshots", 10)
+
 t2_prep_DFT = Task(tasks / "DFT/prep_DFT.py", None, resources_instant, name="prep_DFT")
 t2_run_DFT = Task(tasks / "DFT/run_DFT.py", None, resources_DFT, name="run_DFT")
+
+# Fan out the snapshots of one branch into one job each, so the N_snapshots VASP
+# runs of a branch execute in parallel instead of serially inside a single job.
+# Nesting this inside the branch-width group below makes run_DFT receive
+# pq_index = [snapshot_index, branch_index].
+swg_snapshots = StaticWidthGroup({t2_run_DFT: []}, width=N_snapshots)
 
 swg1_DFT = StaticWidthGroup(
     {
         t2_prep_DFT: [],
-        t2_run_DFT: [t2_prep_DFT]
+        swg_snapshots: [t2_prep_DFT],
     },
     width=num_simulations,
 )
