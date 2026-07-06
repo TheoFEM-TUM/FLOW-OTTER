@@ -96,7 +96,7 @@ t0_check_simulation = Task(
 t1_checkMD = Task(
     MD / "check_MD_type.py", None, resources_instant, name="check_MD_type"
 )
-t1_MD = Task(MD / "lammps_MD.py", None, resources_MD, name="lammps_MD", preamble_path=preamble_MD)
+t1_MD = Task(MD / "lammps_MD.py", None, resources_MD, name="lammps_MD")
 t1_skipMD = Task(MD / "skip_MD.py", None, resources_instant, name="skip_MD")
 
 # which MD type: lammps or skip?

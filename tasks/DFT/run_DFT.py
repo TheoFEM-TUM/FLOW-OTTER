@@ -94,6 +94,21 @@ def main(
         check=True,
     )
 
+    # Extract and log total energy from OSZICAR
+    oszicar_path = snapshot_dir / "OSZICAR"
+    if oszicar_path.exists():
+        with open(oszicar_path, "r") as f:
+            lines = f.readlines()
+        if lines:
+            last_line = lines[-1].split()
+            if len(last_line) >= 5:
+                total_energy = float(last_line[-1])
+                print(f"DFT snapshot {snapshot_index} total energy: {total_energy:.6f} eV", flush=True)
+                with open(snapshot_dir / "total_energy.log", "w") as f:
+                    f.write(f"{total_energy}\n")
+    else:
+        print(f"Warning: OSZICAR not found in {snapshot_dir}", flush=True)
+
     with open(snapshot_dir / "bandgap.log", "w") as f:
         subprocess.run(
             [
