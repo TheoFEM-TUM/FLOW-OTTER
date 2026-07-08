@@ -20,7 +20,8 @@ def lammps_trajectory_to_xdatcar(traj_path: Path, xdatcar_path: Path, elements: 
     POTCAR concatenation order (e.g. ``Ta Cu N``). vamp can then sample POSCARs
     from it exactly as it does from an externally supplied XDATCAR.
     """
-    from ase.io import read, write
+    from ase.io import read
+    from ase.io.vasp import _write_xdatcar_header, _write_xdatcar_config
 
     frames = read(str(traj_path), format="lammps-dump-text", index=":")
     if not isinstance(frames, list):
@@ -43,7 +44,14 @@ def lammps_trajectory_to_xdatcar(traj_path: Path, xdatcar_path: Path, elements: 
     order = [i for el in elements for i, s in enumerate(symbols) if s == el]
     frames = [f[order] for f in frames]
 
-    write(str(xdatcar_path), frames, format="vasp-xdatcar")
+    # ASE's own `write(..., format="vasp-xdatcar")` re-emits the full header
+    # (including the lattice) before every "Direct configuration=" block,
+    # which `vamp supercell sample` chokes on for a fixed-cell trajectory. So
+    # write the header once ourselves, then one config block per frame.
+    with open(xdatcar_path, "w") as f:
+        _write_xdatcar_header(f, frames[0], label=None)
+        for i, frame in enumerate(frames, start=1):
+            _write_xdatcar_config(f, frame, i)
     print(f"Converted {len(frames)} MD frames -> {xdatcar_path}", flush=True)
 
 

@@ -59,6 +59,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 `dir_MD` (str): output directory for MD calculation (*dir_project + "1-MD/"*)  
 `dir_ini_MD` (str): input directory for initial atomic configuration for MD (*dir_MD*)  
 `path_FF_MD` (str): path to force-field file (*dir_MD*)  
+- for `MD_type: lammps+MACE_no_mliap`, this must be a `*-lammps.pt` file produced by `codes/MD/export_mace_lammps_model.sh` (wraps `mace_create_lammps_model`) from a raw MACE `.model` checkpoint. Do not point this at the raw `.model` file or at a `*-mliap_lammps.pt` export (that format is for `MD_type: lammps+MACE`'s `pair_style mliap unified` instead) -- `pair_style mace` will fail with `PytorchStreamReader failed locating file constants.pkl`.
 
 `equilibrate` (bool): if true, equilibration before the production run (*true* if not restart, *false* if restart)  
 `npt_equilibrate` (bool): enable NPT equilibration after NVT equilibration (*true*)  
