@@ -14,6 +14,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 `resources_MD` (str): myqueue string specifying resources for MD jobs  
 `resources_H`  (str): myqueue string specifying resources for H jobs  
 `resources_optoelec` (str): myqueue string specifying resources for optoelec jobs  
+`resources_DFT` (str): myqueue string specifying resources for DFT (VASP) jobs; applied **per snapshot** since each snapshot runs as its own job (`flow_MD_DFT.py`)  
 `resources_instant` (str): myqueue string specifying resources for jobs which should be finished instantaneously (*resources of resources or resources_H with walltime = 5m*)  
 `resources_short` (str): myqueue string specifying resources for jobs which should only run shortly (*resources of resources or resources_H with walltime = 2h*)  
 `resources_long` (str): myqueue string specifying resources for jobs which should run very long (*resources of resources or resources_H with walltime = 1d*)  
@@ -58,6 +59,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 `dir_MD` (str): output directory for MD calculation (*dir_project + "1-MD/"*)  
 `dir_ini_MD` (str): input directory for initial atomic configuration for MD (*dir_MD*)  
 `path_FF_MD` (str): path to force-field file (*dir_MD*)  
+- for `MD_type: lammps+MACE_no_mliap`, this must be a `*-lammps.pt` file produced by `codes/MD/export_mace_lammps_model.sh` (wraps `mace_create_lammps_model`) from a raw MACE `.model` checkpoint. Do not point this at the raw `.model` file or at a `*-mliap_lammps.pt` export (that format is for `MD_type: lammps+MACE`'s `pair_style mliap unified` instead) -- `pair_style mace` will fail with `PytorchStreamReader failed locating file constants.pkl`.
 
 `equilibrate` (bool): if true, equilibration before the production run (*true* if not restart, *false* if restart)  
 `npt_equilibrate` (bool): enable NPT equilibration after NVT equilibration (*true*)  
@@ -89,8 +91,13 @@ These are all parameters with detailed descriptions that can be used in the conf
 
 `cell_size` (int): size of supercell in comparison to unit cell (only needed for "empTB")  
 
+`trajectory_file` (str): path to an externally-supplied trajectory (VASP XDATCAR) to sample DFT/H snapshots from; if omitted, the trajectory is built on the fly from the MD stage of the same branch (`1-MD/position.lammpstrj`, converted to an XDATCAR by `prep_DFT.py`)  
+`md_trajectory_file` (str): name of the LAMMPS dump in the branch's MD directory used for on-the-fly trajectory conversion when `trajectory_file` is not set (*"position.lammpstrj"*)  
+`potcar_file` (str): path to the VASP POTCAR (concatenated for all species) copied into every DFT snapshot directory by `prep_DFT.py`; only used by the DFT pipeline (`flow_MD_DFT.py`). Its species concatenation order must match the `lammps: elements` list (species order of the generated XDATCAR) and any per-species `vasp:` arrays such as `LDAUL`/`LDAUU`  
+`preamble_DFT` (str): path to a shell preamble sourced by the scheduler before each DFT task, used to load the environment-specific VASP modules (see `preambles/`); parallels `preamble_MD` (*venv activation only*)  
+
 `first_snapshot` (int): first snapshot of MD trajectory used for H calculation (*0*)  
-`N_snapshots` (int): total number of snapshots used for H calculation  
+`N_snapshots` (int): total number of snapshots used for H (and DFT) calculation; in the DFT pipeline it sets how many snapshots `vamp supercell sample` extracts and thus how many VASP jobs run per branch (*10* for DFT)  
 `last_snapshot` (int): last snapshot of MD trajectory used for H calculation (*first_snapshot + N_snapshots - 1*)  
 
 `threads_H` (int): number of Julia threads for H calculation (*1*)  
@@ -162,6 +169,27 @@ Details can also be found in [LAMMPS documentation](https://docs.lammps.org/Manu
 `rdf_bins` (int): number of bins which are used to histogram the atom distances for the radial distribution function (rdf) (*100*)  
 
 `units_array` (array of string): individual units shown in the MD plots; set as `["temperature unit", "energy unit", "lattice constant unit", "volume unit", "pressure unit", "time unit (thermo)", "atom distance unit", "velocity unit", "force unit", "frequency unit", "time unit (MSD)"]`  
+
+
+## vasp:
+INCAR tags for the DFT pipeline (`flow_MD_DFT.py`). This group is **free-form**: `prep_DFT.py` writes one `TAG = value` line to the INCAR for **every** key/value pair (keys are upper-cased, booleans become `.TRUE.`/`.FALSE.`, lists become space-separated values). There is therefore no fixed parameter list — any valid VASP INCAR tag can be added and switching functionals/methods (DFT+U, meta-GGA, hybrids) is purely a YAML edit. See the [VASP wiki](https://www.vasp.at/wiki/index.php/Category:INCAR_tag). Commonly used tags for these runs:
+
+`ENCUT` (float): plane-wave cutoff energy in eV  
+`GGA` (str): exchange-correlation functional (e.g. `PE` for PBE)  
+`ISMEAR` / `SIGMA` (int / float): smearing method and width  
+`EDIFF` (float): electronic SCF convergence criterion  
+`LREAL` (str/bool): real-space projection (`Auto` recommended for large cells)  
+`LWAVE` / `LCHARG` (bool): whether to write `WAVECAR` / `CHGCAR` (set `LWAVE: false` for gap/DOS runs to avoid huge I/O)  
+`KPAR` / `NCORE` (int): k-point / band parallelization (`NCORE` must divide `cores/KPAR`)  
+`LDAUTYPE` (int), `LDAUL` / `LDAUU` / `LDAUJ` (arrays), `LMAXMIX` (int): DFT+U settings; the `LDAU*` arrays are **per species and must follow the POTCAR concatenation order** (see `potcar_file`)  
+
+
+## kpoints:
+KPOINTS settings for the DFT pipeline; `prep_DFT.py` writes an automatic mesh from this group.
+
+`mesh` (array of int): subdivisions along each reciprocal axis, e.g. `[4, 4, 4]` (**required**)  
+`type` (str): mesh type, `"Gamma"` (Gamma-centred) or `"Monkhorst-Pack"` (*"Gamma"*)  
+`shift` (array of float): mesh shift off the origin (*[0, 0, 0]*)  
 
 
 ## gap+dos:

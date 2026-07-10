@@ -1,5 +1,3 @@
 using Pkg
 
-Pkg.add([
-    "Vampires",
-])
+Pkg.add(path="/home/nico/Vampires.jl/")

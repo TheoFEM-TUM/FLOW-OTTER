@@ -1,0 +1,134 @@
+# ============================================================================
+#  CuTaN2 — two-temperature MD (MACE) + DFT, on Alex (GPU).
+#  Run with the MD+DFT entrypoint:  python flow_MD_DFT.py examples/otter_MD_CuTaN2_MACE.yaml
+#
+#  Per temperature branch: MACE MD runs on the fly, prep_DFT.py converts each
+#  branch's trajectory (1-MD/position.lammpstrj) into 2-DFT/XDATCAR, vamp samples
+#  N_snapshots snapshots, and VASP runs on each.
+#
+#  Unlike the LJ placeholder (otter_MD_CuTaN2.yaml), the MD uses a trained MACE
+#  potential, so the dynamics are physically meaningful. You supply the model
+#  file yourself and point `path_FF_MD` at it (see the note below on the two
+#  MACE variants). Requires the `lammps-mace_nhvhpc` module on Alex, loaded by
+#  enable_term_alex.sh.
+#
+#  NOTE ON DFT: VASP does not run on Alex (the GPU nvhpc build isn't usable), so
+#  the run_DFT jobs are EXPECTED TO FAIL on Alex — they submit + run on the a100
+#  partition and then fail at `srun vasp_std` (a clean FAILED state). Resubmit
+#  them on Fritz (intel VASP, loaded by enable_term_fritz.sh): because the resource
+#  string is baked in at submit time and Fritz has no a100 partition, first repoint
+#  it, then resubmit, e.g. from a Fritz session:
+#      pq modify r -i <id> "48:1:singlenode:2h"
+#      pq resubmit -i <id>
+#
+#  GPU REQUIREMENT: Alex rejects any job without a GPU. This is handled centrally
+#  by adding  extra_args: ['--gres=gpu:a100:1']  to the `a100` node in
+#  ~/.myqueue/config.py (shared home; only affects a100 jobs, i.e. Alex), so every
+#  a100-partition job here gets one A100 — no per-string GPU flag needed.
+# ============================================================================
+
+### workflow configuration ---------------------------------------------------
+dir_project: "/home/atuin/b299bb/b299bb25/flow-otter-MD-CuTaN2-MACE/"   # ADAPT: output dir
+dir_code: "/home/hpc/b299bb/b299bb25/flow-otter/"                       # ADAPT: rsync'd repo
+
+### resource specification (Slurm: cores:nodes:partition:walltime) ------------
+#  Alex is a GPU cluster. Each branch runs on ONE GPU (the framework launches
+#  `lmp -k on g 1 -sf kk ...`), so ranks_MD is 1. ADAPT the partition/cores to
+#  Alex — an A100 node has 8 GPUs / 128 cores, i.e. ~16 cores per GPU. If your
+#  myqueue setup doesn't request the GPU via the partition, add the gres through
+#  srun_flags_MD (commented below).
+#  The a100 GPU is supplied by the `a100` node's extra_args in ~/.myqueue/config.py
+#  (see header), so these strings need no explicit GPU field — nodename `a100` is enough.
+resources: "16:1:a100:5m"        # a100 partition (also drives the derived instant/short/long)
+resources_MD: "16:1:a100:1h"     # one A100 per MD branch
+ranks_MD: 1                      # 1 MPI rank -> 1 GPU (matches `-k on g 1`)
+resources_DFT: "48:1:a100:2h"    # runs+fails at vasp_std on Alex; repoint to singlenode on Fritz (see header)
+
+### the temperature sweep -----------------------------------------------------
+# Two branches run in parallel (one GPU each); check_simulation_type.py writes
+# one branch_config.yaml per value and sets the top-level `temperature`.
+simulation_type: "sweep"
+num_simulations: 2
+param_to_vary: "temperature"
+array_to_vary: [300.0, 600.0]
+
+### MD configuration ----------------------------------------------------------
+#  MD_type variants:
+#    "lammps+MACE"          -> pair_style mliap unified <model> 0   (ML-IAP unified)
+#    "lammps+MACE_no_mliap" -> pair_style mace no_domain_decomposition; model file
+#  The Alex lammps-mace_nhvhpc container is a native KOKKOS ML-MACE build (it
+#  provides `pair_style mace`/`mace/kk` but NOT the ML-IAP package), so we use
+#  "..._no_mliap". Using "lammps+MACE" here fails with:
+#    ERROR: Unrecognized pair style 'mliap' ... ML-IAP package ... not enabled.
+# Per-stage job environments (sourced by the scheduler before each task).
+# The MD job must load the lammps-mace module + venv; without this the job fails
+# with `lmp: No such file or directory`. Paths are relative to dir_code.
+preamble_MD: "preambles/preamble_alex_lammps_mace.sh"   # Alex: lammps-mace module + .venv-alex
+preamble_DFT: "preambles/preamble_fritz_vasp.sh"        # Fritz VASP env (run_DFT fails on Alex, resubmit on Fritz)
+
+MD_type: "lammps+MACE_no_mliap"
+input_type_lammps: "write_input"
+path_FF_MD: "/home/hpc/b299bb/b299bb25/mace_model.pt"   # INSERT: your MACE model file
+dir_ini_MD: "/home/hpc/b299bb/b299bb25/flow-otter/examples/CuTaN2_MD/"
+
+equilibrate: True
+npt_equilibrate: False           # NVT only; set True (+ P/P_damp) for constant-pressure
+
+vdos_omega_max: 10.0             # used only by the optional post-MD vDOS plot
+
+lammps:
+  units: "metal"                 # eV, Angstrom, ps
+  dimension: 3
+  boundary: "p p p"
+  kspace_style: "none"           # MACE is short-range; no long-range electrostatics
+  atom_style: "atomic"
+
+  restart: false
+  ini_MD_file: "CuTaN2.data"     # LAMMPS data file in dir_ini_MD (converted from POSCAR)
+  elements: ["Ta", "Cu", "N"]    # MUST match the species order the MACE model was trained with
+
+  replicate: [2, 2, 1]           # 12-atom primitive cell -> 108-atom supercell (grow for production)
+
+  dt: 0.002                      # ps (2 fs; drop to 0.001 if you see energy drift)
+  T_start: 50.0                  # heat from 50 K up to the branch temperature
+  T_damp: 0.2                    # ~100*dt, Nose-Hoover thermostat damping
+
+  thermo_output_step_size: 50
+
+  eqsteps_nvt_heating: 2000      # 50 K -> T ramp
+  eqsteps_nvt: 4000              # NVT equilibration at T
+  prodrun_numsteps: 10000        # NVT production
+  prodrun_stepsize: 10           # trajectory dump interval
+
+  compute_msd: true
+  compute_rdf: true
+  compute_inter_rdf: true
+  rdf_bins: 100
+
+### DFT configuration --------------------------------------------------------
+# vamp samples N_snapshots configurations out of each branch's MD trajectory.
+# (No `trajectory_file` here -> prep_DFT.py builds 2-DFT/XDATCAR from the MACE
+#  MD run, regrouping atoms into `lammps: elements` order = the POTCAR order.)
+N_snapshots: 5
+
+potcar_file: "/home/hpc/b299bb/b299bb25/POTCAR"   # must be concatenated in Ta Cu N order
+
+# KPOINTS file (automatic mesh generation)
+kpoints:
+  type: Gamma            # Gamma includes the zone centre (where the gap usually sits)
+  mesh: [2, 2, 2]
+  shift: [0, 0, 0]
+
+# INCAR tags (each key -> "TAG = value"; booleans -> .TRUE./.FALSE.; lists -> space-separated)
+vasp:
+  KPAR: 4                # cores / KPAR = cores per k-point group; NCORE must divide that
+  NCORE: 4
+  ENCUT: 400
+  SIGMA: 0.05
+  EDIFF: 1.0e-06
+  GGA: PE
+  PREC: Accurate
+  ISMEAR: 0
+  LCHARG: true
+  LWAVE: false           # WAVECAR not needed for bandgap/DOS; avoids multi-GB I/O per snapshot
+  LREAL: Auto
