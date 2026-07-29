@@ -209,5 +209,68 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                         print(f"Saved → {outfile}", flush=True)
                     plt.close(fig)
 
+        # --- k-resolved el-ph coupling ratio ---
+        h5_ratio_0 = dir_H_0 / "k_el_ph/k_el_ph_vdos_ratio.h5"
+        if h5_ratio_0.exists():
+            dir_plot_ratio = dir_plots / "k_el_ph_ratio/"
+            dir_plot_ratio.mkdir(parents=True, exist_ok=True)
+
+            with h5py.File(str(h5_ratio_0), "r") as hf:
+                ratio_keys = [k for k in hf.keys() if k not in ("w", "kpoints")]
+
+            for key in ratio_keys:
+                for kpt_vec, klabel in selected_kpoints:
+                    has_data = False
+                    fig, ax = plt.subplots()
+                    ax.set_title(f"el-ph coupling  [{key}]  κ = {klabel}")
+                    ax.axhline(y=0, color="black", linewidth=0.8)
+
+                    for b in range(len(array_to_vary)):
+                        dir_project_b = dir_project / f"{param_to_vary}_{array_to_vary[b]}/"
+                        with open(str(dir_project_b / "branch_config.yaml"), "r") as f:
+                            configWF_b = yaml.safe_load(f)
+
+                        dir_H_b    = Path(configWF_b.get("dir_H", str(dir_project_b / "2-H/")))
+                        h5_ratio_b = dir_H_b / "k_el_ph/k_el_ph_vdos_ratio.h5"
+
+                        if not h5_ratio_b.exists():
+                            continue
+
+                        with h5py.File(str(h5_ratio_b), "r") as hf:
+                            if key not in hf:
+                                continue
+                            w_e        = hf["w"][:]
+                            kpts_rb    = hf["kpoints"][:]
+                            if kpts_rb.shape[0] == 3:
+                                kpts_rb = kpts_rb.T
+                            ratio_data = hf[key]["ratio"][:]
+
+                        [(ik_b, _, _)] = _find_kpoint_indices(kpts_rb, [(kpt_vec, klabel)])
+
+                        if ratio_data.shape[0] == len(w_e):
+                            r_at_k = ratio_data[:, ik_b]
+                        else:
+                            r_at_k = ratio_data[ik_b, :]
+
+                        w_pos_r = w_e >= 0
+                        branch_label = f"{param_to_vary} {array_to_vary[b]}{unit_to_vary}"
+                        ax.plot(w_e[w_pos_r], r_at_k[w_pos_r], label=branch_label)
+                        has_data = True
+
+                    if has_data:
+                        ax.set_xlabel(f"Frequency (1/{unit_dt})")
+                        ax.set_ylabel(f"el-ph coupling / {hamiltonian_unit}")
+                        if omega_max is not None:
+                            ax.set_xlim(0, omega_max)
+                        else:
+                            ax.set_xlim(0)
+                        ax.set_ylim(0)
+                        ax.legend()
+                        plt.tight_layout()
+                        outfile = dir_plot_ratio / f"ratio_{key}_{klabel}.pdf"
+                        plt.savefig(outfile)
+                        print(f"Saved → {outfile}", flush=True)
+                    plt.close(fig)
+
     print("Finish task: plot_k_el_ph_spectral_func", flush=True)
     return True, {"path_configWF": path_configWF, "num_simulations": num_simulations}
