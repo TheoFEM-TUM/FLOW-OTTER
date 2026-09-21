@@ -1,4 +1,4 @@
-# Flow-Otter
+# FLOW-OTTER
 
 <p align="center">
   <img width="424" height="424" alt="flow_otter" src="https://github.com/user-attachments/assets/7de65693-bd03-4196-8ec6-d8d095787fec" /><br>
