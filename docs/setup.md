@@ -6,7 +6,7 @@ git clone https://github.com/TheoFEM-TUM/flow-otter.git
 
 
 ## Requirements
-`Flow-Otter` runs on computing clusters with [SLURM](https://slurm.schedmd.com/), [PBS](https://en.wikipedia.org/wiki/Portable_Batch_System), or [LSF](https://en.wikipedia.org/wiki/IBM_Spectrum_LSF), since the underlying  job scheduler [myqueue](https://myqueue.readthedocs.io/) requires one of them.  
+`FLOW-OTTER` runs on computing clusters with [SLURM](https://slurm.schedmd.com/), [PBS](https://en.wikipedia.org/wiki/Portable_Batch_System), or [LSF](https://en.wikipedia.org/wiki/IBM_Spectrum_LSF), since the underlying  job scheduler [myqueue](https://myqueue.readthedocs.io/) requires one of them.  
 
 To use the package, you need a Python version of **TBD** or higher on your cluster.
 You can check your Python version with 
@@ -16,7 +16,7 @@ python --version
 
 ## Setup virtual Python environment(s)
 
-`Flow-Otter` must be used within virtual Python environments that contain the required Python packages.
+`FLOW-OTTER` must be used within virtual Python environments that contain the required Python packages.
 
 Create an environment with the name `.venv_flow_otter` with
 ```
@@ -64,10 +64,10 @@ __after__ their installations, which are explained below.
 
 
 ## External software
-To access the full functionality of `Flow-Otter`, install all external codes listed below. 
+To access the full functionality of `FLOW-OTTER`, install all external codes listed below. 
 However, if you only require specific features, you may install only the corresponding dependencies.
 
-Below is an overview of the supported external tools, including their installation links and their roles within `Flow-Otter`.
+Below is an overview of the supported external tools, including their installation links and their roles within `FLOW-OTTER`.
 
 
 ### Hamster 
@@ -95,13 +95,13 @@ Only for `MD_type` = "skip_MD", no LAMMPS installation is needed.
 ### MACE
 [MACE](https://mace-docs.readthedocs.io/en/latest/) is a machine-learning software package that creates neural-network-based force fields.
 
-If you would like to use MACE force fields with `Flow-Otter`, follow the instructions to install LAMMPS accordingly, depending on the `MD_type` = ["lammps+MACE_no_mliap"](https://mace-docs.readthedocs.io/en/latest/guide/lammps.html) or `MD_type` = ["lammps+MACE"](https://mace-docs.readthedocs.io/en/latest/guide/lammps_mliap.html).
+If you would like to use MACE force fields with `FLOW-OTTER`, follow the instructions to install LAMMPS accordingly, depending on the `MD_type` = ["lammps+MACE_no_mliap"](https://mace-docs.readthedocs.io/en/latest/guide/lammps.html) or `MD_type` = ["lammps+MACE"](https://mace-docs.readthedocs.io/en/latest/guide/lammps_mliap.html).
 
 
 ### VASP
 [VASP](https://vasp.at/) is a density-functional theory code that supports first-principles molecular dynamics simulations and the generation of kernel-based machine-learning force fields.
 
-If you would like to run VASP machine-learning force fields with `Flow-Otter` (`MD_type` = "lammps+VASP"), LAMMPS needs to be installed with a [VASPml patch](https://vasp.at/wiki/Running_machine-learned_force_fields_in_LAMMPS).
+If you would like to run VASP machine-learning force fields with `FLOW-OTTER` (`MD_type` = "lammps+VASP"), LAMMPS needs to be installed with a [VASPml patch](https://vasp.at/wiki/Running_machine-learned_force_fields_in_LAMMPS).
 
 
 ### MD+Kubo method
