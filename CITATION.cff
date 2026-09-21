@@ -45,10 +45,4 @@ references:
     year: 2023
     doi: "DOI_HERE"
 
-  - type: article
-    title: "Third reference title"
-    authors:
-      - family-names: "Another"
-        given-names: "Author"
-    year: 2022
 
