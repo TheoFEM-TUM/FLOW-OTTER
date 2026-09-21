@@ -1,6 +1,6 @@
 # Examples 🦦
 
-The following examples show some possible applications of `Flow-Otter`. 
+The following examples show some possible applications of `FLOW-OTTER`. 
 The corresponding config YAML files are in this directory.
 Each example is visualized using a scheme that shows the created branches and workflow tasks (except buffer tasks).  
 
