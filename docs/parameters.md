@@ -198,6 +198,8 @@ Details can also be found in [LAMMPS documentation](https://docs.lammps.org/Manu
 
 
 ## el_ph:
+This section contains parameters for calculating spectral functions for electron-phonon couplings. It is, so far, an experimental/not-supported feature!
+
 `num_snapshot` (int): number of snapshots used to calculate an average PDOS (*last_snapshot - first_snapshot + 1*)  
 `snapshot_sampling` (string): determines how `num_snapshot_pdos` snapshots are chosen out of the the N_snapshots snapshots for which H exist (*"all"*, "uniform", "random")  
 `omega_max` (Float64): maximal frequency shown in the electron-phonon spectral function plots in reciprocal units of the time used in the MD (*None*)  
