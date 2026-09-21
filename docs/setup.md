@@ -8,7 +8,7 @@ git clone https://github.com/TheoFEM-TUM/flow-otter.git
 ## Requirements
 `FLOW-OTTER` runs on computing clusters with [SLURM](https://slurm.schedmd.com/), [PBS](https://en.wikipedia.org/wiki/Portable_Batch_System), or [LSF](https://en.wikipedia.org/wiki/IBM_Spectrum_LSF), since the underlying  job scheduler [myqueue](https://myqueue.readthedocs.io/) requires one of them.  
 
-To use the package, you need a Python version of **TBD** or higher on your cluster.
+To use the package, you need a Python version of 3.9 or higher on your cluster.
 You can check your Python version with 
 ```
 python --version
