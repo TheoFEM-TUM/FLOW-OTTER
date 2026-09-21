@@ -6,28 +6,28 @@
 </p>
 <br>
 
-`Flow-Otter` is a Python- and Julia-based workflow framework for automating large-scale, multi-step computational pipelines for materials simulations.
+`FLOW-OTTER` is a Python- and Julia-based workflow framework for automating large-scale, multi-step computational pipelines for materials simulations.
 
 The framework enables efficient computation of optoelectronic properties by constructing electronic Hamiltonian (HAMSTER and empirical tight-binding) from molecular dynamics trajectories (LAMMPS, including machine-learning approaches).
-`Flow-Otter` automates simulation pipelines using [PerQueue](https://gitlab.com/asm-dtu/perqueue), providing structured input/output organization and pre- and post-processing with built-in validation and sanity checks.
+`FLOW-OTTER` automates simulation pipelines using [PerQueue](https://gitlab.com/asm-dtu/perqueue), providing structured input/output organization and pre- and post-processing with built-in validation and sanity checks.
 
 This code package was originally developed by Frederik Vonhoff and is a collaborative effort between TUM (Prof. D. A. Egger) and DTU (Prof. I. E. Castelli).
 
 
 ## Setup 
 
-[Here](docs/setup.md), you find a detailed description of how to set up `Flow-Otter`.
+[Here](docs/setup.md), you find a detailed description of how to set up `FLOW-OTTER`.
 
 
 ## Quick start
 
-After setting up and activating the desired virtual environment, go to a directory where you would like to set up `Flow-Otter`. 
+After setting up and activating the desired virtual environment, go to a directory where you would like to set up `FLOW-OTTER`. 
 Initialize [PerQueue](https://gitlab.com/asm-dtu/perqueue) with
 ```
 pq init
 ```
 
-Then start `Flow-Otter` with the configuration file you would like to use:
+Then start `FLOW-OTTER` with the configuration file you would like to use:
 ```
 python path_to_this_project/flow.py path_to_config_file/otter.yaml
 ```
@@ -47,7 +47,7 @@ to check that everything works fine.
 
 ## Usage
 
-`Flow-Otter` workflows are managed with the normal [PerQueue](https://gitlab.com/asm-dtu/perqueue) commands (follow the link for further details or use `pq -h`). 
+`FLOW-OTTER` workflows are managed with the normal [PerQueue](https://gitlab.com/asm-dtu/perqueue) commands (follow the link for further details or use `pq -h`). 
 The most relevant commands are:
 - `pq ls` &rarr; provides a list of the workflow tasks with their status in order of creation
 - `pq modify r -i ID` &rarr; modify the resources of the job with the requested job ID (submit first job for change of branch config files)
@@ -61,14 +61,14 @@ Exceptions are all resource strings (see `pq modify r -i ID`), the parameter `nu
 
 ## Program logic
 
-The available options for `Flow-Otter` are shown in the following flowchart:
+The available options for `FLOW-OTTER` are shown in the following flowchart:
 <p align="center">
   <img src="https://github.com/user-attachments/assets/739e3ff7-2095-4df3-bccb-9531da3b505e" alt="Flowchart" width="700">
 </p>
 
 ## Parameters
 
-See [here](docs/parameters.md) for a complete list of `Flow-Otter` configuration parameters.
+See [here](docs/parameters.md) for a complete list of `FLOW-OTTER` configuration parameters.
 
 You can either specify them in the main config YAML file (e.g., `otter.yaml`), one of the `branch_config.yaml` files (created for `num_simulations` > 1), or in the `pre_branch_config.yaml` (automatically merged into `branch_config.yaml` when created).  
 
@@ -79,7 +79,7 @@ You can either specify them in the main config YAML file (e.g., `otter.yaml`), o
 
 ## How to cite
 
-Please cite the following references when using `Flow-Otter`:  
+Please cite the following references when using `FLOW-OTTER`:  
 - ***TBD***
 - B. H. Sjølin, W. S. Hansen, A. A. Morin-Martinez, M. H. Petersen, L. H. Rieger, T. Vegge, J. M. García-Lastra, and I. E. Castelli (2024). **PerQueue: managing complex and dynamic workflows. Digital Discovery**, 3(9), 1832–1841. (https://doi.org/10.1039/D4DD00134F)
 
