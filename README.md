@@ -62,8 +62,10 @@ Exceptions are all resource strings (see `pq modify r -i ID`), the parameter `nu
 ## Program logic
 
 The available options for `FLOW-OTTER` are shown in the following flowchart:
+
+
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/739e3ff7-2095-4df3-bccb-9531da3b505e" alt="Flowchart" width="700">
+<img width="700" alt="flowchart" src="https://github.com/user-attachments/assets/e3457489-fcb6-42ff-b8c2-2344f5d6391c" />
 </p>
 
 ## Parameters
