@@ -65,7 +65,7 @@ The available options for `FLOW-OTTER` are shown in the following flowchart:
 
 
 <p align="center">
-<img width="700" alt="flowchart" src="https://github.com/user-attachments/assets/e3457489-fcb6-42ff-b8c2-2344f5d6391c" />
+  <img width="700" alt="flowchart" src="https://github.com/user-attachments/assets/dd1ec8f1-0222-4ff6-b7b8-5bfadde81cbd" />
 </p>
 
 ## Parameters
