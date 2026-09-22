@@ -22,6 +22,22 @@ This code package was originally developed by Frederik Vonhoff and is a collabor
 
 [Here](docs/setup.md), you find a detailed description of how to set up `FLOW-OTTER`.
 
+### Main requirements
+
+- Python 3.8 or later
+- myqueue version 24.10.0
+- PerQueue 0.3.1 or later
+- additional requirements in 
+
+### Optional requirements depending on usage
+
+- [Julia](https://julialang.org/) 1.11.2 or later
+- [Hamster](https://github.com/TheoFEM-TUM/Hamster.jl)
+- [LAMMPS](https://www.lammps.org/cite.html)
+- [MACE](https://mace-docs.readthedocs.io/en/latest/)
+- [VASP](https://vasp.at/)
+- [Vampires](https://github.com/TheoFEM-TUM/Vampires.jl)
+
 
 ## Quickstart 
 
