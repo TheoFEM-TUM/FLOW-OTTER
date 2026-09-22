@@ -21,29 +21,30 @@ This code package was originally developed by Frederik Vonhoff and is a collabor
 ## Setup and requirements
 
 `FLOW-OTTER` is an automation framework designed to run on computer clusters using the job scheduling system Slurm.
+
 The computational overhead for `FLOW-OTTER`'s task management is negligible, taking only a few seconds and using minimal resources, e.g., when calling external software.
 Depending on the investigated system's size, some of the interpretation or evaluation tasks in `FLOW-OTTER` require a small amount of computation time (seconds to minutes for small systems) or a moderate amount (a few hours) on a computation cluster with a typical single-node job.
 
 [Here](docs/setup.md), you find a detailed description of how to set up `FLOW-OTTER`.
 
-The following requirements match the versions for which `FLOW-OTTER` has been tested. However, especially for the optional requirements, other setups might work as well.
+The following requirements match the versions for which `FLOW-OTTER` has been tested. However, other setups might work as well, especially with newer versions of the listed codes.
 
 ### Main requirements
 
-- Slurm 25.05.9 or later
-- Python 3.8 or later
+- Slurm 25.05.9 
+- Python 3.8 
 - myqueue version 24.10.0
-- PerQueue 0.3.1 or later
+- PerQueue 0.3.1 
 - additional requirements in [requirements/requirements_flow_otter.txt](requirements/requirements_flow_otter.txt)
 
 ### Optional requirements depending on usage
 
-- [Julia](https://julialang.org/) 1.11.2 or later (Julia package requirements can be found in [requirements/Project.toml](requirements/Project.toml))
-- [Hamster](https://github.com/TheoFEM-TUM/Hamster.jl) 0.3.1 or later
-- [LAMMPS](https://www.lammps.org/cite.html) (version 10 Sep 2025 or later)
+- [Julia](https://julialang.org/) 1.11.2  (Julia package requirements can be found in [requirements/Project.toml](requirements/Project.toml))
+- [Hamster](https://github.com/TheoFEM-TUM/Hamster.jl) 0.3.1 
+- [LAMMPS](https://www.lammps.org/cite.html) (version 10 Sep 2025)
 - [MACE](https://mace-docs.readthedocs.io/en/latest/)
-- [VASP](https://vasp.at/) 6.5.0 or later
-- [Vampires](https://github.com/TheoFEM-TUM/Vampires.jl) 0.1.0 or later
+- [VASP](https://vasp.at/) 6.5.0 
+- [Vampires](https://github.com/TheoFEM-TUM/Vampires.jl) 0.1.0 
 
 
 ## Quickstart 
