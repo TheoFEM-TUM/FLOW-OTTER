@@ -22,7 +22,7 @@ This code package was originally developed by Frederik Vonhoff and is a collabor
 
 [Here](docs/setup.md), you find a detailed description of how to set up `FLOW-OTTER`.
 
-The following requirements match the versions for which `FLOW-OTTER` has been tested. However, especially for the optional requirements, other setups might also work.
+The following requirements match the versions for which `FLOW-OTTER` has been tested. However, especially for the optional requirements, other setups might work as well.
 
 ### Main requirements
 
@@ -35,11 +35,11 @@ The following requirements match the versions for which `FLOW-OTTER` has been te
 ### Optional requirements depending on usage
 
 - [Julia](https://julialang.org/) 1.11.2 or later (Julia package requirements can be found in `requirements/Project.toml`)
-- [Hamster](https://github.com/TheoFEM-TUM/Hamster.jl)
-- [LAMMPS](https://www.lammps.org/cite.html)
+- [Hamster](https://github.com/TheoFEM-TUM/Hamster.jl) 0.3.1 or later
+- [LAMMPS](https://www.lammps.org/cite.html) (version 10 Sep 2025 or later)
 - [MACE](https://mace-docs.readthedocs.io/en/latest/)
-- [VASP](https://vasp.at/)
-- [Vampires](https://github.com/TheoFEM-TUM/Vampires.jl)
+- [VASP](https://vasp.at/) 6.5.0 or later
+- [Vampires](https://github.com/TheoFEM-TUM/Vampires.jl) 0.1.0 or later
 
 
 ## Quickstart 
