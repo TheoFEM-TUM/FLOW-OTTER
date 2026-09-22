@@ -13,7 +13,7 @@ You can check your Python version with
 python --version
 ```
 
-If Python is applicable, you can install `PerQueue`, which uses the Python package `myqueue`. Together, they build the interface to the job scheduling system. 
+If Python is applicable, you can install PerQueue, which uses the Python package myqueue. Together, they build the interface to the job scheduling system. 
 
 Below are detailed installation steps for a full setup of `FLOW-OTTER`. 
 Steps 1-3 are mandatory for every `FLOW-OTTER` setup. 
@@ -56,7 +56,7 @@ In future versions, these scripts will be supported as preamble scripts, elimina
 
 
 ## 3. myqueue configuration
-To use PerQueue, `myqueue` needs to know the cluster-specific configuration of the compute nodes and partitions. 
+To use PerQueue, myqueue needs to know the cluster-specific configuration of the compute nodes and partitions. 
 You can set this in `~/.myqueue/config.py`. 
 In the [myqueue documentation](https://myqueue.readthedocs.io/configuration.html), you can find further details.
 
