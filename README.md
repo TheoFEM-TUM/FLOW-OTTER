@@ -21,7 +21,7 @@ This code package was originally developed by Frederik Vonhoff and is a collabor
 ## Setup and requirements
 
 `FLOW-OTTER` is an automation framework designed to run on computer clusters using the job scheduling system Slurm.
-The computational overhead for `FLOW-OTTER's task management is negligible, taking only a few seconds and using minimal resources, e.g., when calling external software.
+The computational overhead for `FLOW-OTTER`'s task management is negligible, taking only a few seconds and using minimal resources, e.g., when calling external software.
 Depending on the investigated system's size, some of the interpretation or evaluation tasks in `FLOW-OTTER` require a small amount of computation time (seconds to minutes for small systems) or a moderate amount (a few hours) on a computation cluster with a typical single-node job.
 
 [Here](docs/setup.md), you find a detailed description of how to set up `FLOW-OTTER`.
@@ -34,11 +34,11 @@ The following requirements match the versions for which `FLOW-OTTER` has been te
 - Python 3.8 or later
 - myqueue version 24.10.0
 - PerQueue 0.3.1 or later
-- additional requirements in [requirements/requirements_flow_otter.txt]
+- additional requirements in [requirements/requirements_flow_otter.txt](requirements/requirements_flow_otter.txt)
 
 ### Optional requirements depending on usage
 
-- [Julia](https://julialang.org/) 1.11.2 or later (Julia package requirements can be found in [requirements/Project.toml])
+- [Julia](https://julialang.org/) 1.11.2 or later (Julia package requirements can be found in [requirements/Project.toml](requirements/Project.toml))
 - [Hamster](https://github.com/TheoFEM-TUM/Hamster.jl) 0.3.1 or later
 - [LAMMPS](https://www.lammps.org/cite.html) (version 10 Sep 2025 or later)
 - [MACE](https://mace-docs.readthedocs.io/en/latest/)
