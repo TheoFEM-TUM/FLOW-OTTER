@@ -28,11 +28,11 @@ This code package was originally developed by Frederik Vonhoff and is a collabor
 - Python 3.8 or later
 - myqueue version 24.10.0
 - PerQueue 0.3.1 or later
-- additional requirements in 
+- additional requirements in `requirements/requirements_flow_otter.txt`
 
 ### Optional requirements depending on usage
 
-- [Julia](https://julialang.org/) 1.11.2 or later
+- [Julia](https://julialang.org/) 1.11.2 or later (Julia package requirements can be found in `requirements/Project.toml`)
 - [Hamster](https://github.com/TheoFEM-TUM/Hamster.jl)
 - [LAMMPS](https://www.lammps.org/cite.html)
 - [MACE](https://mace-docs.readthedocs.io/en/latest/)
