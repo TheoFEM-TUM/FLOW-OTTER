@@ -15,7 +15,10 @@ python --version
 
 If Python is applicable, you can install `PerQueue`, which uses the Python package `myqueue`. Together, they build the interface to the job scheduling system. 
 
-Below are detailed installation steps for a full setup of `FLOW-OTTER`. Steps 1-3 are mandatory for every `FLOW-OTTER` setup. The installation steps afterward are optional, depending on how `FLOW-OTTER` is used.
+Below are detailed installation steps for a full setup of `FLOW-OTTER`. 
+Steps 1-3 are mandatory for every `FLOW-OTTER` setup. 
+The installation steps afterward are optional, depending on how `FLOW-OTTER` is used.
+All installation steps (except for some of the external software) should not run longer than a few seconds or minutes.
 
 ## 1. Clone the repository into your desired directory: 
 
