@@ -42,7 +42,7 @@ The following requirements match the versions for which `FLOW-OTTER` has been te
 - [Julia](https://julialang.org/) 1.11.2  (Julia package requirements can be found in [requirements/Project.toml](requirements/Project.toml))
 - [Hamster](https://github.com/TheoFEM-TUM/Hamster.jl) 0.3.1 
 - [LAMMPS](https://www.lammps.org/cite.html) (version 10 Sep 2025)
-- [MACE](https://mace-docs.readthedocs.io/en/latest/)
+- [MACE](https://mace-docs.readthedocs.io/en/latest/) 0.3.15
 - [VASP](https://vasp.at/) 6.5.0 
 - [Vampires](https://github.com/TheoFEM-TUM/Vampires.jl) 0.1.0 
 
