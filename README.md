@@ -22,9 +22,11 @@ This code package was originally developed by Frederik Vonhoff and is a collabor
 
 [Here](docs/setup.md), you find a detailed description of how to set up `FLOW-OTTER`.
 
+The following requirements match the versions for which `FLOW-OTTER` has been tested. However, especially for the optional requirements, other setups might also work.
+
 ### Main requirements
 
-- Slurm 
+- Slurm 25.05.9 or later
 - Python 3.8 or later
 - myqueue version 24.10.0
 - PerQueue 0.3.1 or later
