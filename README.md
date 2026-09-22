@@ -14,12 +14,16 @@ The framework enables efficient computation of optoelectronic properties by cons
 This code package was originally developed by Frederik Vonhoff and is a collaborative effort between TUM (Prof. D. A. Egger) and DTU (Prof. I. E. Castelli).
 
 
-## Setup 
+
+
+
+
+## Setup and requirements
 
 [Here](docs/setup.md), you find a detailed description of how to set up `FLOW-OTTER`.
 
 
-## Quick start
+## Quickstart 
 
 After setting up and activating the desired virtual environment, go to a directory where you would like to set up `FLOW-OTTER`. 
 Initialize [PerQueue](https://gitlab.com/asm-dtu/perqueue) with
