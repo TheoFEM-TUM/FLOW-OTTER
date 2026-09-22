@@ -1,12 +1,11 @@
 # Setup 🦦
-Clone the repository into your desired directory: 
-```
-git clone https://github.com/TheoFEM-TUM/flow-otter.git
-```
 
 
-## Requirements
-`FLOW-OTTER` runs only on computing clusters with [SLURM](https://slurm.schedmd.com/).
+`FLOW-OTTER` runs only on computing clusters with [SLURM](https://slurm.schedmd.com/) since it interferes with the scheduler to manage the workflow.
+You can check the Slurm version on your cluster with 
+```
+sbatch --version
+```
 
 To use the package, you need Python version 3.9 or later on your cluster.
 You can check your Python version with 
@@ -14,7 +13,17 @@ You can check your Python version with
 python --version
 ```
 
-## Setup virtual Python environment(s)
+If Python is applicable, you can install `PerQueue`, which uses the Python package `myqueue`. Together, they build the interface to the job scheduling system. 
+
+Below are detailed installation steps for a full setup of `FLOW-OTTER`. Steps 1-3 are mandatory for every `FLOW-OTTER` setup. The installation steps afterward are optional, depending on the usage of `FLOW-OTTER`.
+
+## 1. Clone the repository into your desired directory: 
+
+```
+git clone https://github.com/TheoFEM-TUM/flow-otter.git
+```
+
+## 2. Set up virtual Python environment(s)
 
 `FLOW-OTTER` must be used within virtual Python environments that contain the required Python packages.
 
@@ -43,8 +52,8 @@ Creating small bash scripts to load environment-specific dependencies can be hel
 In future versions, these scripts will be supported as preamble scripts, eliminating the need for manual resubmission (see the Preambles section below).
 
 
-## PerQueue configuration
-PerQueue requires cluster-specific configuration. 
+## 3. myqueue configuration
+To use PerQueue, you need to requires cluster-specific configuration. Since it depends on the package `myqueue`
 You can set this in `~/.myqueue/config.py`. 
 In the [myqueue documentation](https://myqueue.readthedocs.io/configuration.html), you can find further details.
 
