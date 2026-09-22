@@ -20,7 +20,7 @@ This code package was originally developed by Frederik Vonhoff and is a collabor
 
 ## Setup and requirements
 
-`FLOW-OTTER` is an automation framework designed to run on computer clusters using the job scheduling system Slurm.
+`FLOW-OTTER` is an automation framework designed to run on computer clusters using the job scheduling system SLURM.
 
 The computational overhead for `FLOW-OTTER`'s task management is negligible, taking only a few seconds and using minimal resources, e.g., when calling external software.
 Depending on the investigated system's size, some of the interpretation or evaluation tasks in `FLOW-OTTER` require a small amount of computation time (seconds to minutes for small systems) or a moderate amount (a few hours) on a computation cluster with a typical single-node job.
@@ -31,10 +31,10 @@ The following requirements match the versions for which `FLOW-OTTER` has been te
 
 ### Main requirements
 
-- Slurm 25.05.9 
-- Python 3.8 
-- myqueue version 24.10.0
-- PerQueue 0.3.1 
+- [SLURM](https://slurm.schedmd.com/) 25.05.9 
+- [Python](https://www.python.org/) 3.8 
+- [myqueue](https://myqueue.readthedocs.io/index.html#) version 24.10.0
+- [PerQueue](https://gitlab.com/asm-dtu/perqueue) 0.3.1 
 - additional requirements in [requirements/requirements_flow_otter.txt](requirements/requirements_flow_otter.txt)
 
 ### Optional requirements depending on usage
