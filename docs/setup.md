@@ -15,12 +15,12 @@ python --version
 
 If Python is applicable, you can install `PerQueue`, which uses the Python package `myqueue`. Together, they build the interface to the job scheduling system. 
 
-Below are detailed installation steps for a full setup of `FLOW-OTTER`. Steps 1-3 are mandatory for every `FLOW-OTTER` setup. The installation steps afterward are optional, depending on the usage of `FLOW-OTTER`.
+Below are detailed installation steps for a full setup of `FLOW-OTTER`. Steps 1-3 are mandatory for every `FLOW-OTTER` setup. The installation steps afterward are optional, depending on how `FLOW-OTTER` is used.
 
 ## 1. Clone the repository into your desired directory: 
 
 ```
-git clone https://github.com/TheoFEM-TUM/flow-otter.git
+git clone https://github.com/TheoFEM-TUM/FLOW-OTTER.git
 ```
 
 ## 2. Set up virtual Python environment(s)
@@ -53,14 +53,14 @@ In future versions, these scripts will be supported as preamble scripts, elimina
 
 
 ## 3. myqueue configuration
-To use PerQueue, you need `myqueue` to know the cluster-specific configuration of the compute nodes and partitions. 
+To use PerQueue, `myqueue` needs to know the cluster-specific configuration of the compute nodes and partitions. 
 You can set this in `~/.myqueue/config.py`. 
 In the [myqueue documentation](https://myqueue.readthedocs.io/configuration.html), you can find further details.
 
 
 ## 4. Set up Julia dependencies
 
-To set up the Julia dependencies, you can either use the `Manifest.toml` and/or `Project.toml`,  or you can install them in your global Julia environment with
+To set up the Julia dependencies, you can either use the `Project.toml`,  or you can install them in your global Julia environment with
 ```
 juia requirements/install_julia_requirements.jl
 ```
@@ -88,7 +88,7 @@ It is required if you set the parameter `H_type` to "hamster".
 ### Vampires
 [Vampires](https://github.com/TheoFEM-TUM/Vampires.jl) is a Julia toolkit for manipulating molecular dynamics trajectories and density functional theory output.
 
-It supports Hamster, so it needs to be installed if you set the parameter `H_type` to "hamster".
+It supports Hamster, so it must be installed if you set the `H_type` parameter to "hamster".
 
 
 ### LAMMPS
