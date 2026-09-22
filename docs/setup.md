@@ -53,12 +53,12 @@ In future versions, these scripts will be supported as preamble scripts, elimina
 
 
 ## 3. myqueue configuration
-To use PerQueue, you need to requires cluster-specific configuration. Since it depends on the package `myqueue`
+To use PerQueue, you need `myqueue` to know the cluster-specific configuration of the compute nodes and partitions. 
 You can set this in `~/.myqueue/config.py`. 
 In the [myqueue documentation](https://myqueue.readthedocs.io/configuration.html), you can find further details.
 
 
-## Setup Julia dependencies
+## 4. Set up Julia dependencies
 
 To set up the Julia dependencies, you can either use the `Manifest.toml` and/or `Project.toml`,  or you can install them in your global Julia environment with
 ```
@@ -72,7 +72,7 @@ julia requirements/add_packages/add_*.jl
 __after__ their installations, which are explained below.
 
 
-## External software
+## 5. External software
 To access the full functionality of `FLOW-OTTER`, install all external codes listed below. 
 However, if you only require specific features, you may install only the corresponding dependencies.
 
