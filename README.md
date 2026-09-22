@@ -33,7 +33,7 @@ The following requirements match the versions for which `FLOW-OTTER` has been te
 
 - [SLURM](https://slurm.schedmd.com/) 25.05.9 
 - [Python](https://www.python.org/) 3.8 
-- [myqueue](https://myqueue.readthedocs.io/index.html#) version 24.10.0
+- [myqueue](https://myqueue.readthedocs.io/index.html#) 24.10.0
 - [PerQueue](https://gitlab.com/asm-dtu/perqueue) 0.3.1 
 - additional requirements in [requirements/requirements_flow_otter.txt](requirements/requirements_flow_otter.txt)
 
