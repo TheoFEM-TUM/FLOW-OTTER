@@ -33,7 +33,7 @@ Install all required Python packages (including PerQueue and myqueue) with:
 pip install -r requirements_flow_otter.txt
 ```
 You can find `requirements_flow_otter.txt` in `requirements/`. 
-Please note that PerQueue currently requires myqueue version of **TBD**.
+Please note that PerQueue currently requires myqueue version 24.10.0.
 
 
 Often, different external software packages have incompatible requirements for Python packages. 
