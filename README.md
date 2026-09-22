@@ -24,6 +24,7 @@ This code package was originally developed by Frederik Vonhoff and is a collabor
 
 ### Main requirements
 
+- Slurm 
 - Python 3.8 or later
 - myqueue version 24.10.0
 - PerQueue 0.3.1 or later
