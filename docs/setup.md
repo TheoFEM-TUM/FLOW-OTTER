@@ -6,9 +6,9 @@ git clone https://github.com/TheoFEM-TUM/flow-otter.git
 
 
 ## Requirements
-`FLOW-OTTER` runs on computing clusters with [SLURM](https://slurm.schedmd.com/), [PBS](https://en.wikipedia.org/wiki/Portable_Batch_System), or [LSF](https://en.wikipedia.org/wiki/IBM_Spectrum_LSF), since the underlying  job scheduler [myqueue](https://myqueue.readthedocs.io/) requires one of them.  
+`FLOW-OTTER` runs only on computing clusters with [SLURM](https://slurm.schedmd.com/).
 
-To use the package, you need a Python version of 3.9 or higher on your cluster.
+To use the package, you need Python version 3.9 or later on your cluster.
 You can check your Python version with 
 ```
 python --version
@@ -104,11 +104,4 @@ If you would like to use MACE force fields with `FLOW-OTTER`, follow the instruc
 If you would like to run VASP machine-learning force fields with `FLOW-OTTER` (`MD_type` = "lammps+VASP"), LAMMPS needs to be installed with a [VASPml patch](https://vasp.at/wiki/Running_machine-learned_force_fields_in_LAMMPS).
 
 
-### MD+Kubo method
 
-Not supported yet!
-
-
-## Perambles
-
-Not supported yet!
