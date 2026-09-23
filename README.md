@@ -106,7 +106,7 @@ You can either specify them in the main config YAML file (e.g., `otter.yaml`), o
 
 [Here](examples/examples.md), you can find examples of simple configuration files.
 
-For more advanced examples, you can take a look at the [data](zenodo-link) from the paper "Hamiltonian learning reveals optoelectronic mechanisms across thermodynamic state" (see below). 
+For more advanced examples, you can take a look at the [data](https://doi.org/10.5281/zenodo.22917148) from the paper "Hamiltonian learning reveals optoelectronic mechanisms across thermodynamic state" (see below). 
 Using this framework with the referenced external codes, the paper's results can be fully reproduced from the configuration YAML and input files stored in the linked data set.
 
 ## How to cite
