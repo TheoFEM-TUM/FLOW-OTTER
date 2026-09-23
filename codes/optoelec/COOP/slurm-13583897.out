@@ -1,0 +1,34 @@
+
+  [01;33mThis stage is deprecated. Please consider moving to a new stage (2026
+or newer)[0m
+
+test
+ERROR: LoadError: KeyError: key "Hk__1" not found
+Stacktrace:
+  [1] getindex(parent::HDF5.File, path::String; pv::@Kwargs{})
+    @ HDF5 /p/project1/hamilmater/vonhoff1/.julia_depot/packages/HDF5/Z859u/src/highlevel.jl:75
+  [2] getindex
+    @ /p/project1/hamilmater/vonhoff1/.julia_depot/packages/HDF5/Z859u/src/highlevel.jl:74 [inlined]
+  [3] (::Hamster.var"#275#277"{String, String, Int64})(file::HDF5.File)
+    @ Hamster /p/scratch/hamilmater/vonhoff1/workflow_pq/modules/Hamster.jl/src/model/ham_write.jl:199
+  [4] (::HDF5.var"#17#18"{HDF5.HDF5Context, @Kwargs{}, Hamster.var"#275#277"{String, String, Int64}, HDF5.File})()
+    @ HDF5 /p/project1/hamilmater/vonhoff1/.julia_depot/packages/HDF5/Z859u/src/file.jl:101
+  [5] task_local_storage(body::HDF5.var"#17#18"{HDF5.HDF5Context, @Kwargs{}, Hamster.var"#275#277"{String, String, Int64}, HDF5.File}, key::Symbol, val::HDF5.HDF5Context)
+    @ Base ./task.jl:315
+  [6] #h5open#16
+    @ /p/project1/hamilmater/vonhoff1/.julia_depot/packages/HDF5/Z859u/src/file.jl:96 [inlined]
+  [7] h5open
+    @ /p/project1/hamilmater/vonhoff1/.julia_depot/packages/HDF5/Z859u/src/file.jl:94 [inlined]
+  [8] #read_ham#274
+    @ /p/scratch/hamilmater/vonhoff1/workflow_pq/modules/Hamster.jl/src/model/ham_write.jl:197 [inlined]
+  [9] read_ham
+    @ /p/scratch/hamilmater/vonhoff1/workflow_pq/modules/Hamster.jl/src/model/ham_write.jl:194 [inlined]
+ [10] read_ham
+    @ /p/scratch/hamilmater/vonhoff1/workflow_pq/modules/Hamster.jl/src/model/ham_write.jl:218 [inlined]
+ [11] get_dense_H(H_path::String, t::Int64, hamiltonian_style::String)
+    @ Main /p/scratch/hamilmater/vonhoff1/workflow_pq/MD_TB_PQ_wf/codes/optoelec/gap+dos/read_H.jl:96
+ [12] top-level scope
+    @ /p/scratch/hamilmater/vonhoff1/workflow_pq/MD_TB_PQ_wf/codes/optoelec/COOP/coop.jl:93
+in expression starting at /p/scratch/hamilmater/vonhoff1/workflow_pq/MD_TB_PQ_wf/codes/optoelec/COOP/coop.jl:93
+readFromPMIClient: lost connection to the PMI client
+srun: error: jwc00n024: task 0: Exited with exit code 1
