@@ -113,7 +113,7 @@ Using this framework with the referenced external codes, the paper's results can
 
 Please cite the following references when using `FLOW-OTTER`:  
 - F. Vonhoff, J. R. Pedersen, F. P. Delgado, M. Schwade, P. Beck, J. A. Oldenstaedt, I. E. Castelli, and D. A. Egger (2026). **Hamiltonian learning reveals optoelectronic mechanisms across thermodynamic state
-space in soft semiconductors** (arxive link)
+space in soft semiconductors** (https://arxiv.org/abs/2609.29361)
 - B. H. Sjølin, W. S. Hansen, A. A. Morin-Martinez, M. H. Petersen, L. H. Rieger, T. Vegge, J. M. García-Lastra, and I. E. Castelli (2024). **PerQueue: managing complex and dynamic workflows. Digital Discovery**, 3(9), 1832–1841. (https://doi.org/10.1039/D4DD00134F)
 
 For instructions for citing external software called by this project, please follow the links in the list below:
