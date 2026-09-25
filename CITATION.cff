@@ -40,29 +40,29 @@ references:
   - type: article
     title: "Hamiltonian learning reveals optoelectronic mechanisms across thermodynamic state space in soft semiconductors"
     authors:
-    - family-names: Vonhoff
-      given-names: Frederik
-    - family-names: Pedersen
-      given-names: Jesper R.
-    - family-names: Delgado
-      given-names: Frederico P.
-    - family-names: Schwade
-      given-names: Martin
-    - family-names: Beck
-      given-names: Peter
-    - family-names: Oldenstaedt
-      given-names: Jonas A.
-    - family-names: Castelli
-      given-names: Ivano E.
-    - family-names: Egger
-      given-names: David A.
-  year: 2026
-  month: 9
-  journal: "arXiv preprint"
-  identifiers:
-    - type: other
-      value: "arXiv:2609.29361"
-      description: arXiv identifier
-    - type: doi
-      value: 10.48550/arXiv.2609.29361
-  url: "https://arxiv.org/abs/2609.29361"
+      - family-names: Vonhoff
+        given-names: Frederik
+      - family-names: Pedersen
+        given-names: Jesper R.
+      - family-names: Delgado
+        given-names: Frederico P.
+      - family-names: Schwade
+        given-names: Martin
+      - family-names: Beck
+        given-names: Peter
+      - family-names: Oldenstaedt
+        given-names: Jonas A.
+      - family-names: Castelli
+        given-names: Ivano E.
+      - family-names: Egger
+        given-names: David A.
+    year: 2026
+    month: 9
+    journal: "arXiv preprint"
+    identifiers:
+      - type: other
+        value: "arXiv:2609.29361"
+        description: arXiv identifier
+      - type: doi
+        value: 10.48550/arXiv.2609.29361
+    url: "https://arxiv.org/abs/2609.29361"
