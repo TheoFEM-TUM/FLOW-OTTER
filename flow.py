@@ -164,18 +164,19 @@ t3_plot_cohp = Task( cohp / "cohp_plot.py", None, resources_instant, name="cohp_
 
 
 ## optical conductivity tasks
-t3_optC = Task( conductivity / "optical_conductivity.py", None, resources_optoelec, name="optical_conductivity")
-t3_plot_optC = Task( conductivity / "plot_optical_conductivity.py", None, resources_instant, name="plot_optical_conductivity")
+#t3_optC = Task( conductivity / "optical_conductivity.py", None, resources_optoelec, name="optical_conductivity")
+#t3_plot_optC = Task( conductivity / "plot_optical_conductivity.py", None, resources_instant, name="plot_optical_conductivity")
 
 
-N_avg = configWF.get("N_avg", 1)  # number of averages for optical conductivity
-swg3_optC = StaticWidthGroup(t3_optC, width=N_avg)
+#N_avg = configWF.get("N_avg", 1)  # number of averages for optical conductivity
+#swg3_optC = StaticWidthGroup(t3_optC, width=N_avg)
 
 # which optoelectronic property: conductivity, band gap + density of states, COHP, or skip? 
-sg3_opto = SwitchGroup({"conductivity": {t_buffer: [], swg3_optC: [t_buffer]}, "gap+dos_exact_diag": {t3_dia: [], t3_post_dia: [t3_dia]}, "gap+dos_KPM": {t3_KPM: [], t3_post_KPM: [t3_KPM], t3_gap_KPM: [t3_post_KPM]}, "cohp_exact_diag": {t3_cohp_dia: []}, "cohp_KPM": {t3_cohp_KPM: []}, "pdos_exact_diag": {t3_pdos_dia: []}, "pdos_KPM": {t3_pdos_KPM: []}, "skip_optoelec": t3_skipOpto})
+#sg3_opto = SwitchGroup({"conductivity": {t_buffer: [], swg3_optC: [t_buffer]}, "gap+dos_exact_diag": {t3_dia: [], t3_post_dia: [t3_dia]}, "gap+dos_KPM": {t3_KPM: [], t3_post_KPM: [t3_KPM], t3_gap_KPM: [t3_post_KPM]}, "cohp_exact_diag": {t3_cohp_dia: []}, "cohp_KPM": {t3_cohp_KPM: []}, "pdos_exact_diag": {t3_pdos_dia: []}, "pdos_KPM": {t3_pdos_KPM: []}, "skip_optoelec": t3_skipOpto})
+sg3_opto = SwitchGroup({"gap+dos_exact_diag": {t3_dia: [], t3_post_dia: [t3_dia]}, "gap+dos_KPM": {t3_KPM: [], t3_post_KPM: [t3_KPM], t3_gap_KPM: [t3_post_KPM]}, "cohp_exact_diag": {t3_cohp_dia: []}, "cohp_KPM": {t3_cohp_KPM: []}, "pdos_exact_diag": {t3_pdos_dia: []}, "pdos_KPM": {t3_pdos_KPM: []}, "skip_optoelec": t3_skipOpto})
 
 # plot optoelectronic property?
-sg3_plotOpto = SwitchGroup({"conductivity": t3_plot_optC, "gap+dos": t3_plot_gap, "cohp": t3_plot_cohp, "pdos": t3_plot_pdos, "skip_optoelec": t3_skipOpto_plot})
+#sg3_plotOpto = SwitchGroup({"conductivity": t3_plot_optC, "gap+dos": t3_plot_gap, "cohp": t3_plot_cohp, "pdos": t3_plot_pdos, "skip_optoelec": t3_skipOpto_plot})
 
 
 # sweep over Hamiltonian and optoelectronic tasks
