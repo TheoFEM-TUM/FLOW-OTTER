@@ -34,31 +34,27 @@ function compute_cohp(H::Matrix{ComplexF64}, basis_labels::Vector{String}; n_E::
                 label_i = basis_labels[i]
                 label_j = basis_labels[j]
 
-                if label_i != label_j
-                    
-                    H_ij = H[i, j]
-                    H_ji = H[j, i]
+                H_ij = H[i, j]
+                H_ji = H[j, i]
 
-                    if abs(H_ij) > 1e-10 || abs(H_ji) > 1e-10
+                if abs(H_ij) > 1e-10 || abs(H_ji) > 1e-10
 
-                        pair_key = (label_i, label_j)
+                    pair_key = (label_i, label_j)
 
-                        if !haskey(COHPs, pair_key)
-                            if !haskey(COHPs, (label_j, label_i))
-                                COHPs[pair_key] = zeros(Float64, n_E)
-                            else
-                                pair_key = (label_j, label_i)
-                            end
+                    if !haskey(COHPs, pair_key)
+                        if !haskey(COHPs, (label_j, label_i))
+                            COHPs[pair_key] = zeros(Float64, n_E)
+                        else
+                            pair_key = (label_j, label_i)
                         end
-
-                        ci   = vecs[i, k]
-                        cj   = vecs[j, k]
-
-                        cohp_k = real(H_ij * conj(ci) * cj + H_ji * conj(cj) * ci)
-
-                        COHPs[pair_key] .+= cohp_k * weight
-
                     end
+
+                    ci   = vecs[i, k]
+                    cj   = vecs[j, k]
+
+                    cohp_k = real(H_ij * conj(ci) * cj + H_ji * conj(cj) * ci)
+
+                    COHPs[pair_key] .+= cohp_k * weight
 
                 end
             end

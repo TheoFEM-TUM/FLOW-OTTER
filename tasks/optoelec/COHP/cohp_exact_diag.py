@@ -122,38 +122,37 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     for i in basis_labels:
         for j in basis_labels:
-            if i != j:
-                dir_cohp_ij = dir_cohp / f"{i}_{j}/"
-                cohp_files = list(dir_cohp_ij.glob("COHP_*.txt"))
+            dir_cohp_ij = dir_cohp / f"{i}_{j}/"
+            cohp_files = list(dir_cohp_ij.glob("COHP_*.txt"))
 
-                if cohp_files:
-                    avg_E = np.zeros(len(np.loadtxt(cohp_files[0], skiprows=1)[:, 0]))
-                    avg_cohp = np.zeros_like(avg_E)
-                    std_cohp = np.zeros_like(avg_E)
-                    for file in cohp_files:
-                        data = np.loadtxt(file, skiprows=1)
-                        avg_E += data[:, 0]
-                        avg_cohp += data[:, 1]
-                        std_cohp += data[:, 1] ** 2
+            if cohp_files:
+                avg_E = np.zeros(len(np.loadtxt(cohp_files[0], skiprows=1)[:, 0]))
+                avg_cohp = np.zeros_like(avg_E)
+                std_cohp = np.zeros_like(avg_E)
+                for file in cohp_files:
+                    data = np.loadtxt(file, skiprows=1)
+                    avg_E += data[:, 0]
+                    avg_cohp += data[:, 1]
+                    std_cohp += data[:, 1] ** 2
 
-                    avg_E /= len(cohp_files)
-                    avg_cohp /= len(cohp_files)
-                    std_cohp = np.sqrt(std_cohp / len(cohp_files) - avg_cohp ** 2)
+                avg_E /= len(cohp_files)
+                avg_cohp /= len(cohp_files)
+                std_cohp = np.sqrt(std_cohp / len(cohp_files) - avg_cohp ** 2)
 
-                    ICOHP = np.trapz(avg_cohp, avg_E)
-                    print(f"Integrated COHP for {i}-{j} pair: {ICOHP}/{hamiltonian_unit}", flush=True)
+                ICOHP = np.trapz(avg_cohp, avg_E)
+                print(f"Integrated COHP for {i}-{j} pair: {ICOHP}/{hamiltonian_unit}", flush=True)
 
-                    fig, ax = plt.subplots()
-                    plt.title(f"Crystal orbital Hamilton population ({i}-{j})")
-                    ax.axhline(y=0, color='black', linewidth=0.8)
-                    ax.plot(avg_E, avg_cohp)
-                    ax.fill_between(avg_E, (avg_cohp - std_cohp), (avg_cohp + std_cohp), alpha=0.2)
-                    ax.set_xlabel(f"Energy/{hamiltonian_unit}")
-                    ax.set_ylabel(f"COHP")
-                    plt.savefig(str(dir_cohp / f"avg_COHP_{i}_{j}.pdf"))
-                    plt.close(fig)
+                fig, ax = plt.subplots()
+                plt.title(f"Crystal orbital Hamilton population ({i}-{j})")
+                ax.axhline(y=0, color='black', linewidth=0.8)
+                ax.plot(avg_E, avg_cohp)
+                ax.fill_between(avg_E, (avg_cohp - std_cohp), (avg_cohp + std_cohp), alpha=0.2)
+                ax.set_xlabel(f"Energy/{hamiltonian_unit}")
+                ax.set_ylabel(f"COHP")
+                plt.savefig(str(dir_cohp / f"avg_COHP_{i}_{j}.pdf"))
+                plt.close(fig)
 
-                    np.savetxt(str(dir_cohp / f"avg_COHP_{i}_{j}.txt"), np.column_stack((avg_E, avg_cohp, std_cohp)), header="Energy   COHP   std_COHP")
+                np.savetxt(str(dir_cohp / f"avg_COHP_{i}_{j}.txt"), np.column_stack((avg_E, avg_cohp, std_cohp)), header="Energy   COHP   std_COHP")
         
 
     optoelec_type = "cohp_exact_diag"

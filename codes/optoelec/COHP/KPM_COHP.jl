@@ -77,6 +77,10 @@ function kernel_polynomial_method_cohp(H::SparseMatrixCSC{ComplexF64}, v::Vector
     for i in 1:n_labels
         for j in 1:n_labels
             pi_H_pj[:, i, j] = projector(H * projector(v, Ps[:, i]), Ps[:, j])
+            # exclude on-site terms H_kk for same-label pairs (only inter-orbital overlaps)
+            if i == j
+                pi_H_pj[:, i, j] .-= projector(diag(H) .* v, Ps[:, i])
+            end
         end
     end
 
@@ -125,20 +129,18 @@ function compute_cohp(M, mean_E, ΔE, coeff_COHP, unique_labels)
             elem_i = unique_labels[i]
             elem_j = unique_labels[j]
 
-            if elem_i != elem_j
-                pair_key = (elem_i, elem_j)
+            pair_key = (elem_i, elem_j)
 
-                if !haskey(COHPs, pair_key)
-                    if !haskey(COHPs, (elem_j, elem_i))
-                        COHPs[pair_key] = zeros(Float64, 2 * M)
-                    else
-                        pair_key = (elem_j, elem_i)
-                    end
+            if !haskey(COHPs, pair_key)
+                if !haskey(COHPs, (elem_j, elem_i))
+                    COHPs[pair_key] = zeros(Float64, 2 * M)
+                else
+                    pair_key = (elem_j, elem_i)
                 end
+            end
 
-                for m in 1:M
-                    COHPs[pair_key] += coeff_COHP[m, i, j] * delta_m_E[:, m]
-                end
+            for m in 1:M
+                COHPs[pair_key] += coeff_COHP[m, i, j] * delta_m_E[:, m]
             end
 
         end
