@@ -191,7 +191,8 @@ function KPM_COHP(H_path::String, output_dir::String, t::Int, M::Int, N::Int)
     tforeach(1:num_vecs; chunksize=1) do i
 
         vec = draw_vec(i, dim, rank, num_vecs)
-        arr_coeff_COHPs[:, :, :, i] = kernel_polynomial_method_cohp(H, vec, M, basis_labels, unique_labels)
+        # multiply by ΔE to undo the rescaling of H in the P_i * H * P_j prefactor
+        arr_coeff_COHPs[:, :, :, i] = ΔE .* kernel_polynomial_method_cohp(H, vec, M, basis_labels, unique_labels)
 
     end
 
