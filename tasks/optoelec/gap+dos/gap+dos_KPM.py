@@ -126,4 +126,5 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     print("Finish task: gap+dos_KPM", flush=True)
 
-    return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, "optoelec_type": optoelec_type, "snapshots": snapshots}
+    # DoS exists only for chosen_snapshots; gaps are later computed for all snapshots
+    return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, "optoelec_type": optoelec_type, "snapshots": snapshots, "dos_snapshots": chosen_snapshots}

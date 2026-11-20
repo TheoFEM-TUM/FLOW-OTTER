@@ -145,6 +145,9 @@ function KPM_DOS(M::Int, N::Int, H_path::String, output_path::String, t::Int, ha
     BLAS.set_num_threads(1)
 
     num_vecs = floor(Int, N / rank_size)
+    if num_vecs == 0
+        error("Number of random vectors N=$N is smaller than the number of MPI ranks ($rank_size).")
+    end
 
     if rank == (rank_size - 1)
         mod_vecs = N % rank_size

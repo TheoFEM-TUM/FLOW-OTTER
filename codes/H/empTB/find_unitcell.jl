@@ -86,7 +86,7 @@ end
 path = ARGS[1]
 xyz_file = ARGS[2] 
 L = readdlm(ARGS[3])
-n_nn = Int(parse(Int, ARGS[4])/4)
+n_nn = parse(Int, ARGS[4]) / 4   # Float64: cell sizes not divisible by 4 must not throw an InexactError
 println(n_nn)
 
 positions = readdlm(joinpath(path, xyz_file))

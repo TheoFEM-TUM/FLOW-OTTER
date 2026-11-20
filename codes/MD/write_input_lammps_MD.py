@@ -57,7 +57,7 @@ with open(lammps_input_file, "w") as f:
     w(f"units {input_params['units']}")
     w(f"dimension {input_params['dimension']}")
     w(f"boundary {input_params['boundary']}")
-    w(f"kspace_style {input_params['kspace_style']}")
+    w(f"kspace_style {input_params.get('kspace_style', 'none')}")
     w(f"atom_style {input_params['atom_style']}")
     if configWF["MD_type"] == "lammps+MACE":
         w("package kokkos neigh half")

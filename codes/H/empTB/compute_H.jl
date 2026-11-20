@@ -530,10 +530,13 @@ snapshot2 = parse(Int, ARGS[5])
 
 snapshot_size = parse(Int, ARGS[6])
 
-snapshots = [
+snapshots = snapshot_size == 1 ? [snapshot1] : [
         snapshot1 + round(Int, i * (snapshot2 - snapshot1) / (snapshot_size - 1))
         for i in 0:snapshot_size-1
     ]
+# drop duplicates (snapshot range smaller than N_snapshots) so no snapshot is computed twice
+snapshots = unique(snapshots)
+snapshot_size = length(snapshots)
 
 println("Start MPI:")
 MPI.Init()

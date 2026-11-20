@@ -6,7 +6,7 @@ from pathlib import Path
 import subprocess
 
 
-def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, optoelec_type: str = "KPM", snapshots: np.ndarray = np.arange(0, 47, 1), **kwargs) -> Tuple[bool, dict]:
+def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, optoelec_type: str = "KPM", snapshots: np.ndarray = np.arange(0, 47, 1), dos_snapshots: np.ndarray = None, **kwargs) -> Tuple[bool, dict]:
 
     print("Start task: gap+dos_post_exact_diag", flush=True)
 
@@ -45,28 +45,26 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     sigma = 0.05   # Gaussian broadening (energy units)
     prefactor = 1.0 / (sigma * np.sqrt(2.0 * np.pi))
 
+    # eigenvalues exist only for the diagonalized (sampled) snapshots
+    if dos_snapshots is not None:
+        snapshots = dos_snapshots
+
+    EVs = [np.loadtxt(str(dir_H / f"gap+dos/EV/EV_{t}.txt"), unpack=True, skiprows=1) for t in snapshots]
+    avg_EV = np.mean(EVs, axis=0)
+
+    # one common energy grid for all snapshots (each snapshot has its own spectral
+    # range, so DoS curves on per-snapshot grids must not be averaged row by row)
     E_grid_points = 1000  # number of points in energy grid
-    arr_E = np.zeros((len(snapshots), E_grid_points))
+    E_min = min(EV.min() for EV in EVs)
+    E_max = max(EV.max() for EV in EVs)
+    avg_E = np.linspace(E_min, E_max, E_grid_points)
     arr_dos = np.zeros((len(snapshots), E_grid_points))
 
-    # average DoS over snapshots
-    EV0 = np.loadtxt(str(dir_H / f"gap+dos/EV/EV_{snapshots[0]}.txt"), unpack=True, skiprows=1)
-    avg_EV = np.zeros(len(EV0))
-
-    for t in range(len(snapshots)):
-
-        EV = np.loadtxt(str(dir_H / f"gap+dos/EV/EV_{snapshots[t]}.txt"), unpack=True, skiprows=1)
-        avg_EV += EV/len(snapshots)
-
-        E_min, E_max = EV.min(), EV.max()
-
-        arr_E[t, :] = np.linspace(E_min, E_max, E_grid_points)
-
+    for t, EV in enumerate(EVs):
         # calculate DoS out of eigenvalues
         for E in EV:
-            arr_dos[t, :] += prefactor * np.exp(-0.5 * ((arr_E[t, :] - E) / sigma)**2)
+            arr_dos[t, :] += prefactor * np.exp(-0.5 * ((avg_E - E) / sigma)**2)
 
-    avg_E = np.mean(arr_E, axis=0)
     avg_dos = np.mean(arr_dos, axis=0)
     std_dos = np.std(arr_dos, axis=0)
 
@@ -102,9 +100,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     CBMs = np.zeros((len(snapshots), len(largest_gap_indices)))
 
     # collect gaps, VBM, CBM for all snapshots
-    for t in range(len(snapshots)):
-
-        EV = np.loadtxt(str(dir_H / f"gap+dos/EV/EV_{snapshots[t]}.txt"), unpack=True, skiprows=1)
+    for t, EV in enumerate(EVs):
 
         for ix in range(len(largest_gap_indices)):
 
