@@ -14,6 +14,7 @@ These are all parameters with detailed descriptions that can be used in the conf
 `resources_MD` (str): myqueue string specifying resources for MD jobs  
 `resources_H`  (str): myqueue string specifying resources for H jobs  
 `resources_optoelec` (str): myqueue string specifying resources for optoelec jobs  
+`resources_DFT` (str): myqueue string specifying resources for DFT (VASP) jobs; applied **per snapshot** since each snapshot runs as its own job (`flow_MD_DFT.py`)  
 `resources_instant` (str): myqueue string specifying resources for jobs which should be finished instantaneously (*resources of resources or resources_H with walltime = 5m*)  
 `resources_short` (str): myqueue string specifying resources for jobs which should only run shortly (*resources of resources or resources_H with walltime = 2h*)  
 `resources_long` (str): myqueue string specifying resources for jobs which should run very long (*resources of resources or resources_H with walltime = 1d*)  
@@ -89,8 +90,11 @@ These are all parameters with detailed descriptions that can be used in the conf
 
 `cell_size` (int): size of supercell in comparison to unit cell (only needed for "empTB")  
 
+`trajectory_file` (str): exception for the DFT workflow without MD (`MD_type: "skip_MD"`): path to an external VASP XDATCAR from which the DFT snapshots are sampled; if not set, `dir_MD/position.lammpstrj` from the MD stage is used (*None*)  
+`potcar_file` (str): path to the VASP POTCAR (concatenated for all species) copied into every DFT snapshot directory by `prep_DFT.py`; only used by the DFT pipeline (`flow_MD_DFT.py`). Its species concatenation order must match the `lammps: elements` list (species order of the generated XDATCAR) and any per-species VASP arrays   
+
 `first_snapshot` (int): first snapshot of MD trajectory used for H calculation (*0*)  
-`N_snapshots` (int): total number of snapshots used for H calculation  
+`N_snapshots` (int): total number of snapshots used for H (and DFT) calculations
 `last_snapshot` (int): last snapshot of MD trajectory used for H calculation (*first_snapshot + N_snapshots - 1*)  
 
 `threads_H` (int): number of Julia threads for H calculation (*1*)  
@@ -162,6 +166,24 @@ Details can also be found in [LAMMPS documentation](https://docs.lammps.org/Manu
 `rdf_bins` (int): number of bins which are used to histogram the atom distances for the radial distribution function (rdf) (*100*)  
 
 `units_array` (array of string): individual units shown in the MD plots; set as `["temperature unit", "energy unit", "lattice constant unit", "volume unit", "pressure unit", "time unit (thermo)", "atom distance unit", "velocity unit", "force unit", "frequency unit", "time unit (MSD)"]`  
+
+
+## vasp:
+INCAR tags and k-point mesh for the DFT pipeline (`flow_MD_DFT.py`). Apart from the `kpoints` subgroup (see below), this group is **free-form**: `prep_DFT.py` writes one `TAG = value` line to the INCAR for **every** other key/value pair (keys are upper-cased, booleans become `.TRUE.`/`.FALSE.`, lists become space-separated values). There is therefore no fixed parameter list — any valid VASP INCAR tag can be added and switching functionals/methods (DFT+U, meta-GGA, hybrids) is purely a YAML edit. See the [VASP wiki](https://www.vasp.at/wiki/index.php/Category:INCAR_tag). Commonly used tags for these runs:
+
+`ENCUT` (float): plane-wave cutoff energy in eV  
+`GGA` (str): exchange-correlation functional (e.g. `PE` for PBE)  
+`ISMEAR` / `SIGMA` (int / float): smearing method and width  
+`EDIFF` (float): electronic SCF convergence criterion  
+`LREAL` (str/bool): real-space projection 
+`LWAVE` / `LCHARG` (bool): whether to write `WAVECAR` / `CHGCAR` 
+`KPAR` / `NCORE` (int): k-point / band parallelization (`NCORE` must divide `cores/KPAR`)  
+
+`kpoints` (group): KPOINTS settings, written by `prep_DFT.py` as an automatic mesh to the KPOINTS file (not to the INCAR); **required**:
+
+`mesh` (array of int): subdivisions along each reciprocal axis, e.g. `[4, 4, 4]` (**required**)  
+`type` (str): mesh type, `"Gamma"` (Gamma-centred) or `"Monkhorst-Pack"` (*"Gamma"*)  
+`shift` (array of float): mesh shift off the origin (*[0, 0, 0]*)  
 
 
 ## gap+dos:
