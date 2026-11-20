@@ -99,13 +99,18 @@ def main(
     if oszicar_path.exists():
         with open(oszicar_path, "r") as f:
             lines = f.readlines()
-        if lines:
-            last_line = lines[-1].split()
-            if len(last_line) >= 5:
-                total_energy = float(last_line[-1])
-                print(f"DFT snapshot {snapshot_index} total energy: {total_energy:.6f} eV", flush=True)
-                with open(snapshot_dir / "total_energy.log", "w") as f:
-                    f.write(f"{total_energy}\n")
+        # ionic-step lines look like
+        #   "   1 F= -.11159218E+01 E0= -.11159218E+01  d E =-.117812E-42  mag=     1.0000"
+        # take E0 (energy for sigma -> 0) from the last such line
+        energy_lines = [l for l in lines if "E0=" in l]
+        match = re.search(r"E0=\s*([-+]?[\d.]+(?:[eE][-+]?\d+)?)", energy_lines[-1]) if energy_lines else None
+        if match:
+            total_energy = float(match.group(1))
+            print(f"DFT snapshot {snapshot_index} total energy (E0): {total_energy:.6f} eV", flush=True)
+            with open(snapshot_dir / "total_energy.log", "w") as f:
+                f.write(f"{total_energy}\n")
+        else:
+            print(f"Warning: could not parse E0 from {oszicar_path}", flush=True)
     else:
         print(f"Warning: OSZICAR not found in {snapshot_dir}", flush=True)
 
@@ -121,23 +126,6 @@ def main(
             cwd=snapshot_dir,
             stdout=f,
             stderr=subprocess.STDOUT,
-            check=True
-        )
-
-    with open(snapshot_dir / "dos.log", "w") as f:
-        subprocess.run(
-            [
-                "vamp",
-                "doscar",
-                "read",
-                "--doscar",
-                "DOSCAR",
-                "--o",
-                "dos.h5"
-            ],
-            cwd=snapshot_dir,
-            stdout=f,
-            stderr=subprocess.STDOUT,   # merge stderr into the same file
             check=True
         )
 
