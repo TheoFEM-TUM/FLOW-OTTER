@@ -177,6 +177,7 @@ sg3_opto = SwitchGroup({"gap+dos_exact_diag": {t3_dia: [], t3_post_dia: [t3_dia]
 
 # plot optoelectronic property?
 #sg3_plotOpto = SwitchGroup({"conductivity": t3_plot_optC, "gap+dos": t3_plot_gap, "cohp": t3_plot_cohp, "pdos": t3_plot_pdos, "skip_optoelec": t3_skipOpto_plot})
+sg3_plotOpto = SwitchGroup({"gap+dos": t3_plot_gap, "cohp": t3_plot_cohp, "pdos": t3_plot_pdos, "skip_optoelec": t3_skipOpto_plot})
 
 
 # sweep over Hamiltonian and optoelectronic tasks

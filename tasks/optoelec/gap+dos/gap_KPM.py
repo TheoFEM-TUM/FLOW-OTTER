@@ -3,7 +3,7 @@ import yaml
 import numpy as np
 from pathlib import Path
 
-def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, snapshots: np.ndarray = np.arange(0, 47, 1), **kwargs) -> Tuple[bool, dict]:
+def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, snapshots: np.ndarray = np.arange(0, 47, 1), guess_E_v: float = None, guess_E_c: float = None, **kwargs) -> Tuple[bool, dict]:
 
     print("Start task: gap_KPM", flush=True)
 
@@ -35,8 +35,12 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     dir_H = Path(configWF_i.get("dir_H", str(dir_project_i / "2-H/")))
     hamiltonian_unit = configWF_i.get("hamiltonian_unit", "eV")
 
-    guess_E_v = configWF_i["gap+dos"].get("guess_E_v", None)
-    guess_E_c = configWF_i["gap+dos"].get("guess_E_c", None)
+    # guesses are passed on by gap+dos_post_KPM (incl. automatically determined ones);
+    # fall back to the config for older callers
+    if guess_E_v is None:
+        guess_E_v = configWF_i["gap+dos"].get("guess_E_v", None)
+    if guess_E_c is None:
+        guess_E_c = configWF_i["gap+dos"].get("guess_E_c", None)
 
     # average gaps over snapshots
     data_gap_VBM_CBM = np.zeros((len(snapshots), 3))

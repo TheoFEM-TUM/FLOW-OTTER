@@ -6,7 +6,21 @@ from pathlib import Path
 import subprocess
 
 
-def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, optoelec_type: str = "KPM", snapshots: np.ndarray = np.arange(0, 47, 1), **kwargs) -> Tuple[bool, dict]:
+def average_on_common_grid(arr_E, arr_Y, n_points):
+    """Interpolate per-snapshot curves onto one common energy grid and average.
+
+    Each snapshot has its own energy grid (its own spectral bounds), so curves
+    must not be averaged row by row. The common grid spans the union of all
+    snapshot ranges; outside its own range a snapshot contributes zero.
+    """
+    E_min = min(np.min(E) for E in arr_E)
+    E_max = max(np.max(E) for E in arr_E)
+    grid = np.linspace(E_min, E_max, n_points)
+    stack = np.array([np.interp(grid, E, Y, left=0.0, right=0.0) for E, Y in zip(arr_E, arr_Y)])
+    return grid, np.mean(stack, axis=0), np.std(stack, axis=0)
+
+
+def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, optoelec_type: str = "KPM", snapshots: np.ndarray = np.arange(0, 47, 1), dos_snapshots: np.ndarray = None, **kwargs) -> Tuple[bool, dict]:
 
     print("Start task: gap+dos_post_KPM", flush=True)
 
@@ -46,17 +60,19 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     julia_flags_optoelec = configWF_i.get("julia_flags_optoelec", [])
 
+    # DoS was only computed for the sampled snapshots; gaps are computed for all
+    if dos_snapshots is None:
+        dos_snapshots = snapshots
+
     # read in DoS from KPM calculation
-    arr_E = np.zeros((len(snapshots), 2*M))
-    arr_dos = np.zeros((len(snapshots), 2*M))
+    arr_E = np.zeros((len(dos_snapshots), 2*M))
+    arr_dos = np.zeros((len(dos_snapshots), 2*M))
 
-    # average DoS over snapshots
-    for t in range(len(snapshots)):
-        arr_E[t, :], arr_dos[t, :] = np.loadtxt(str(dir_H / f"gap+dos/DOS/dos_{snapshots[t]}_KPM.txt"), unpack=True, skiprows=1)
+    for t in range(len(dos_snapshots)):
+        arr_E[t, :], arr_dos[t, :] = np.loadtxt(str(dir_H / f"gap+dos/DOS/dos_{dos_snapshots[t]}_KPM.txt"), unpack=True, skiprows=1)
 
-    avg_E = np.mean(arr_E, axis=0)
-    avg_dos = np.mean(arr_dos, axis=0)
-    std_dos = np.std(arr_dos, axis=0)
+    # average DoS over snapshots on a common energy grid
+    avg_E, avg_dos, std_dos = average_on_common_grid(arr_E, arr_dos, 2*M)
 
     # save average DoS to file
     data_dos = np.column_stack((avg_E, avg_dos, std_dos))
@@ -73,7 +89,8 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
     plt.close(fig1)
 
     # estimate band gap candidates from DoS with removed low-weight areas
-    threshold = np.min(avg_dos) * 10
+    # (positive values only: the zero padding of the common grid must not set the threshold)
+    threshold = np.min(avg_dos[avg_dos > 0]) * 10
     EV = avg_E[avg_dos > threshold]
 
     gaps = np.diff(EV)
@@ -126,4 +143,7 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
 
     print("Finish task: gap+dos_post_KPM", flush=True)
 
-    return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, "snapshots": snapshots}
+    # pass the guesses on directly: gap_KPM must not rely on re-reading them from a
+    # config file (for num_simulations == 1 it reads the main config, not branch_config.yaml)
+    return True, {"path_configWF": path_configWF, "num_simulations": num_simulations, "snapshots": snapshots,
+                  "guess_E_v": float(guess_E_v), "guess_E_c": float(guess_E_c)}

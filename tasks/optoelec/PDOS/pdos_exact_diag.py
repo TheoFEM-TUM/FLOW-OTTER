@@ -10,6 +10,20 @@ import matplotlib.pyplot as plt
 
 
 
+def average_on_common_grid(arr_E, arr_Y, n_points):
+    """Interpolate per-snapshot curves onto one common energy grid and average.
+
+    Each snapshot has its own energy grid (its own spectral bounds), so curves
+    must not be averaged row by row. The common grid spans the union of all
+    snapshot ranges; outside its own range a snapshot contributes zero.
+    """
+    E_min = min(np.min(E) for E in arr_E)
+    E_max = max(np.max(E) for E in arr_E)
+    grid = np.linspace(E_min, E_max, n_points)
+    stack = np.array([np.interp(grid, E, Y, left=0.0, right=0.0) for E, Y in zip(arr_E, arr_Y)])
+    return grid, np.mean(stack, axis=0), np.std(stack, axis=0)
+
+
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
     print("Start task: pdos_exact_diag", flush=True)
@@ -121,19 +135,9 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
         pdos_files = list(dir_pdos_l.glob("PDOS_*.txt"))
 
         if pdos_files:
-            avg_E    = np.zeros(len(np.loadtxt(pdos_files[0], skiprows=1)[:, 0]))
-            avg_pdos = np.zeros_like(avg_E)
-            std_pdos = np.zeros_like(avg_E)
-
-            for file in pdos_files:
-                data = np.loadtxt(file, skiprows=1)
-                avg_E    += data[:, 0]
-                avg_pdos += data[:, 1]
-                std_pdos += data[:, 1] ** 2
-
-            avg_E    /= len(pdos_files)
-            avg_pdos /= len(pdos_files)
-            std_pdos  = np.sqrt(std_pdos / len(pdos_files) - avg_pdos ** 2)
+            data = [np.loadtxt(file, skiprows=1) for file in pdos_files]
+            # average on a common energy grid (each snapshot has its own grid)
+            avg_E, avg_pdos, std_pdos = average_on_common_grid([d[:, 0] for d in data], [d[:, 1] for d in data], len(data[0]))
 
             IPDOS = np.trapz(avg_pdos, avg_E)
             print(f"Integrated PDOS for {label}: {IPDOS}/{hamiltonian_unit}", flush=True)

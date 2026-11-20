@@ -35,6 +35,9 @@ def parse_masses(data_file):
             if stripped == "":
                 continue  # skip blank lines
             parts = stripped.split()
+            # any non-numeric line is the next section header (e.g. "Pair Coeffs", "Atoms")
+            if not parts[0].isdigit():
+                break
             if len(parts) >= 2:
                 atype = int(parts[0])
                 mass = float(parts[1])

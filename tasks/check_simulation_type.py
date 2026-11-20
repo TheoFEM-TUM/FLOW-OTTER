@@ -56,6 +56,9 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
             array_to_vary6 = configWF["array_to_vary6"]
 
 
+        # output directories already claimed by a branch: {(key, resolved path): branch index}
+        claimed_dirs = {}
+
         # Loop over different branches
         for i in range(num_simulations):
 
@@ -124,6 +127,20 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                 configWF_i = deep_merge(configWF_i, configWF)
             else:
                 configWF_i = configWF.copy()
+
+            # branches must not share an output directory, otherwise they overwrite each other
+            # (dir_MD/dir_H default to per-branch folders; this only triggers if they are set explicitly)
+            for key in ("dir_MD", "dir_H"):
+                if configWF_i.get(key) is not None:
+                    resolved = str(Path(configWF_i[key]).resolve())
+                    if (key, resolved) in claimed_dirs:
+                        raise Exception(
+                            f"Branches {claimed_dirs[(key, resolved)]} and {i} both use {key} = {resolved}. "
+                            f"They would overwrite each other's output. Remove {key} from the main config: "
+                            f"each branch then uses its own folder, or you can set a different {key} per branch "
+                            f"in pre_branch_config.yaml (values in the main config take precedence over it)."
+                        )
+                    claimed_dirs[(key, resolved)] = i
 
             with open(path_configWF_i, 'w') as f:
                 yaml.dump(configWF_i, f)    

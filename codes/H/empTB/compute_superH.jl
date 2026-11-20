@@ -742,10 +742,14 @@ end
 println("Start MPI:")
 MPI.Init()
 
-snapshots = [
+snapshots = snapshot_size == 1 ? [snapshot1] : [
         snapshot1 + round(Int, i * (snapshot2 - snapshot1) / (snapshot_size - 1))
         for i in 0:snapshot_size-1
     ]
+# drop duplicates (snapshot range smaller than N_snapshots): two ranks writing the
+# same snapshot would create the same HDF5 group twice and error
+snapshots = unique(snapshots)
+snapshot_size = length(snapshots)
 
 #println(snapshots)
 

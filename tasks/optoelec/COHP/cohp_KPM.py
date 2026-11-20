@@ -9,6 +9,20 @@ import random
 import matplotlib.pyplot as plt
 
 
+def average_on_common_grid(arr_E, arr_Y, n_points):
+    """Interpolate per-snapshot curves onto one common energy grid and average.
+
+    Each snapshot has its own energy grid (its own spectral bounds), so curves
+    must not be averaged row by row. The common grid spans the union of all
+    snapshot ranges; outside its own range a snapshot contributes zero.
+    """
+    E_min = min(np.min(E) for E in arr_E)
+    E_max = max(np.max(E) for E in arr_E)
+    grid = np.linspace(E_min, E_max, n_points)
+    stack = np.array([np.interp(grid, E, Y, left=0.0, right=0.0) for E, Y in zip(arr_E, arr_Y)])
+    return grid, np.mean(stack, axis=0), np.std(stack, axis=0)
+
+
 def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, **kwargs) -> Tuple[bool, dict]:
 
     print("Start task: cohp_KPM", flush=True)
@@ -132,22 +146,15 @@ def main(path_configWF: str = "workflow_config.yaml", num_simulations: int = 1, 
                 cohp_files = list(dir_cohp_ij.glob("COHP_*.txt"))
 
                 if cohp_files:
-                    avg_E = np.zeros(len(np.loadtxt(cohp_files[0], skiprows=1)[:, 0]))
-                    avg_cohp = np.zeros_like(avg_E)
-                    std_cohp = np.zeros_like(avg_E)
+                    data = [np.loadtxt(file, skiprows=1) for file in cohp_files]
+                    # average on a common energy grid (each snapshot has its own grid)
+                    avg_E, avg_cohp, std_cohp = average_on_common_grid([d[:, 0] for d in data], [d[:, 1] for d in data], len(data[0]))
                     avg_ICOHP = 0
                     std_ICOHP = 0
-                    for file in cohp_files:
-                        data = np.loadtxt(file, skiprows=1)
-                        avg_E += data[:, 0]
-                        avg_cohp += data[:, 1]
-                        std_cohp += data[:, 1] ** 2
-                        avg_ICOHP += np.trapz(data[:, 1], data[:, 0])
-                        std_ICOHP += np.trapz(data[:, 1], data[:, 0]) ** 2
+                    for d in data:
+                        avg_ICOHP += np.trapz(d[:, 1], d[:, 0])
+                        std_ICOHP += np.trapz(d[:, 1], d[:, 0]) ** 2
 
-                    avg_E /= len(cohp_files)
-                    avg_cohp /= len(cohp_files)
-                    std_cohp = np.sqrt(std_cohp / len(cohp_files) - avg_cohp ** 2)
                     avg_ICOHP /= len(cohp_files)
                     std_ICOHP = np.sqrt(std_ICOHP / len(cohp_files) - avg_ICOHP ** 2)
 
